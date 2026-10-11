@@ -17,4 +17,7 @@ urlpatterns = [
     
     # Identity & Authentication APIs
     path('api/auth/', include('identity.urls')),
+    
+    # Catalog, Products, Categories & Brands APIs
+    path('api/catalog/', include('catalog.urls')),
 ]
