@@ -1,0 +1,1515 @@
+// ======================================================================================
+// AMAZON MARKETPLACE ENTERPRISE E-COMMERCE PRISMA SCHEMA
+// ======================================================================================
+// This schema models an enterprise multi-vendor marketplace in the architecture of
+// Amazon.com. Key foundational pillars include:
+// 1. Separation of Master Catalog (ASIN / Parent-Child Variations) from Seller Offers (Listings/SKUs).
+// 2. Buy Box algorithmic pricing & multi-seller competition on identical items.
+// 3. Dual fulfillment engines: FBA (Fulfillment by Amazon) vs FBM (Fulfillment by Merchant).
+// 4. Multi-node warehouse inventory, inbound logistics replenishment, and safety stock.
+// 5. Split-shipment order fulfillment across multiple warehouses and independent merchants.
+// 6. Marketplace financial ledger: Escrow, referral fees, closing fees, FBA pick/pack fees,
+//    storage fees, and scheduled seller disbursements.
+// 7. Strict compliance & trust: Seller KYC, Brand Registry, A-to-z Guarantee claims,
+//    verified purchase reviews, seller performance metrics (ODR, VTR, LDR).
+// 8. Native advertising engine: Sponsored Products, PPC campaigns, ad groups, and keyword bids.
+// ======================================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ======================================================================================
+// SECTION 1: GLOBAL ENUMS
+// ======================================================================================
+
+/// Global platform user roles governing access control and API permissions.
+enum UserRole {
+  CUSTOMER
+  SELLER
+  ADMIN
+  SUPPORT_AGENT
+  WAREHOUSE_OPERATOR
+}
+
+/// Verification lifecycle for merchant accounts, KYC compliance, and legal verification.
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+/// Seller account subscription tier affecting fee structures and listing features.
+enum SellerTier {
+  INDIVIDUAL // Pay-per-item sale model ($0.99 fee per sale)
+  PROFESSIONAL // Monthly subscription fee ($39.99/mo) with bulk listing & API access
+  ENTERPRISE // Custom enterprise marketplace tier
+}
+
+/// Operational state of a merchant storefront.
+enum SellerAccountStatus {
+  ACTIVE
+  ONBOARDING
+  VACATION_MODE
+  UNDER_REVIEW
+  SUSPENDED
+  TERMINATED
+}
+
+/// Identity and legal document categories submitted for seller KYC compliance.
+enum KycDocumentType {
+  PASSPORT
+  NATIONAL_ID
+  DRIVERS_LICENSE
+  BUSINESS_REGISTRATION_CERTIFICATE
+  TAX_IDENTIFICATION_CERTIFICATE
+  UTILITY_BILL
+  BANK_ACCOUNT_STATEMENT
+}
+
+/// Physical condition grading of goods according to standard Amazon grading rules.
+enum ProductCondition {
+  NEW
+  REFURBISHED_EXCELLENT
+  REFURBISHED_GOOD
+  USED_LIKE_NEW
+  USED_VERY_GOOD
+  USED_GOOD
+  USED_ACCEPTABLE
+  COLLECTIBLE
+}
+
+/// Fulfillment channel defining whether Amazon or the third-party merchant ships the item.
+enum FulfillmentChannel {
+  FBA // Fulfillment by Amazon (stored & dispatched from marketplace FC)
+  FBM // Fulfillment by Merchant (stored & shipped directly by third-party seller)
+}
+
+/// Catalog state of a seller's specific offer / SKU listing.
+enum ListingStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+  SUPPRESSED // Suppressed due to policy violation, missing image, or pricing error
+  BLOCKED
+  DRAFT
+  ARCHIVED
+}
+
+/// Variation theme defining the parent-child matrix for catalog display.
+enum VariationTheme {
+  SIZE
+  COLOR
+  SIZE_COLOR
+  STYLE
+  FLAVOR
+  SCENT
+  CAPACITY
+  MATERIAL
+  COUNT_PER_PACK
+}
+
+/// Master catalog product status in the global ASIN repository.
+enum CatalogStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  SUPPRESSED
+  DISCONTINUED
+}
+
+/// Type of warehouse or node in the distribution and fulfillment network.
+enum WarehouseType {
+  FBA_FULFILLMENT_CENTER
+  SORTATION_CENTER
+  DELIVERY_STATION
+  SELLER_WAREHOUSE
+  CROSS_DOCK_FACILITY
+}
+
+/// Inbound shipment plan statuses for FBA inventory replenishment.
+enum InboundShipmentStatus {
+  WORKING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CHECKED_IN
+  RECEIVING
+  CLOSED
+  CANCELLED
+}
+
+/// Reason codes for physical inventory movement and adjustment audit logs.
+enum InventoryMovementReason {
+  CUSTOMER_ORDER_RESERVED
+  CUSTOMER_ORDER_DISPATCHED
+  CUSTOMER_RETURN_RESTOCKED
+  FBA_INBOUND_RECEIVED
+  DAMAGED_IN_WAREHOUSE
+  CYCLE_COUNT_ADJUSTMENT
+  DISPOSED
+  STOCK_TRANSFER_INTER_WAREHOUSE
+  SELLER_REMOVAL_ORDER
+}
+
+/// High-level lifecycle state for a customer's composite order.
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  PROCESSING
+  PARTIALLY_SHIPPED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+/// Individual item status inside an order line, handling separate cancel/return flows.
+enum OrderItemStatus {
+  PENDING
+  ALLOCATED
+  PACKED
+  SHIPPED
+  DELIVERED
+  RETURN_REQUESTED
+  RETURNED
+  CANCELLED
+  REFUND_PROCESSED
+}
+
+/// Shipping SLA speeds selected by customer during checkout.
+enum ShippingSpeed {
+  STANDARD // Standard 3-5 business days
+  EXPEDITED // 2 business days
+  PRIME_TWO_DAY // Guaranteed Prime 2-day delivery
+  PRIME_ONE_DAY // Guaranteed Prime 1-day delivery
+  PRIME_SAME_DAY // Same-day / sub-day delivery
+}
+
+/// Status of individual shipping packages / consignments.
+enum ShipmentStatus {
+  LABEL_CREATED
+  READY_FOR_PICKUP
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERY_ATTEMPTED
+  DELIVERED
+  EXCEPTION_RETURNED
+  LOST_IN_TRANSIT
+}
+
+/// Payment method types accepted at platform checkout.
+enum PaymentMethodType {
+  CREDIT_CARD
+  DEBIT_CARD
+  AMAZON_PAY_BALANCE
+  NET_BANKING
+  UPI
+  DIGITAL_WALLET
+  BUY_NOW_PAY_LATER
+  CASH_ON_DELIVERY
+}
+
+/// Financial payment transaction status.
+enum PaymentStatus {
+  INITIATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  VOIDED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+/// Bi-weekly merchant settlement statement status for financial disbursements.
+enum SettlementStatus {
+  OPEN // Currently accumulating orders & fees in active 14-day cycle
+  PROCESSING // Cycle closed, calculating fee breakdown & tax withholding
+  DISBURSED // Wire / ACH sent to seller bank account
+  FAILED // Bank rejected wire; withheld for retry
+}
+
+/// Financial transaction ledger classification for marketplace fee accounting.
+enum TransactionType {
+  PRODUCT_SALE // Gross proceeds credited from customer purchase
+  REFERRAL_FEE // Percentage fee deducted by marketplace (category-based, e.g. 8-15%)
+  CLOSING_FEE // Fixed closing/handling fee deducted per item
+  FBA_PICK_AND_PACK_FEE // Weight/size-based fulfillment charge per FBA unit
+  FBA_MONTHLY_STORAGE_FEE // Cubic foot monthly warehouse storage fee
+  FBA_LONG_TERM_STORAGE_FEE // Surcharge for units stored > 180 or 365 days
+  REFUND_DEDUCTION // Reverse credit deducted when customer is refunded
+  REFUND_ADMIN_FEE // Marketplace fee for processing returns
+  ADVERTISING_SPEND_DEBIT // Deductions for PPC advertising campaigns
+  SUBSCRIPTION_FEE // $39.99/mo Pro Seller recurring charge
+  PAYOUT_DISBURSEMENT // ACH / wire transfer out to seller bank account
+  MANUAL_ADJUSTMENT // Support/account manager manual credit or debit
+}
+
+/// Customer return reasons according to standard marketplace return policy.
+enum ReturnReason {
+  DEFECTIVE_OR_DOES_NOT_WORK
+  WRONG_ITEM_SENT
+  ITEM_NOT_AS_DESCRIBED
+  ACCIDENTAL_ORDER
+  FOUND_BETTER_PRICE
+  MISSING_PARTS_OR_ACCESSORIES
+  SHIPPING_BOX_AND_ITEM_DAMAGED
+  ARRIVED_TOO_LATE
+  UNAUTHORIZED_PURCHASE
+}
+
+/// Lifecycle status for item return requests.
+enum ReturnStatus {
+  REQUESTED
+  SELLER_APPROVED
+  AUTO_AUTHORIZED
+  RETURN_LABEL_GENERATED
+  IN_TRANSIT_TO_FC
+  DELIVERED_TO_FC
+  INSPECTED_SELLABLE
+  INSPECTED_DAMAGED
+  REFUND_ISSUED
+  REJECTED
+  CANCELLED
+}
+
+/// Amazon A-to-z Guarantee claim status for dispute resolution.
+enum AtoZClaimStatus {
+  FILED
+  UNDER_INVESTIGATION
+  WAITING_FOR_SELLER_RESPONSE
+  GRANTED_BUYER_REFUNDED_BY_SELLER
+  GRANTED_BUYER_FUNDED_BY_AMAZON
+  CLAIM_DENIED
+  WITHDRAWN
+}
+
+/// Match types for Amazon Sponsored Ads keyword targeting.
+enum AdKeywordMatchType {
+  EXACT
+  PHRASE
+  BROAD
+  NEGATIVE_EXACT
+  NEGATIVE_PHRASE
+}
+
+/// Advertising campaign status.
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+  OUT_OF_BUDGET
+}
+
+// ======================================================================================
+// SECTION 2: IDENTITY, AUTHENTICATION, AND USER PROFILES
+// ======================================================================================
+
+/// Core platform account representing any authenticated human or service principal.
+model User {
+  id                  String     @id @default(uuid())
+  email               String     @unique
+  passwordHash        String
+  firstName           String
+  lastName            String
+  phone               String?    @unique
+  role                UserRole   @default(CUSTOMER)
+  isEmailVerified     Boolean    @default(false)
+  isPhoneVerified     Boolean    @default(false)
+  twoFactorEnabled    Boolean    @default(false)
+  twoFactorSecret     String?
+  failedLoginAttempts Int        @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  // Relationships
+  customerProfile     CustomerProfile?
+  sellerAccount       Seller?
+  addresses           Address[]
+  reviews             ProductReview[]
+  reviewVotes         ReviewVote[]
+  sellerFeedback      SellerFeedback[]
+  questionsAsked      ProductQuestion[]
+  answersGiven        ProductAnswer[]
+  cart                Cart?
+  wishlists           Wishlist[]
+  orders              Order[]
+  claimsFiled         AtoZClaim[]
+  sentMessages        BuyerSellerMessage[] @relation("SentMessages")
+  receivedMessages    BuyerSellerMessage[] @relation("ReceivedMessages")
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+/// Consumer profile containing shopping preferences, Prime subscription, and loyalty status.
+model CustomerProfile {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPrimeMember      Boolean   @default(false)
+  primeStartedAt     DateTime?
+  primeExpiresAt     DateTime?
+  primeAutoRenew     Boolean   @default(true)
+  preferredCurrency  String    @default("USD")
+  preferredLanguage  String    @default("en-US")
+  isTaxExempt        Boolean   @default(false)
+  taxExemptionNumber String?
+  avatarUrl          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([isPrimeMember])
+}
+
+/// Customer physical address book for deliveries, tax jurisdiction, and billing.
+model Address {
+  id                   String   @id @default(uuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName             String
+  phoneNumber          String
+  streetLine1          String
+  streetLine2          String?
+  companyName          String?
+  city                 String
+  stateOrProvince      String
+  postalCode           String
+  countryCode          String   @default("US") // ISO-3166-1 alpha-2
+  isDefaultShipping    Boolean  @default(false)
+  isDefaultBilling     Boolean  @default(false)
+  isCommercial         Boolean  @default(false) // Residential vs Commercial building
+  deliveryInstructions String?  // e.g. "Leave at back porch, gate code 1234"
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Inverse relations
+  shippingOrders       Order[]  @relation("OrderShippingAddress")
+  billingOrders        Order[]  @relation("OrderBillingAddress")
+
+  @@index([userId])
+  @@index([postalCode, countryCode])
+}
+
+// ======================================================================================
+// SECTION 3: SELLER CENTRAL (MERCHANTS, KYC, BANKING, PERFORMANCE)
+// ======================================================================================
+
+/// Merchant account entity operating on the Amazon Marketplace.
+model Seller {
+  id                   String              @id @default(uuid())
+  userId               String              @unique
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  legalBusinessName    String
+  displayName          String              @unique // Storefront name displayed on ASIN buy page
+  storeSlug            String              @unique
+  tier                 SellerTier          @default(INDIVIDUAL)
+  accountStatus        SellerAccountStatus @default(ONBOARDING)
+  verificationStatus   VerificationStatus  @default(PENDING_REVIEW)
+  logoUrl              String?
+  bannerUrl            String?
+  storeDescription     String?             @db.Text
+  supportEmail         String
+  supportPhone         String
+  taxIdentificationNum String?             // EIN / SSN / VAT / GSTIN
+  defaultFulfillment   FulfillmentChannel  @default(FBA)
+  holidayModeEnabled   Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  // Relationships
+  kycDocuments         SellerKycDocument[]
+  bankAccounts         SellerBankAccount[]
+  metrics              SellerPerformanceMetrics?
+  brandRegistries      Brand[]             @relation("BrandOwner")
+  listings             Listing[]
+  warehouseInventories InventoryItem[]
+  inboundShipments     InboundShipment[]
+  settlements          SellerSettlement[]
+  orderItemsFulfilled  OrderItem[]         @relation("SellerOrderItems")
+  shipmentsFulfilled   Shipment[]          @relation("SellerShipments")
+  sellerFeedbacks      SellerFeedback[]    @relation("SellerFeedbacks")
+  returnRequests       ReturnRequest[]
+  claimsAgainstSeller  AtoZClaim[]
+  adCampaigns          AdCampaign[]
+  promotionsSponsored  Promotion[]
+  brandAuthorizations  SellerBrandAuthorization[]
+  categoryAuthorizations SellerCategoryAuthorization[]
+  gtinExemptions       GtinExemption[]
+
+  @@index([accountStatus])
+  @@index([verificationStatus])
+}
+
+/// Regulatory Know-Your-Customer (KYC) identity compliance document uploads.
+model SellerKycDocument {
+  id              String             @id @default(uuid())
+  sellerId        String
+  seller          Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  documentType    KycDocumentType
+  documentNumber  String?
+  fileUrl         String
+  status          VerificationStatus @default(PENDING_REVIEW)
+  verifiedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+/// Merchant disbursement bank account for automated ACH/SEPA/Wire settlements.
+model SellerBankAccount {
+  id             String             @id @default(uuid())
+  sellerId       String
+  seller         Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  bankName       String
+  accountHolder  String
+  accountNumber  String             // Encrypted / Tokenized in application layer
+  routingNumber  String?            // ABA / IFSC / Sort Code
+  swiftBic       String?
+  currency       String             @default("USD")
+  countryCode    String             @default("US")
+  isPrimary      Boolean            @default(false)
+  status         VerificationStatus @default(PENDING_REVIEW)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  settlements    SellerSettlement[]
+
+  @@index([sellerId])
+}
+
+/// Live algorithmic health and performance scorecard for maintaining seller privileges.
+model SellerPerformanceMetrics {
+  id                      String   @id @default(uuid())
+  sellerId                String   @unique
+  seller                  Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  // Amazon Seller KPI Standards
+  orderDefectRate         Decimal  @default(0.0) @db.Decimal(5, 2) // Amazon target: < 1.0% (Claims + Chargebacks + Neg Feedback)
+  cancellationRate        Decimal  @default(0.0) @db.Decimal(5, 2) // Amazon target: < 2.5% pre-fulfillment cancel
+  lateShipmentRate        Decimal  @default(0.0) @db.Decimal(5, 2) // Amazon target: < 4.0% late dispatch
+  validTrackingRate       Decimal  @default(100.0) @db.Decimal(5, 2) // Amazon target: > 95% on-time tracking uploads
+  onTimeDeliveryRate      Decimal  @default(100.0) @db.Decimal(5, 2) // Target: > 97% on-time arrival
+  policyComplianceScore   Int      @default(1000) // Health score (0-1000 scale)
+  
+  // Aggregate feedback metrics
+  lifetimeReviewCount     Int      @default(0)
+  positiveFeedbackPercent Decimal  @default(100.0) @db.Decimal(5, 2)
+  averageFeedbackScore    Decimal  @default(5.0) @db.Decimal(3, 2) // 1.00 to 5.00 stars
+  
+  lastCalculatedAt        DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+// ======================================================================================
+// SECTION 4: MASTER CATALOG, ASIN HIERARCHY, CATEGORIES & BRANDS
+// ======================================================================================
+
+/// Amazon Brand Registry entity protecting trademarks and granting enhanced content tools.
+model Brand {
+  id                   String             @id @default(uuid())
+  name                 String             @unique
+  slug                 String             @unique
+  ownerSellerId        String?
+  ownerSeller          Seller?            @relation("BrandOwner", fields: [ownerSellerId], references: [id], onDelete: SetNull)
+  trademarkOffice      String?            // e.g. "USPTO", "EUIPO"
+  trademarkSerialNum   String?
+  verificationStatus   VerificationStatus @default(PENDING_REVIEW)
+  isGated              Boolean            @default(false) // If true, other sellers cannot list without approval
+  logoUrl              String?
+  bannerUrl            String?
+  brandStorefrontUrl   String?
+  brandStory           String?            @db.Text
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  products             Product[]
+  sellerAuthorizations SellerBrandAuthorization[]
+  gtinExemptions       GtinExemption[]
+
+  @@index([name])
+}
+
+/// Self-referential hierarchical taxonomy tree (e.g. Electronics -> Computers -> Laptops).
+model Category {
+  id                 String              @id @default(uuid())
+  parentId           String?
+  parent             Category?           @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children           Category[]          @relation("CategoryHierarchy")
+  name               String
+  slug               String              @unique
+  browseNodeId       String              @unique // Amazon 9-digit Browse Node ID
+  level              Int                 @default(0) // Root=0, Sub=1, Leaf=2...
+  isLeaf             Boolean             @default(false)
+  isGated            Boolean             @default(false) // If true, requires category ungating approval (e.g. Jewelry, Grocery)
+  referralFeePercent Decimal             @default(15.0) @db.Decimal(5, 2) // Amazon category referral fee rate (e.g., 8% electronics, 15% clothing)
+  closingFeeFixed    Decimal             @default(0.30) @db.Decimal(6, 2) // Fixed fee deducted per item sale
+  bannerUrl          String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  products           Product[]
+  attributes         CategoryAttribute[]
+  sellerAuthorizations SellerCategoryAuthorization[]
+  gtinExemptions     GtinExemption[]
+
+  @@index([parentId])
+  @@index([browseNodeId])
+}
+
+/// Category-specific dynamic schema attributes (e.g. Shoes: Size, Width; Laptops: RAM, CPU).
+/// This defines the strict validation schema for creating/editing products in each leaf category.
+model CategoryAttribute {
+  id                    String                  @id @default(uuid())
+  categoryId            String
+  category              Category                @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code                  String                  // e.g. "screen_size", "ram_memory", "shoe_size", "outer_material"
+  label                 String                  // e.g. "Screen Display Size"
+  dataType              String                  // "STRING", "NUMBER", "BOOLEAN", "SELECT", "MULTI_SELECT"
+  isRequired            Boolean                 @default(false) // Mandatory attribute if true
+  isVariationAttribute  Boolean                 @default(false) // Determines child ASIN variations (e.g. Size, Color)
+  isFilterable          Boolean                 @default(true)  // Used in faceted search sidebar
+  validationRegex       String?                 // Pattern rule e.g. "^[0-9]+$" or model format
+  allowedOptionsJson    Json?                   // Predefined selection choices: ["4GB", "8GB", "16GB", "32GB"]
+  unitOfMeasureOptions  String[]                // Allowed measurement units: ["GB", "TB"] or ["cm", "inches"]
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  values                ProductAttributeValue[]
+
+  @@unique([categoryId, code])
+}
+
+/// Seller approval request to sell gated/restricted brands (e.g. Apple, Nike, Sony).
+model SellerBrandAuthorization {
+  id                      String             @id @default(uuid())
+  sellerId                String
+  seller                  Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  brandId                 String
+  brand                   Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  status                  VerificationStatus @default(PENDING_REVIEW)
+  invoiceDocumentUrls     String[]           // Proof of wholesale purchase invoice from authorized distributor
+  authorizationLetterUrl  String?            // Letter of Authorization (LOA) from brand manufacturer
+  rejectionReason         String?
+  approvedAt              DateTime?
+  expiresAt               DateTime?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  @@unique([sellerId, brandId])
+  @@index([status])
+}
+
+/// Seller approval request to sell in restricted categories (e.g. Fine Jewelry, Dietary Supplements).
+model SellerCategoryAuthorization {
+  id                  String             @id @default(uuid())
+  sellerId            String
+  seller              Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  categoryId          String
+  category            Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status              VerificationStatus @default(PENDING_REVIEW)
+  certificationUrls   String[]           // FDA cert, lab test results, supplier invoice
+  rejectionReason     String?
+  approvedAt          DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@unique([sellerId, categoryId])
+  @@index([status])
+}
+
+/// Exemption granted to a seller to list products without standard UPC/EAN barcodes (e.g. private label handicrafts).
+model GtinExemption {
+  id              String             @id @default(uuid())
+  sellerId        String
+  seller          Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  brandId         String?
+  brand           Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  categoryId      String
+  category        Category           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  status          VerificationStatus @default(PENDING_REVIEW)
+  reason          String             // e.g. "Custom handmade products without manufacturer barcodes"
+  productImages   String[]           // Photos of product packaging showing brand name with no barcode
+  approvedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([sellerId, categoryId])
+  @@index([status])
+}
+
+/// Master Canonical Product Entry identified by ASIN (Amazon Standard Identification Number).
+/// Follows Amazon's Parent-Child variation model:
+/// - Parent ASIN: Conceptual container (has no inventory, price, or UPC; holds title & variation theme).
+/// - Child ASIN: Buyable variation with specific color, size, UPC/EAN, and dimensions.
+model Product {
+  id                  String             @id @default(uuid())
+  asin                String             @unique // 10-character alphanumeric Amazon ASIN (e.g., "B08N5WRWNW")
+  parentAsinId        String?
+  parentProduct       Product?           @relation("ProductVariations", fields: [parentAsinId], references: [id], onDelete: Restrict)
+  childVariations     Product[]          @relation("ProductVariations")
+  isParent            Boolean            @default(false)
+  variationTheme      VariationTheme?
+  
+  // Barcode / External Global Trade Identifiers
+  upc                 String?            @unique // Universal Product Code (12 digits)
+  ean                 String?            @unique // European Article Number (13 digits)
+  gtin                String?            @unique // Global Trade Item Number (14 digits)
+  isbn                String?            @unique // Book ISBN
+  partNumber          String?            // Manufacturer Part Number (MPN)
+  modelNumber         String?
+
+  // Catalog Metadata
+  brandId             String?
+  brand               Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  categoryId          String
+  category            Category           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  title               String             @db.VarChar(500)
+  description         String             @db.Text
+  bulletPoints        Json               // Array of strings: 5 Amazon key product feature bullet points
+  searchKeywords      String[]           // Backend indexing search terms
+  status              CatalogStatus      @default(ACTIVE)
+
+  // Physical Package Dimensions (Critical for automated FBA tier fee calculation)
+  packageLengthInches Decimal?           @db.Decimal(8, 2)
+  packageWidthInches  Decimal?           @db.Decimal(8, 2)
+  packageHeightInches Decimal?           @db.Decimal(8, 2)
+  packageWeightPounds Decimal?           @db.Decimal(8, 2)
+  isHazmat            Boolean            @default(false) // Flammable, batteries, dangerous goods
+  hazmatDetails       String?
+
+  // Enhanced Brand Content / A+ Content
+  aPlusContentHtml    String?            @db.Text
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Relationships
+  images              ProductImage[]
+  attributeValues     ProductAttributeValue[]
+  listings            Listing[]          // All seller offers competing for this ASIN
+  reviews             ProductReview[]
+  questions           ProductQuestion[]
+  deals               Deal[]
+
+  @@index([asin])
+  @@index([parentAsinId])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([title])
+}
+
+/// Master catalog product photography complying with Amazon image requirements (MAIN, PT01..PT08).
+model ProductImage {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl     String
+  zoomImageUrl String?
+  thumbnailUrl String?
+  variantTag   String   @default("MAIN") // "MAIN" (pure white background #FFF), "PT01", "SWATCH"
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([productId, sortOrder])
+}
+
+/// Normalized attribute values assigned to a specific ASIN based on category schema.
+model ProductAttributeValue {
+  id          String            @id @default(uuid())
+  productId   String
+  product     Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeId String
+  attribute   CategoryAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value         String            // The actual value e.g. "Space Gray", "16GB", "10.5 US"
+  unitOfMeasure String?           // e.g. "GB", "cm", "kg", "inches"
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([productId, attributeId])
+}
+
+// ======================================================================================
+// SECTION 5: SELLER OFFERS, LISTINGS, BUY BOX ENGINE & VOLUME PRICING
+// ======================================================================================
+
+/// The Seller Offer / Merchant SKU. Multiple merchants list offers against the SAME Product ASIN.
+/// This is the exact table where the Amazon "Buy Box" algorithmic competition takes place.
+model Listing {
+  id                   String             @id @default(uuid())
+  sellerId             String
+  seller               Seller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  productId            String
+  product              Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sellerSku            String             // Unique stock SKU defined by merchant (e.g., "SONY-WH1000-NEW-01")
+  condition            ProductCondition   @default(NEW)
+  conditionNote        String?            @db.Text // Required if used/refurbished to state scratches or wear
+  fulfillmentChannel   FulfillmentChannel @default(FBA)
+  status               ListingStatus      @default(ACTIVE)
+
+  // Pricing & Currency
+  standardPrice        Decimal            @db.Decimal(12, 2) // Regular list offer price
+  salePrice            Decimal?           @db.Decimal(12, 2) // Temporary promotional strike-through price
+  saleStartsAt         DateTime?
+  saleEndsAt           DateTime?
+  minimumPrice         Decimal?           @db.Decimal(12, 2) // Automated repricing floor safety limit
+  maximumPrice         Decimal?           @db.Decimal(12, 2) // Automated repricing ceiling safety limit
+  
+  // Fulfillment SLA & Inventory Limits
+  handlingTimeDays     Int                @default(1) // Lead time to ship for FBM sellers
+  maxOrderQuantity     Int?               // Anti-scalping quantity limit per purchase
+  restockDate          DateTime?          // For back-ordered listings
+
+  // Algorithmic Buy Box Status (Computed periodically by background pricing worker)
+  isBuyBoxWinner       Boolean            @default(false)
+  buyBoxWonAt          DateTime?
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Relationships
+  inventoryItems       InventoryItem[]
+  cartItems            CartItem[]
+  orderItems           OrderItem[]
+  b2bTierPrices        ListingTierPrice[]
+  deals                Deal[]
+  sponsoredAds         SponsoredProductAd[]
+
+  @@unique([sellerId, sellerSku])
+  @@unique([sellerId, productId, condition, fulfillmentChannel])
+  @@index([productId, status, standardPrice])
+  @@index([isBuyBoxWinner])
+}
+
+/// Amazon Business (B2B) Quantity Tier Discounts for enterprise buyers.
+model ListingTierPrice {
+  id              String   @id @default(uuid())
+  listingId       String
+  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  minQuantity     Int      // e.g. Buy 5+ units, 10+ units
+  discountedPrice Decimal  @db.Decimal(12, 2) // Discounted unit price
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([listingId, minQuantity])
+}
+
+// ======================================================================================
+// SECTION 6: WAREHOUSES, FBA INBOUND LOGISTICS & INVENTORY TRACKING
+// ======================================================================================
+
+/// Physical fulfillment center, sorting hub, or merchant warehouse.
+model Warehouse {
+  id              String          @id @default(uuid())
+  code            String          @unique // e.g. "PHX3", "JFK8", "BLR1"
+  name            String
+  type            WarehouseType   @default(FBA_FULFILLMENT_CENTER)
+  streetAddress   String
+  city            String
+  stateOrProvince String
+  postalCode      String
+  countryCode     String          @default("US")
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relationships
+  inventoryItems   InventoryItem[]
+  inboundShipments InboundShipment[]
+  outboundPackages Shipment[]
+
+  @@index([code])
+}
+
+/// Multi-location physical stock tracking per listing offer in every warehouse.
+model InventoryItem {
+  id             String    @id @default(uuid())
+  listingId      String
+  listing        Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  sellerId       String
+  seller         Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  warehouseId    String
+  warehouse      Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  
+  // Stock Allocations
+  availableStock Int       @default(0) // Ready for immediate picking and packing
+  reservedStock  Int       @default(0) // Locked by customer checkouts awaiting dispatch
+  inboundStock   Int       @default(0) // Inbound FBA stock in transit from merchant
+  damagedStock   Int       @default(0) // Unfulfillable damaged / customer-returned inventory
+  safetyStock    Int       @default(5) // Threshold for automated reorder notification
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  stockLogs      InventoryMovement[]
+
+  @@unique([listingId, warehouseId])
+  @@index([listingId])
+  @@index([warehouseId])
+}
+
+/// Immutable audit ledger recording all physical stock mutations and reconciliation reasons.
+model InventoryMovement {
+  id              String                  @id @default(uuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem           @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  quantityChange  Int                     // Signed integer (+100 received, -1 sold, -2 damaged)
+  balanceAfter    Int
+  reason          InventoryMovementReason
+  referenceNote   String?                 // Order ID, Inbound Plan ID, or Cycle Count ticket #
+  createdAt       DateTime                @default(now())
+
+  @@index([inventoryItemId, createdAt])
+}
+
+/// Inbound replenishment shipment plan created by a seller sending cartons/pallets to Amazon FBA FCs.
+model InboundShipment {
+  id                  String                @id @default(uuid())
+  shipmentNumber      String                @unique // FBA shipment ID e.g. "FBA17Z89BCP"
+  sellerId            String
+  seller              Seller                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  destinationFcId     String
+  destinationFc       Warehouse             @relation(fields: [destinationFcId], references: [id], onDelete: Restrict)
+  status              InboundShipmentStatus @default(WORKING)
+  carrierName         String?               // "UPS", "Amazon Freight", "FedEx"
+  trackingNumber      String?
+  boxCount            Int                   @default(1)
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+  checkedInAt         DateTime?
+  closedAt            DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  items               InboundShipmentItem[]
+
+  @@index([sellerId])
+  @@index([destinationFcId])
+}
+
+/// Line items declared inside an FBA replenishment carton/pallet shipment.
+model InboundShipmentItem {
+  id                String          @id @default(uuid())
+  inboundShipmentId String
+  inboundShipment   InboundShipment @relation(fields: [inboundShipmentId], references: [id], onDelete: Cascade)
+  sellerSku         String
+  quantityExpected  Int
+  quantityReceived  Int             @default(0)
+  quantityDamaged   Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([inboundShipmentId])
+}
+
+// ======================================================================================
+// SECTION 7: SHOPPING CART, SAVED ITEMS & WISHLISTS
+// ======================================================================================
+
+/// Customer active shopping cart.
+model Cart {
+  id         String     @id @default(uuid())
+  userId     String     @unique
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  items      CartItem[]
+}
+
+/// Cart line item with native Amazon-style "Save for Later" feature toggle.
+model CartItem {
+  id             String   @id @default(uuid())
+  cartId         String
+  cart           Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  listingId      String
+  listing        Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  quantity       Int      @default(1)
+  isSavedForLater Boolean @default(false) // If true, moved to "Saved for Later" shelf
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([cartId, listingId])
+  @@index([cartId])
+}
+
+/// Customer registry, gift list, or product wishlist.
+model Wishlist {
+  id         String         @id @default(uuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String         @default("Shopping List")
+  isPublic   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  items      WishlistItem[]
+
+  @@index([userId])
+}
+
+/// Item tracked inside a customer wishlist.
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  addedPrice Decimal? @db.Decimal(12, 2) // Recorded price at addition to notify on price drops
+  priority   Int      @default(1) // 1=Low, 2=Medium, 3=High
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+}
+
+// ======================================================================================
+// SECTION 8: PROMOTIONS, COUPONS & LIGHTNING DEALS
+// ======================================================================================
+
+/// Vouchers, promo codes, and discount campaigns sponsored by platform or seller.
+model Promotion {
+  id               String    @id @default(uuid())
+  code             String?   @unique // Optional if auto-applied or clipped digital coupon
+  name             String
+  description      String?
+  sponsorSellerId  String?
+  sponsorSeller    Seller?   @relation(fields: [sponsorSellerId], references: [id], onDelete: SetNull)
+  discountPercent  Decimal?  @db.Decimal(5, 2)
+  discountAmount   Decimal?  @db.Decimal(10, 2)
+  minimumSpend     Decimal?  @db.Decimal(10, 2)
+  maximumDiscount  Decimal?  @db.Decimal(10, 2)
+  usageLimitGlobal Int?
+  usageLimitPerUser Int      @default(1)
+  totalTimesUsed   Int       @default(0)
+  startsAt         DateTime
+  endsAt           DateTime
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  ordersUsed       Order[]
+
+  @@index([code])
+  @@index([isActive, startsAt, endsAt])
+}
+
+/// Amazon "Lightning Deals" and "Deal of the Day" with limited quantity and countdown timer.
+model Deal {
+  id              String   @id @default(uuid())
+  listingId       String
+  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  dealTitle       String
+  dealPrice       Decimal  @db.Decimal(12, 2)
+  maxQuantity     Int      // Cap of available units allocated for lightning deal
+  claimedQuantity Int      @default(0)
+  startsAt        DateTime
+  endsAt          DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([listingId])
+  @@index([isActive, startsAt, endsAt])
+}
+
+// ======================================================================================
+// SECTION 9: ORDERS, SHIPMENTS & MULTI-VENDOR SPLIT FULFILLMENT
+// ======================================================================================
+
+/// Master composite customer purchase order.
+/// Because an order may contain items from multiple sellers or multiple FBA fulfillment centers,
+/// it splits into multiple discrete `Shipment` packages for logistical dispatch.
+model Order {
+  id                  String       @id @default(uuid())
+  orderNumber         String       @unique // Amazon format: "114-8742193-9482105"
+  customerId          String
+  customer            User         @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status              OrderStatus  @default(PENDING_PAYMENT)
+  
+  // Financial Breakdowns
+  currency            String       @default("USD")
+  itemsSubtotal       Decimal      @db.Decimal(12, 2)
+  shippingTotal       Decimal      @db.Decimal(10, 2)
+  taxTotal            Decimal      @db.Decimal(10, 2)
+  promotionDiscount   Decimal      @default(0.0) @db.Decimal(10, 2)
+  grandTotal          Decimal      @db.Decimal(12, 2)
+
+  // Promotion applied
+  promotionId         String?
+  promotion           Promotion?   @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+
+  // Addresses
+  shippingAddressId   String
+  shippingAddress     Address      @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id], onDelete: Restrict)
+  billingAddressId    String
+  billingAddress      Address      @relation("OrderBillingAddress", fields: [billingAddressId], references: [id], onDelete: Restrict)
+  
+  shippingSpeed       ShippingSpeed @default(STANDARD)
+  isGift              Boolean      @default(false)
+  giftMessage         String?
+
+  placedAt            DateTime     @default(now())
+  paidAt              DateTime?
+  updatedAt           DateTime     @updatedAt
+
+  // Relationships
+  items               OrderItem[]
+  shipments           Shipment[]
+  payments            Payment[]
+  claims              AtoZClaim[]
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([status])
+  @@index([placedAt])
+}
+
+/// Line item in an order belonging to a specific seller's listing offer.
+model OrderItem {
+  id                 String          @id @default(uuid())
+  orderId            String
+  order              Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listingId          String
+  listing            Listing         @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  sellerId           String
+  seller             Seller          @relation("SellerOrderItems", fields: [sellerId], references: [id], onDelete: Restrict)
+  shipmentId         String?
+  shipment           Shipment?       @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  status             OrderItemStatus @default(PENDING)
+
+  // Quantity and Pricing Breakdown
+  quantity           Int
+  unitPrice          Decimal         @db.Decimal(12, 2)
+  totalPrice         Decimal         @db.Decimal(12, 2) // unitPrice * quantity
+  itemTaxAmount      Decimal         @default(0.0) @db.Decimal(10, 2)
+  itemShippingFee    Decimal         @default(0.0) @db.Decimal(10, 2)
+  itemDiscountAmount Decimal         @default(0.0) @db.Decimal(10, 2)
+
+  // Marketplace Commission & Fees Deducted for this Line Item
+  referralFeeCharged Decimal         @default(0.0) @db.Decimal(10, 2)
+  closingFeeCharged  Decimal         @default(0.0) @db.Decimal(10, 2)
+  fbaFulfillmentFee  Decimal         @default(0.0) @db.Decimal(10, 2)
+
+  giftWrapRequested  Boolean         @default(false)
+  giftWrapFee        Decimal         @default(0.0) @db.Decimal(6, 2)
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  // Inverse relations
+  returnRequests     ReturnRequest[]
+  review             ProductReview?
+  sellerFeedback     SellerFeedback?
+  settlementEntries  SellerTransaction[]
+
+  @@index([orderId])
+  @@index([sellerId])
+  @@index([listingId])
+}
+
+/// Physical parcel shipment containing one or more order items dispatched from an FC or merchant warehouse.
+model Shipment {
+  id                   String         @id @default(uuid())
+  shipmentNumber       String         @unique // Tracking package reference e.g. "PKG-9821734"
+  orderId              String
+  order                Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sellerId             String?        // Populated if fulfilled directly by merchant (FBM)
+  seller               Seller?        @relation("SellerShipments", fields: [sellerId], references: [id], onDelete: SetNull)
+  warehouseId          String?        // Populated if dispatched from Amazon FC (FBA)
+  warehouse            Warehouse?     @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  status               ShipmentStatus @default(LABEL_CREATED)
+
+  // Carrier Integration
+  carrierName          String         // "UPS", "USPS", "FedEx", "Amazon Logistics (AMZL)", "DHL"
+  trackingNumber       String?
+  trackingUrl          String?
+  shippingLabelUrl     String?
+  packageWeightPounds  Decimal?       @db.Decimal(8, 2)
+
+  estimatedDeliveryAt  DateTime?
+  dispatchedAt         DateTime?
+  deliveredAt          DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  orderItems           OrderItem[]
+  trackingEvents       ShipmentCheckpoint[]
+
+  @@index([orderId])
+  @@index([trackingNumber])
+  @@index([status])
+}
+
+/// Real-time geolocation and transit milestones reported by shipping carriers.
+model ShipmentCheckpoint {
+  id          String   @id @default(uuid())
+  shipmentId  String
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  eventTime   DateTime
+  location    String   // e.g. "Dallas, TX, US"
+  statusText  String   // e.g. "Departed carrier facility"
+  carrierCode String?  // Raw code from carrier webhook (e.g., "DP", "OFD")
+  createdAt   DateTime @default(now())
+
+  @@index([shipmentId, eventTime])
+}
+
+// ======================================================================================
+// SECTION 10: PAYMENTS, ESCROW, PLATFORM FEES & SELLER SETTLEMENTS
+// ======================================================================================
+
+/// Gateway payment transaction authorized and captured for an order.
+model Payment {
+  id                 String            @id @default(uuid())
+  orderId            String
+  order              Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentMethod      PaymentMethodType
+  gatewayProvider    String            // "STRIPE", "ADYEN", "RAZORPAY", "AMAZON_PAY"
+  gatewayTransactionId String          @unique
+  gatewayPayloadJson Json?             // Raw gateway response payload
+  amount             Decimal           @db.Decimal(12, 2)
+  currency           String            @default("USD")
+  status             PaymentStatus     @default(INITIATED)
+  authorizedAt       DateTime?
+  capturedAt         DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([orderId])
+  @@index([gatewayTransactionId])
+  @@index([status])
+}
+
+/// Bi-weekly financial settlement account statement for third-party sellers.
+model SellerSettlement {
+  id                    String              @id @default(uuid())
+  settlementNumber      String              @unique // Statement ID e.g. "SETTLE-2026-10-A891"
+  sellerId              String
+  seller                Seller              @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  periodStart           DateTime
+  periodEnd             DateTime
+  status                SettlementStatus    @default(OPEN)
+
+  // Financial Ledger Aggregations
+  grossSalesTotal       Decimal             @default(0.0) @db.Decimal(12, 2) // Gross sales collected from buyers
+  referralFeesTotal     Decimal             @default(0.0) @db.Decimal(12, 2) // Amazon marketplace commission
+  closingFeesTotal      Decimal             @default(0.0) @db.Decimal(12, 2) // Fixed closing fees
+  fbaFulfillmentFees    Decimal             @default(0.0) @db.Decimal(12, 2) // FBA pick & pack fees
+  fbaStorageFees        Decimal             @default(0.0) @db.Decimal(12, 2) // FC monthly storage fees
+  refundDeductionsTotal Decimal             @default(0.0) @db.Decimal(12, 2) // Clawback from customer returns
+  advertisingSpendTotal Decimal             @default(0.0) @db.Decimal(12, 2) // PPC ad spend deducted
+  otherAdjustmentsTotal Decimal             @default(0.0) @db.Decimal(12, 2)
+  netDisbursementAmount Decimal             @default(0.0) @db.Decimal(12, 2) // Final transfer to bank account
+
+  bankAccountId         String?
+  bankAccount           SellerBankAccount?  @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  disbursedAt           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  transactions          SellerTransaction[]
+
+  @@index([sellerId, status])
+}
+
+/// Atomic line item entry on a seller's financial ledger statement.
+model SellerTransaction {
+  id              String            @id @default(uuid())
+  settlementId    String
+  settlement      SellerSettlement  @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  orderItemId     String?
+  orderItem       OrderItem?        @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  transactionType TransactionType
+  amount          Decimal           @db.Decimal(12, 2) // Positive for credits/sales, Negative for fees/refunds
+  currency        String            @default("USD")
+  description     String
+  postedAt        DateTime          @default(now())
+
+  @@index([settlementId])
+  @@index([orderItemId])
+}
+
+// ======================================================================================
+// SECTION 11: REVIEWS, SELLER FEEDBACK, VOTES & PRODUCT Q&A
+// ======================================================================================
+
+/// Amazon verified customer product review with 1-5 star rating and photo uploads.
+model ProductReview {
+  id                 String       @id @default(uuid())
+  productId          String
+  product            Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItemId        String?      @unique // Links directly to purchase for verified badge
+  orderItem          OrderItem?   @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  rating             Int          // 1 to 5 stars
+  headline           String       @db.VarChar(255)
+  content            String       @db.Text
+  isVerifiedPurchase Boolean      @default(false)
+  imageUrls          String[]     // Customer uploaded review photos
+  helpfulVotesCount  Int          @default(0)
+  isApproved         Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  votes              ReviewVote[]
+
+  @@index([productId, rating])
+  @@index([userId])
+}
+
+/// Upvotes on product reviews (Amazon "Was this review helpful? Yes / No").
+model ReviewVote {
+  id         String        @id @default(uuid())
+  reviewId   String
+  review     ProductReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isHelpful  Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+
+  @@unique([reviewId, userId])
+}
+
+/// Separate feedback on merchant performance (shipping speed, item accuracy, service).
+/// Distinct from ProductReview (Amazon strictly separates seller rating from product rating).
+model SellerFeedback {
+  id                 String     @id @default(uuid())
+  sellerId           String
+  seller             Seller     @relation("SellerFeedbacks", fields: [sellerId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItemId        String     @unique
+  orderItem          OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  rating             Int        // 1 to 5 stars
+  feedbackText       String     @db.Text
+  itemAsDescribed    Boolean    @default(true)
+  promptShipping     Boolean    @default(true)
+  customerService    Boolean    @default(true)
+  sellerResponseText String?    @db.Text // Merchant public response
+  sellerRespondedAt  DateTime?
+  createdAt          DateTime   @default(now())
+
+  @@index([sellerId, rating])
+}
+
+/// Community customer questions asked on product detail pages.
+model ProductQuestion {
+  id           String          @id @default(uuid())
+  productId    String
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionText String          @db.Text
+  upvotesCount Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  answers      ProductAnswer[]
+
+  @@index([productId])
+}
+
+/// Answers submitted to product questions by other verified buyers or the seller.
+model ProductAnswer {
+  id           String          @id @default(uuid())
+  questionId   String
+  question     ProductQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answerText   String          @db.Text
+  isSellerAnswer Boolean       @default(false)
+  upvotesCount Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([questionId])
+}
+
+// ======================================================================================
+// SECTION 12: RETURNS, REFUNDS & A-TO-Z GUARANTEE CLAIMS
+// ======================================================================================
+
+/// Customer merchandise return request and RMA processing.
+model ReturnRequest {
+  id                 String        @id @default(uuid())
+  rmaNumber          String        @unique // Return Merchandise Authorization ID e.g. "RMA-984210"
+  orderItemId        String
+  orderItem          OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  sellerId           String
+  seller             Seller        @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  reason             ReturnReason
+  customerComment    String?       @db.Text
+  evidenceImages     String[]
+  status             ReturnStatus  @default(REQUESTED)
+  
+  // Return Logistics
+  returnCarrier      String?
+  returnTrackingNumber String?
+  returnLabelUrl     String?
+  
+  // Restocking & Refund calculations
+  restockingFeeRate  Decimal       @default(0.0) @db.Decimal(5, 2)
+  refundAmount       Decimal       @db.Decimal(12, 2)
+  refundedAt         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([orderItemId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+/// Amazon A-to-z Guarantee Buyer Protection Claim dispute resolution.
+model AtoZClaim {
+  id                 String          @id @default(uuid())
+  claimNumber        String          @unique // e.g. "ATOZ-781923"
+  orderId            String
+  order              Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId         String
+  customer           User            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  sellerId           String
+  seller             Seller          @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  claimReason        String
+  buyerExplanation   String          @db.Text
+  sellerResponseText String?         @db.Text
+  sellerRespondedAt  DateTime?
+  status             AtoZClaimStatus @default(FILED)
+  refundAmount       Decimal?        @db.Decimal(12, 2)
+  arbitrationNotes   String?         @db.Text // Internal marketplace investigator notes
+  resolvedAt         DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([orderId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+// ======================================================================================
+// SECTION 13: SPONSORED PRODUCTS & PPC ADVERTISING ENGINE
+// ======================================================================================
+
+/// Amazon Advertising Sponsored Products PPC campaign.
+model AdCampaign {
+  id          String         @id @default(uuid())
+  sellerId    String
+  seller      Seller         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  name        String
+  dailyBudget Decimal        @db.Decimal(10, 2)
+  status      CampaignStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  adGroups    AdGroup[]
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+/// Ad Group containing targeted listings and associated bidding keywords.
+model AdGroup {
+  id          String               @id @default(uuid())
+  campaignId  String
+  campaign    AdCampaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name        String
+  defaultBid  Decimal              @db.Decimal(6, 2)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  keywords    AdKeyword[]
+  ads         SponsoredProductAd[]
+
+  @@index([campaignId])
+}
+
+/// Target keywords and cost-per-click bids for sponsored placement.
+model AdKeyword {
+  id        String             @id @default(uuid())
+  adGroupId String
+  adGroup   AdGroup            @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  keyword   String
+  matchType AdKeywordMatchType @default(BROAD)
+  bidPrice  Decimal            @db.Decimal(6, 2)
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([adGroupId, keyword])
+}
+
+/// Sponsored product impression, click, and conversion performance tracker.
+model SponsoredProductAd {
+  id           String   @id @default(uuid())
+  adGroupId    String
+  adGroup      AdGroup  @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  listingId    String
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  impressions  Int      @default(0)
+  clicks       Int      @default(0)
+  totalSpend   Decimal  @default(0.0) @db.Decimal(10, 2)
+  attributedSales Decimal @default(0.0) @db.Decimal(12, 2) // ACOS (Advertising Cost of Sales) tracking
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([adGroupId, listingId])
+}
+
+// ======================================================================================
+// SECTION 14: BUYER-SELLER MESSAGING & AUDIT LOGS
+// ======================================================================================
+
+/// Secure, policy-compliant Buyer-Seller Messaging relay.
+model BuyerSellerMessage {
+  id             String   @id @default(uuid())
+  senderId       String
+  sender         User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId    String
+  recipient      User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  orderNumber    String?  // Reference to relevant order if applicable
+  subject        String
+  body           String   @db.Text
+  attachmentUrls String[]
+  isRead         Boolean  @default(false)
+  sentAt         DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientId])
+}
+
+/// Security, financial, and admin action audit logging.
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // e.g., "SELLER_KYC_APPROVED", "PRICE_OVERRIDE", "BUY_BOX_RECALCULATED"
+  entityType String   // "Seller", "Listing", "Order", "Settlement"
+  entityId   String
+  metadata   Json?    // Snapshot of before/after or payload
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
