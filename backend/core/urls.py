@@ -1,27 +1,42 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView
+)
 
 def health_check(request):
     return JsonResponse({
         "status": "online",
         "service": "Construction Marketplace API",
         "version": "1.0.0",
-        "message": "Django backend is up and running!"
+        "message": "Django backend is up and running!",
+        "documentation": "/api/docs/"
     })
 
 urlpatterns = [
+    # Administration
     path('admin/', admin.site.urls),
+    
+    # System Health
     path('', health_check, name='root_health'),
     path('api/health/', health_check, name='health_check'),
     
-    # Identity & Authentication APIs
+    # 📚 Interactive Swagger & OpenAPI Documentation
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui-alias'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    
+    # 🔐 Identity & Authentication APIs
     path('api/auth/', include('identity.urls')),
     
-    # Public Catalog (Products, Categories & Brands)
+    # 📦 Public Catalog (Products, Categories & Brands)
     path('api/catalog/', include('catalog.urls')),
     
-    # Seller Portal APIs (Listings, Products, Profile & Stock)
+    # 🏪 Seller Portal APIs (Listings, Products, Profile & Stock)
     path('api/seller/', include('sellers.urls')),
     path('api/listings/', include('listings.urls')),
 ]
