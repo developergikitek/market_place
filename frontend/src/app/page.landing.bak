@@ -1,0 +1,141 @@
+"use client";
+
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
+import { ProductItem } from "@/types";
+import Navbar from "@/components/layout/Navbar";
+import HeroSection from "@/components/sections/HeroSection";
+import CategoriesSection from "@/components/sections/CategoriesSection";
+import MaterialLaboratorySection from "@/components/sections/MaterialLaboratorySection";
+import FeaturedProductsSection from "@/components/sections/FeaturedProductsSection";
+import VerifiedSellersSection from "@/components/sections/VerifiedSellersSection";
+import BulkProcurementSection from "@/components/sections/BulkProcurementSection";
+import TrustSection from "@/components/sections/TrustSection";
+import Footer from "@/components/layout/Footer";
+import RFQModal from "@/components/modals/RFQModal";
+import CertificateModal from "@/components/modals/CertificateModal";
+
+// Isolate Spatial 3D Moving Images Stage from SSR
+const Spatial3DImageStage = dynamic(
+  () => import("@/components/3d/Spatial3DImageStage"),
+  { ssr: false }
+);
+
+export default function Home() {
+  const [activeCity, setActiveCity] = useState("Mumbai MMR");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [rfqItems, setRfqItems] = useState<
+    Array<{ product: ProductItem; quantity: number }>
+  >([]);
+  const [isRFQModalOpen, setIsRFQModalOpen] = useState(false);
+  const [activeMTCProduct, setActiveMTCProduct] = useState<ProductItem | null>(
+    null
+  );
+
+  const handleAddToRFQ = (product: ProductItem, quantity: number) => {
+    setRfqItems((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { product, quantity }];
+    });
+  };
+
+  const handleClearRFQ = () => {
+    setRfqItems([]);
+  };
+
+  const handleLaunchBidding = (data: {
+    material: string;
+    qty: number;
+    unit: string;
+    pincode: string;
+    totalCost: number;
+  }) => {
+    setIsRFQModalOpen(true);
+  };
+
+  return (
+    <main
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        background: "transparent",
+        overflowX: "hidden",
+      }}
+    >
+      {/* 1. REAL 3D SPATIAL MOVING IMAGES WEBGL SCENE (4 GENERATED CONSTRUCTION MEGA-TEXTURES) */}
+      <Spatial3DImageStage />
+
+      {/* 2. RESPONSIVE INSTITUTIONAL NAVIGATION */}
+      <Navbar
+        activeCity={activeCity}
+        onCityChange={setActiveCity}
+        onOpenRFQ={() => setIsRFQModalOpen(true)}
+        rfqCount={rfqItems.length}
+      />
+
+      {/* 3. HERO SECTION */}
+      <HeroSection
+        activeCity={activeCity}
+        onSearchChange={setSearchQuery}
+        onSelectCategory={setSelectedCategory}
+        onOpenRFQ={() => setIsRFQModalOpen(true)}
+      />
+
+      {/* 4. 7 ESSENTIAL MATERIAL CATEGORIES */}
+      <CategoriesSection
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+
+      {/* 5. VIRTUAL QUALITY LABORATORY & PHYSICAL MATERIAL SPECIMEN INSPECTOR */}
+      <MaterialLaboratorySection onOpenRFQ={() => setIsRFQModalOpen(true)} />
+
+      {/* 6. PRIMARY MILL FEATURED INVENTORY & PRODUCTS */}
+      <FeaturedProductsSection
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        searchQuery={searchQuery}
+        onAddToRFQ={handleAddToRFQ}
+        onViewMTC={(prod) => setActiveMTCProduct(prod)}
+      />
+
+      {/* 7. AUDITED & VERIFIED SELLERS / PRODUCERS */}
+      <VerifiedSellersSection onOpenRFQ={() => setIsRFQModalOpen(true)} />
+
+      {/* 8. BULK PROCUREMENT REVERSE AUCTION ENGINE */}
+      <BulkProcurementSection
+        activeCity={activeCity}
+        onLaunchBidding={handleLaunchBidding}
+      />
+
+      {/* 9. ENGINEERING QUALITY, WEIGHBRIDGE & GPS FLEET TELEMETRY */}
+      <TrustSection />
+
+      {/* 10. FOOTER & SELLER ONBOARDING */}
+      <Footer />
+
+      {/* 11. REVERSE AUCTION BIDDING MODAL */}
+      <RFQModal
+        isOpen={isRFQModalOpen}
+        onClose={() => setIsRFQModalOpen(false)}
+        rfqItems={rfqItems}
+        onClearRFQ={handleClearRFQ}
+        activeCity={activeCity}
+      />
+
+      {/* 12. NABL MILL TEST CERTIFICATE (MTC) MODAL */}
+      <CertificateModal
+        product={activeMTCProduct}
+        onClose={() => setActiveMTCProduct(null)}
+      />
+    </main>
+  );
+}
