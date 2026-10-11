@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from decimal import Decimal
+from django.db import transaction
 from django.db.models import Avg, Sum
 from catalog.models import (
     Product, Brand, Category, CategoryAttribute,
@@ -239,3 +240,125 @@ class ProductDetailSerializer(ProductListSerializer):
 
     def get_offers_count(self, obj):
         return obj.listings.filter(status='ACTIVE').count()
+
+
+class ProductImageInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image_url', 'zoom_image_url', 'thumbnail_url', 'variant_tag', 'sort_order']
+
+
+class ProductAttributeInputSerializer(serializers.Serializer):
+    attribute_id = serializers.CharField(required=True)
+    value = serializers.CharField(required=True)
+    unit_of_measure = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+
+class SellerProductCreateSerializer(serializers.ModelSerializer):
+    brand_id = serializers.CharField(required=True)
+    category_id = serializers.CharField(required=True)
+    images = ProductImageInputSerializer(many=True, required=False)
+    attributes = ProductAttributeInputSerializer(many=True, required=False)
+    initial_listing = serializers.DictField(required=False, allow_null=True)
+
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'asin', 'title', 'brand_id', 'category_id',
+            'description', 'bullet_points', 'search_keywords',
+            'model_number', 'part_number', 'upc', 'ean', 'gtin',
+            'package_length_inches', 'package_width_inches', 'package_height_inches', 'package_weight_pounds',
+            'is_hazmat', 'hazmat_details',
+            'images', 'attributes', 'initial_listing'
+        ]
+        read_only_fields = ['id', 'asin']
+
+    @transaction.atomic
+    def create(self, validated_data):
+        from common.utils import generate_asin
+        from listings.models import Listing, ListingTierPrice
+        from warehouses.models import Warehouse, InventoryItem
+
+        brand_id = validated_data.pop('brand_id')
+        category_id = validated_data.pop('category_id')
+        images_data = validated_data.pop('images', [])
+        attributes_data = validated_data.pop('attributes', [])
+        initial_listing_data = validated_data.pop('initial_listing', None)
+
+        brand = Brand.objects.filter(id=brand_id).first()
+        if not brand:
+            raise serializers.ValidationError({"brand_id": "Brand does not exist."})
+
+        category = Category.objects.filter(id=category_id).first()
+        if not category:
+            raise serializers.ValidationError({"category_id": "Category does not exist."})
+
+        asin = generate_asin()
+        while Product.objects.filter(asin=asin).exists():
+            asin = generate_asin()
+
+        product = Product.objects.create(
+            asin=asin,
+            brand=brand,
+            category=category,
+            **validated_data
+        )
+
+        for i, img_item in enumerate(images_data):
+            ProductImage.objects.create(
+                product=product,
+                image_url=img_item.get('image_url'),
+                zoom_image_url=img_item.get('zoom_image_url'),
+                thumbnail_url=img_item.get('thumbnail_url'),
+                variant_tag=img_item.get('variant_tag', 'MAIN' if i == 0 else 'PT01'),
+                sort_order=img_item.get('sort_order', i)
+            )
+
+        for attr_item in attributes_data:
+            cat_attr = CategoryAttribute.objects.filter(id=attr_item['attribute_id']).first()
+            if cat_attr:
+                ProductAttributeValue.objects.create(
+                    product=product,
+                    attribute=cat_attr,
+                    value=attr_item['value'],
+                    unit_of_measure=attr_item.get('unit_of_measure')
+                )
+
+        request = self.context.get('request')
+        seller = getattr(request.user, 'seller_account', None) if request else None
+
+        if initial_listing_data and seller:
+            sku = initial_listing_data.get('seller_sku') or f"{seller.store_slug[:6].upper()}-{asin}"
+            std_price = Decimal(str(initial_listing_data.get('standard_price', '0')))
+            sale_price = Decimal(str(initial_listing_data['sale_price'])) if initial_listing_data.get('sale_price') else None
+            channel = initial_listing_data.get('fulfillment_channel', 'FBA')
+            stock = int(initial_listing_data.get('initial_stock', 0))
+
+            listing = Listing.objects.create(
+                seller=seller,
+                product=product,
+                seller_sku=sku,
+                standard_price=std_price,
+                sale_price=sale_price,
+                fulfillment_channel=channel,
+                is_buy_box_winner=True
+            )
+
+            for tp in initial_listing_data.get('b2b_tier_prices', []):
+                ListingTierPrice.objects.create(
+                    listing=listing,
+                    min_quantity=tp['min_quantity'],
+                    discounted_price=Decimal(str(tp['discounted_price']))
+                )
+
+            if stock > 0:
+                wh = Warehouse.objects.first()
+                if wh:
+                    InventoryItem.objects.create(
+                        listing=listing,
+                        seller=seller,
+                        warehouse=wh,
+                        available_stock=stock
+                    )
+
+        return product

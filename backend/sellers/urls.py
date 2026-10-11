@@ -1,0 +1,14 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from sellers.views import SellerProfileViewSet
+from listings.views import SellerListingViewSet
+from catalog.seller_views import SellerProductViewSet
+
+router = DefaultRouter()
+router.register(r'profile', SellerProfileViewSet, basename='seller-profile')
+router.register(r'listings', SellerListingViewSet, basename='seller-listing')
+router.register(r'products', SellerProductViewSet, basename='seller-product')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]

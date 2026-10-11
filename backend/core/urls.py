@@ -18,6 +18,10 @@ urlpatterns = [
     # Identity & Authentication APIs
     path('api/auth/', include('identity.urls')),
     
-    # Catalog, Products, Categories & Brands APIs
+    # Public Catalog (Products, Categories & Brands)
     path('api/catalog/', include('catalog.urls')),
+    
+    # Seller Portal APIs (Listings, Products, Profile & Stock)
+    path('api/seller/', include('sellers.urls')),
+    path('api/listings/', include('listings.urls')),
 ]
