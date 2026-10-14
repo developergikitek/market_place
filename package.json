@@ -1,0 +1,16 @@
+{
+  "name": "buildmart-marketplace",
+  "version": "1.0.0",
+  "description": "B2B Construction Materials Marketplace - Fullstack Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "./start.sh",
+    "start": "./start.sh",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && venv/bin/python3 manage.py runserver 0.0.0.0:8000",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": ["marketplace", "django", "nextjs"],
+  "author": "Archit Tiwari",
+  "license": "ISC"
+}

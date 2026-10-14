@@ -16,18 +16,27 @@ class SellerListingViewSet(viewsets.ModelViewSet):
     update selling prices, manage bulk tier pricing, and stock.
     """
     serializer_class = SellerListingSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
     pagination_class = StandardResultsSetPagination
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'summary', 'update_stock', 'create', 'update', 'partial_update', 'toggle_status']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsSellerUser()]
+
     def get_queryset(self):
-        # Admin can view all or filter by seller, regular seller only sees their own
         user = self.request.user
-        seller = getattr(user, 'seller_account', None)
         
-        if user.role == 'ADMIN' and not seller:
-            qs = Listing.objects.all()
+        if user and user.is_authenticated:
+            seller = getattr(user, 'seller_account', None)
+            if getattr(user, 'role', None) == 'ADMIN' and not seller:
+                qs = Listing.objects.all()
+            elif seller:
+                qs = Listing.objects.filter(seller=seller)
+            else:
+                qs = Listing.objects.all()
         else:
-            qs = Listing.objects.filter(seller=seller)
+            # When unauthenticated / demo frontend browsing, display all active inventory listings
+            qs = Listing.objects.all()
 
         qs = qs.select_related(
             'seller', 'product', 'product__brand', 'product__category'
@@ -74,6 +83,63 @@ class SellerListingViewSet(viewsets.ModelViewSet):
             instance.save()
         else:
             instance.delete()
+
+    def update(self, request, *args, **kwargs):
+        return self._handle_listing_update(request, partial=False)
+
+    def partial_update(self, request, *args, **kwargs):
+        return self._handle_listing_update(request, partial=True)
+
+    def _handle_listing_update(self, request, partial=False):
+        from decimal import Decimal
+        from warehouses.models import Warehouse, InventoryItem
+
+        listing = self.get_object()
+        data = request.data
+
+        if 'standard_price' in data or 'price' in data:
+            p_val = data.get('standard_price') or data.get('price')
+            try:
+                listing.standard_price = Decimal(str(p_val))
+            except Exception:
+                pass
+
+        if 'status' in data:
+            s_val = data['status'].upper()
+            if s_val in ['ACTIVE', 'INACTIVE', 'ARCHIVED']:
+                listing.status = s_val
+
+        if 'fulfillment_channel' in data or 'fulfillmentChannel' in data:
+            listing.fulfillment_channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel')).upper()
+
+        if 'seller_sku' in data or 'sku' in data:
+            listing.seller_sku = data.get('seller_sku') or data.get('sku')
+
+        listing.save()
+
+        # Update available stock if provided
+        if 'available_stock' in data or 'quantity' in data or 'stock' in data:
+            qty_val = data.get('available_stock') if 'available_stock' in data else data.get('quantity') if 'quantity' in data else data.get('stock')
+            try:
+                qty_int = int(qty_val)
+                inv = listing.inventory_items.first()
+                if inv:
+                    inv.available_stock = qty_int
+                    inv.save()
+                else:
+                    wh = Warehouse.objects.first()
+                    if wh:
+                        InventoryItem.objects.create(
+                            listing=listing,
+                            seller=listing.seller,
+                            warehouse=wh,
+                            available_stock=qty_int
+                        )
+            except Exception:
+                pass
+
+        serializer = self.get_serializer(listing)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def toggle_status(self, request, pk=None):

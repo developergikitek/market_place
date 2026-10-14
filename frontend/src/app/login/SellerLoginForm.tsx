@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Mail,
   Lock,
@@ -32,7 +33,16 @@ export default function SellerLoginForm({
   onSwitchMethod,
   showHeaderFooter = true,
 }: SellerLoginFormProps) {
+  const router = useRouter();
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">(initialMethod);
+
+  const handleSignUp = () => {
+    if (onGoToRegister) {
+      onGoToRegister();
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   useEffect(() => {
     setLoginMethod(initialMethod);
@@ -69,7 +79,11 @@ export default function SellerLoginForm({
     setTimeout(() => {
       setIsLoading(false);
       setIsSuccess(true);
-      onLoginSuccess?.(email);
+      if (onLoginSuccess) {
+        onLoginSuccess(email);
+      } else {
+        router.push("/dashboard");
+      }
     }, 700);
   };
 
@@ -86,7 +100,11 @@ export default function SellerLoginForm({
     setTimeout(() => {
       setIsLoading(false);
       setIsSuccess(true);
-      onLoginSuccess?.(mobileNumber);
+      if (onLoginSuccess) {
+        onLoginSuccess(mobileNumber);
+      } else {
+        router.push("/dashboard");
+      }
     }, 700);
   };
 
@@ -143,6 +161,18 @@ export default function SellerLoginForm({
             {loginMethod === "email"
               ? "Sign in with your registered email & password"
               : "Sign in with your registered mobile number & OTP"}
+            {" • "}
+            <span
+              onClick={handleSignUp}
+              style={{
+                color: "#7c3aed",
+                fontWeight: 700,
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+            >
+              Sign Up
+            </span>
           </p>
         </div>
 
@@ -794,7 +824,7 @@ export default function SellerLoginForm({
           cursor: "pointer",
           transition: "all 0.15s ease",
         }}
-        onClick={onGoToRegister}
+        onClick={handleSignUp}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = "#7c3aed";
           e.currentTarget.style.transform = "translateY(-1px)";
@@ -825,10 +855,10 @@ export default function SellerLoginForm({
 
           <div>
             <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e1b4b", lineHeight: 1.2 }}>
-              Don&apos;t have an account?
+              Don&apos;t have an account? <span style={{ color: "#7c3aed" }}>Sign Up</span>
             </div>
             <div style={{ fontSize: "12px", color: "#6d28d9", fontWeight: 600, marginTop: "2px" }}>
-              Register as Seller on BuildMart
+              Sign Up / Register as Seller on BuildMart
             </div>
           </div>
         </div>

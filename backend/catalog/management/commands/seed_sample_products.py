@@ -15,13 +15,38 @@ class Command(BaseCommand):
     help = "Seed flagship construction products, listings, tier prices, and inventory for Gikitek seller"
 
     def handle(self, *args, **options):
-        # 1. Fetch Gikitek Seller
+        # 1. Fetch or create Gikitek Seller
         seller = Seller.objects.filter(store_slug='gikitek').first()
         if not seller:
-            self.stderr.write(self.style.ERROR("Seller 'gikitek' not found! Please create seller first."))
-            return
+            from identity.models import User
+            from common.enums import UserRole, SellerTier, SellerAccountStatus, VerificationStatus
+            user, _ = User.objects.get_or_create(
+                phone="9936628446",
+                defaults={
+                    "username": "9936628446",
+                    "email": "seller@gikitek.com",
+                    "first_name": "Gikitek",
+                    "last_name": "Seller",
+                    "role": UserRole.SELLER,
+                    "is_active": True,
+                }
+            )
+            seller, _ = Seller.objects.get_or_create(
+                store_slug="gikitek",
+                defaults={
+                    "user": user,
+                    "legal_business_name": "Gikitek Construction Solutions Pvt Ltd",
+                    "display_name": "Gikitek Certified Store",
+                    "tier": SellerTier.ENTERPRISE,
+                    "account_status": SellerAccountStatus.ACTIVE,
+                    "verification_status": VerificationStatus.APPROVED,
+                    "support_email": "seller@gikitek.com",
+                    "support_phone": "9936628446",
+                }
+            )
 
         self.stdout.write(f"Using Seller: {seller.display_name} (ID: {seller.id})")
+
 
         with transaction.atomic():
             # 2. Ensure Central Warehouse
@@ -211,17 +236,187 @@ class Command(BaseCommand):
             ListingTierPrice.objects.update_or_create(listing=l3, min_quantity=5, defaults={"discounted_price": Decimal("3850.00")})
             ListingTierPrice.objects.update_or_create(listing=l3, min_quantity=20, defaults={"discounted_price": Decimal("3690.00")})
 
+            # 6. Product 4: Bosch GSB 550 Impact Drill
+            b_bosch = Brand.objects.filter(name__icontains="Bosch").first() or b_ultratech
+            c_tools = Category.objects.filter(name__icontains="Tool").first() or c_cement
+
+            p4, _ = Product.objects.update_or_create(
+                asin="BM04BOSCH550",
+                defaults={
+                    "brand": b_bosch,
+                    "category": c_tools,
+                    "title": "Bosch GSB 550 Impact Drill 550W (13mm Chuck)",
+                    "description": "Compact and powerful 550 Watt impact drill with dual-mode functionality for drilling and impact drilling in masonry, wood, and metal.",
+                    "bullet_points": ["550 Watt powerful motor", "13mm keyed chuck", "Forward/reverse rotation", "Ergonomic design with auxiliary handle"],
+                    "search_keywords": ["bosch", "drill", "impact drill", "power tool", "gsb 550"],
+                    "package_weight_pounds": Decimal("4.5"),
+                    "status": CatalogStatus.ACTIVE,
+                }
+            )
+            l4, _ = Listing.objects.update_or_create(
+                seller=seller,
+                product=p4,
+                defaults={
+                    "seller_sku": "BOSCH-GSB-550W",
+                    "condition": ProductCondition.NEW,
+                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "status": ListingStatus.ACTIVE,
+                    "standard_price": Decimal("2099.00"),
+                    "handling_time_days": 1,
+                    "max_order_quantity": 20,
+                    "is_buy_box_winner": True,
+                }
+            )
+            ListingTierPrice.objects.update_or_create(listing=l4, min_quantity=10, defaults={"discounted_price": Decimal("1999.00")})
             InventoryItem.objects.update_or_create(
-                listing=l3,
+                listing=l4,
                 warehouse=warehouse,
-                defaults={"seller": seller, "available_stock": 350, "safety_stock": 20}
+                defaults={"seller": seller, "available_stock": 35, "safety_stock": 10}
+            )
+
+            # 7. Product 5: Stanley 16 Inch Hammer
+            b_stanley = Brand.objects.filter(name__icontains="Stanley").first() or b_ultratech
+            p5, _ = Product.objects.update_or_create(
+                asin="BM05STANLEY16",
+                defaults={
+                    "brand": b_stanley,
+                    "category": c_tools,
+                    "title": "Stanley 16 Inch Claw Steel Hammer (Anti-Vibration)",
+                    "description": "Heavy-duty anti-vibration claw hammer with high-carbon steel head for tough carpentry and masonry work.",
+                    "bullet_points": ["Anti-vibration ergonomic grip", "Forged high carbon steel", "Precision-curved claw for nail pulling"],
+                    "search_keywords": ["stanley", "hammer", "claw hammer", "hand tool"],
+                    "package_weight_pounds": Decimal("1.8"),
+                    "status": CatalogStatus.ACTIVE,
+                }
+            )
+            l5, _ = Listing.objects.update_or_create(
+                seller=seller,
+                product=p5,
+                defaults={
+                    "seller_sku": "STAN-16IN",
+                    "condition": ProductCondition.NEW,
+                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "status": ListingStatus.ACTIVE,
+                    "standard_price": Decimal("649.00"),
+                    "handling_time_days": 1,
+                    "max_order_quantity": 50,
+                    "is_buy_box_winner": True,
+                }
+            )
+            InventoryItem.objects.update_or_create(
+                listing=l5,
+                warehouse=warehouse,
+                defaults={"seller": seller, "available_stock": 12, "safety_stock": 15}
+            )
+
+            # 8. Product 6: Finolex PVC Pipe
+            b_finolex = Brand.objects.filter(name__icontains="Finolex").first() or b_ultratech
+            p6, _ = Product.objects.update_or_create(
+                asin="BM06FINOLEX1",
+                defaults={
+                    "brand": b_finolex,
+                    "category": c_cement,
+                    "title": "Finolex PVC Heavy Duty Plumbing Pipe - 1 Inch (6m)",
+                    "description": "High-pressure certified uPVC and PVC pipes for residential, commercial and agriculture plumbing systems.",
+                    "bullet_points": ["100% lead-free formulation", "Corrosion and UV resistant", "High flow coefficient"],
+                    "search_keywords": ["finolex", "pvc pipe", "plumbing pipe", "1 inch pipe"],
+                    "package_weight_pounds": Decimal("8.0"),
+                    "status": CatalogStatus.ACTIVE,
+                }
+            )
+            l6, _ = Listing.objects.update_or_create(
+                seller=seller,
+                product=p6,
+                defaults={
+                    "seller_sku": "FIN-1INCH-6M",
+                    "condition": ProductCondition.NEW,
+                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "status": ListingStatus.ACTIVE,
+                    "standard_price": Decimal("340.00"),
+                    "handling_time_days": 1,
+                    "max_order_quantity": 500,
+                    "is_buy_box_winner": True,
+                }
+            )
+            InventoryItem.objects.update_or_create(
+                listing=l6,
+                warehouse=warehouse,
+                defaults={"seller": seller, "available_stock": 65, "safety_stock": 20}
+            )
+
+            # 9. Product 7: Philips 12W LED Bulb
+            b_philips = Brand.objects.filter(name__icontains="Philips").first() or b_ultratech
+            p7, _ = Product.objects.update_or_create(
+                asin="BM07PHILIPS12",
+                defaults={
+                    "brand": b_philips,
+                    "category": c_tools,
+                    "title": "Philips 12W LED High Brightness Bulb (B22 Cool Day Light)",
+                    "description": "Energy-saving LED bulb with EyeComfort technology for glare-free illumination.",
+                    "bullet_points": ["EyeComfort technology", "12W power consumption, 1200 Lumens", "Up to 15,000 hours rated life"],
+                    "search_keywords": ["philips", "led bulb", "12w", "lighting", "cool day light"],
+                    "package_weight_pounds": Decimal("0.3"),
+                    "status": CatalogStatus.ACTIVE,
+                }
+            )
+            l7, _ = Listing.objects.update_or_create(
+                seller=seller,
+                product=p7,
+                defaults={
+                    "seller_sku": "PHIL-12W-CDL",
+                    "condition": ProductCondition.NEW,
+                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "status": ListingStatus.ACTIVE,
+                    "standard_price": Decimal("165.00"),
+                    "handling_time_days": 1,
+                    "max_order_quantity": 100,
+                    "is_buy_box_winner": True,
+                }
+            )
+            InventoryItem.objects.update_or_create(
+                listing=l7,
+                warehouse=warehouse,
+                defaults={"seller": seller, "available_stock": 22, "safety_stock": 25}
+            )
+
+            # 10. Product 8: Sintex Water Tank
+            b_sintex = Brand.objects.filter(name__icontains="Sintex").first() or b_ultratech
+            p8, _ = Product.objects.update_or_create(
+                asin="BM08SINTEX1000",
+                defaults={
+                    "brand": b_sintex,
+                    "category": c_cement,
+                    "title": "Sintex 1000L Triple Layer Overhead Anti-Bacterial Water Tank",
+                    "description": "Virgin plastic food-grade overhead water storage tank with 3-layer UV protection and anti-bacterial shield.",
+                    "bullet_points": ["1000 Litres capacity", "100% Virgin food-grade plastic", "Triple layer with anti-microbial inside layer"],
+                    "search_keywords": ["sintex", "water tank", "1000 litre", "tank", "storage"],
+                    "package_weight_pounds": Decimal("65.0"),
+                    "status": CatalogStatus.ACTIVE,
+                }
+            )
+            l8, _ = Listing.objects.update_or_create(
+                seller=seller,
+                product=p8,
+                defaults={
+                    "seller_sku": "SINTEX-1000L-TL",
+                    "condition": ProductCondition.NEW,
+                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "status": ListingStatus.ACTIVE,
+                    "standard_price": Decimal("6850.00"),
+                    "handling_time_days": 2,
+                    "max_order_quantity": 5,
+                    "is_buy_box_winner": True,
+                }
+            )
+            InventoryItem.objects.update_or_create(
+                listing=l8,
+                warehouse=warehouse,
+                defaults={"seller": seller, "available_stock": 8, "safety_stock": 10}
             )
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Successfully seeded 3 flagship products and listings for {seller.display_name}!\n"
-                f"   1. {p1.title} (ASIN: {p1.asin}) -> ₹{l1.standard_price} (Stock: 5000)\n"
-                f"   2. {p2.title} (ASIN: {p2.asin}) -> ₹{l2.standard_price} (Stock: 2500)\n"
-                f"   3. {p3.title} (ASIN: {p3.asin}) -> ₹{l3.sale_price or l3.standard_price} (Stock: 350)"
+                f"✅ Successfully seeded flagship products and listings for {seller.display_name}!"
             )
         )
+

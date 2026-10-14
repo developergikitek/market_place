@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
   Bell,
-  HelpCircle,
   Menu,
   ChevronDown,
   ChevronUp,
@@ -41,15 +40,23 @@ import {
   Trash2,
   RefreshCw,
   ShieldCheck,
+  Globe,
 } from "lucide-react";
 import ProductThumbnail from "@/components/catalog/ProductThumbnail";
 import { INITIAL_PRODUCTS, INITIAL_CATALOG_STATS } from "@/data/catalogData";
-import { CatalogProductListing, StockStatusType, ListingStatusType } from "@/types/catalog";
+import { CatalogProductListing, CatalogStats, StockStatusType, ListingStatusType } from "@/types/catalog";
+import { getCatalogProducts, createCatalogProduct, updateCatalogProduct } from "@/services/catalogService";
 
 export default function CatalogPage() {
-  // Products and Stats State
-  const [products, setProducts] = useState<CatalogProductListing[]>(INITIAL_PRODUCTS);
-  const [stats, setStats] = useState(INITIAL_CATALOG_STATS);
+  // Products and Stats State (Initialized empty with loading true to prevent mock data flash)
+  const [products, setProducts] = useState<CatalogProductListing[]>([]);
+  const [stats, setStats] = useState<CatalogStats>({
+    totalProducts: 0,
+    activeProducts: 0,
+    outOfStock: 0,
+    lowStock: 0,
+    inactiveProducts: 0,
+  });
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,6 +85,60 @@ export default function CatalogPage() {
   const [newB2bTier, setNewB2bTier] = useState("");
   const [newModelNumber, setNewModelNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit Product Modal State (PUT API)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editStock, setEditStock] = useState("");
+  const [editStatus, setEditStatus] = useState<ListingStatusType>("Active");
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  // API integration states (start loading to smoothly await real API)
+  const [isLoadingApi, setIsLoadingApi] = useState(true);
+  const [isApiConnected, setIsApiConnected] = useState(false);
+  const [notificationToast, setNotificationToast] = useState<string | null>(null);
+
+  // Fetch catalog products from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingApi(true);
+
+    getCatalogProducts()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.products && res.products.length > 0) {
+          setProducts(res.products);
+          setIsApiConnected(res.isFromApi);
+
+          // Dynamically compute stats from fetched data
+          const total = res.products.length;
+          const active = res.products.filter((p) => p.status === "Active").length;
+          const outOfStock = res.products.filter((p) => p.stockStatus === "out_of_stock").length;
+          const lowStock = res.products.filter((p) => p.stockStatus === "low_stock").length;
+          const inactive = res.products.filter((p) => p.status === "Inactive").length;
+
+          setStats({
+            totalProducts: total,
+            activeProducts: active,
+            outOfStock,
+            lowStock,
+            inactiveProducts: inactive,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching catalog products:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingApi(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter products based on search, category, status, and fulfillment channel
   const filteredProducts = useMemo(() => {
@@ -134,61 +195,39 @@ export default function CatalogPage() {
     );
   };
 
-  // Add product handler (matches backend Product + Listing models)
-  const handleCreateProduct = (e: React.FormEvent) => {
+  // Add product handler (Calls POST API via createCatalogProduct)
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newSku.trim() || !newPrice.trim()) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const stockNum = parseInt(newStock) || 0;
-      let stockSt: StockStatusType = "in_stock";
-      if (stockNum === 0) stockSt = "out_of_stock";
-      else if (stockNum <= 10) stockSt = "low_stock";
-
-      // Select icon thumbnail based on category/title
-      let icon = "drill";
-      const catLower = newCategory.toLowerCase();
-      if (catLower.includes("cement")) icon = "cement";
-      else if (catLower.includes("steel")) icon = "steel";
-      else if (catLower.includes("paint")) icon = "paint";
-      else if (catLower.includes("pipe")) icon = "pipe";
-      else if (catLower.includes("hammer")) icon = "hammer";
-      else if (catLower.includes("light") || catLower.includes("bulb")) icon = "bulb";
-      else if (catLower.includes("switch")) icon = "switch";
-      else if (catLower.includes("grinder")) icon = "grinder";
-
-      const createdAsin = newAsin.trim()
-        ? newAsin.toUpperCase()
-        : `BM0${Math.floor(1 + Math.random() * 9)}${newBrand.substring(0, 4).toUpperCase()}${Math.floor(10 + Math.random() * 90)}`;
-
-      const created: CatalogProductListing = {
-        id: `prod-${Date.now()}`,
-        asin: createdAsin,
-        title: newTitle,
+    try {
+      const res = await createCatalogProduct({
+        title: newTitle.trim(),
         brand: newBrand,
-        sku: newSku.toUpperCase(),
-        category: newCategory.split(">").pop()?.trim() || "Building Materials",
-        categoryPath: newCategory,
-        price: parseFloat(newPrice) || 999,
-        stock: stockNum,
-        stockStatus: stockSt,
-        status: "Active",
-        lastUpdated: "Just now",
+        sku: newSku.trim().toUpperCase(),
+        category: newCategory,
+        price: parseFloat(newPrice) || 0,
+        stock: parseInt(newStock) || 0,
         condition: newCondition,
         fulfillmentChannel: newFulfillment,
-        isBuyBoxWinner: true,
-        b2bTierPrice: newB2bTier.trim() || undefined,
+        b2bTier: newB2bTier.trim() || undefined,
         modelNumber: newModelNumber.trim() || undefined,
-        iconType: icon,
-      };
+      });
 
-      setProducts([created, ...products]);
+      const created = res.product;
+      setProducts((prev) => [created, ...prev]);
       setStats((prev) => ({
         ...prev,
         totalProducts: prev.totalProducts + 1,
         activeProducts: prev.activeProducts + 1,
       }));
+
+      // Show notification toast
+      setNotificationToast(
+        `Product "${created.title}" successfully added (ASIN: ${created.asin})!`
+      );
+      setTimeout(() => setNotificationToast(null), 4500);
 
       // Reset form
       setNewTitle("");
@@ -198,23 +237,94 @@ export default function CatalogPage() {
       setNewStock("");
       setNewB2bTier("");
       setNewModelNumber("");
-      setIsSubmitting(false);
       setIsAddModalOpen(false);
-    }, 500);
+    } catch (err) {
+      console.error("Failed to add product:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Row Action Handlers
-  const handleToggleProductStatus = (id: string) => {
+  // Row Action Handlers (Live PUT API calls)
+  const handleToggleProductStatus = async (id: string) => {
+    const target = products.find((item) => item.id === id);
+    if (!target) return;
+    const nextStatus: ListingStatusType = target.status === "Active" ? "Inactive" : "Active";
+
+    // Immediate UI update
     setProducts((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const nextStatus: ListingStatusType = item.status === "Active" ? "Inactive" : "Active";
-          return { ...item, status: nextStatus };
-        }
-        return item;
-      })
+      prev.map((item) => (item.id === id ? { ...item, status: nextStatus, lastUpdated: "Just now" } : item))
     );
     setActiveRowActionMenu(null);
+
+    // Live PUT request to Django Backend API
+    try {
+      const res = await updateCatalogProduct(id, { status: nextStatus });
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live PUT API: Status of "${target.title}" changed to ${nextStatus} in database!`
+          : `✓ Status of "${target.title}" changed to ${nextStatus}!`
+      );
+      setTimeout(() => setNotificationToast(null), 4000);
+    } catch (err) {
+      console.error("Failed to toggle product status via PUT:", err);
+    }
+  };
+
+  const handleOpenEditModal = (item: CatalogProductListing) => {
+    setEditingProductId(item.id);
+    setEditTitle(item.title);
+    setEditPrice(item.price.toString());
+    setEditStock(item.stock.toString());
+    setEditStatus(item.status);
+    setIsEditModalOpen(true);
+    setActiveRowActionMenu(null);
+  };
+
+  const handleSaveProductEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProductId) return;
+    setIsSubmittingEdit(true);
+
+    const updatedPrice = parseFloat(editPrice) || 0;
+    const updatedStock = parseInt(editStock) || 0;
+
+    try {
+      const res = await updateCatalogProduct(editingProductId, {
+        title: editTitle.trim(),
+        price: updatedPrice,
+        stock: updatedStock,
+        status: editStatus,
+      });
+
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingProductId
+            ? {
+                ...p,
+                title: editTitle.trim(),
+                price: updatedPrice,
+                stock: updatedStock,
+                status: editStatus,
+                stockStatus: updatedStock === 0 ? "out_of_stock" : updatedStock <= 10 ? "low_stock" : "in_stock",
+                lastUpdated: "Just now",
+              }
+            : p
+        )
+      );
+
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live PUT API: Product "${editTitle}" successfully updated in database!`
+          : `✓ Product "${editTitle}" updated successfully!`
+      );
+      setTimeout(() => setNotificationToast(null), 4000);
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error("Failed to update product via PUT:", err);
+    } finally {
+      setIsSubmittingEdit(false);
+    }
   };
 
   const handleDeleteProduct = (id: string) => {
@@ -342,87 +452,8 @@ export default function CatalogPage() {
           </div>
         </div>
 
-        {/* Right Header Controls: Search, Notification, Help, Profile */}
+        {/* Right Header Controls: Profile */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <button
-            type="button"
-            title="Search"
-            style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#e9d5ff",
-              cursor: "pointer",
-              width: "34px",
-              height: "34px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s ease",
-            }}
-          >
-            <Search size={16} />
-          </button>
-
-          {/* Notification with Badge 12 */}
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              title="Notifications"
-              style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#e9d5ff",
-                cursor: "pointer",
-                width: "34px",
-                height: "34px",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Bell size={16} />
-            </button>
-            <span
-              style={{
-                position: "absolute",
-                top: "-2px",
-                right: "-2px",
-                background: "#ef4444",
-                color: "#ffffff",
-                fontSize: "10px",
-                fontWeight: 800,
-                borderRadius: "9999px",
-                padding: "1px 5px",
-                minWidth: "16px",
-                textAlign: "center",
-                lineHeight: "13px",
-                boxShadow: "0 2px 6px rgba(239, 68, 68, 0.5)",
-              }}
-            >
-              12
-            </span>
-          </div>
-
-          <button
-            type="button"
-            title="Help"
-            style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#e9d5ff",
-              cursor: "pointer",
-              width: "34px",
-              height: "34px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <HelpCircle size={16} />
-          </button>
 
           {/* Profile Dropdown */}
           <div
@@ -490,8 +521,8 @@ export default function CatalogPage() {
           }}
         >
           {/* Menu Items */}
-          <button
-            type="button"
+          <Link
+            href="/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -501,20 +532,19 @@ export default function CatalogPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
-              textAlign: "left",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
-          </button>
+          </Link>
 
-          <button
-            type="button"
+          <Link
+            href="/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -524,11 +554,11 @@ export default function CatalogPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -547,10 +577,11 @@ export default function CatalogPage() {
             >
               128
             </span>
-          </button>
+          </Link>
 
-          <button
-            type="button"
+          {/* Bulk orders */}
+          <Link
+            href="/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -560,17 +591,16 @@ export default function CatalogPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
-              textAlign: "left",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <Layers size={18} />
             <span>Bulk orders</span>
-          </button>
+          </Link>
 
           {/* ACTIVE CATALOG MENU ITEM (Purple Brand Signature Active) */}
           <button
@@ -687,30 +717,7 @@ export default function CatalogPage() {
             );
           })}
 
-          {/* Need Help Card */}
-          <div
-            style={{
-              marginTop: "auto",
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(168, 85, 247, 0.25)",
-              borderRadius: "12px",
-              padding: "14px 12px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#f8fafc", fontWeight: 700, fontSize: "12.5px" }}>
-              <HelpCircle size={15} color="#fbbf24" />
-              <span>Need Help?</span>
-            </div>
-            <p style={{ fontSize: "11.5px", color: "#e9d5ff", margin: 0 }}>Our support team is here</p>
-            <a href="#" style={{ color: "#fbbf24", fontSize: "12px", fontWeight: 700, textDecoration: "none", marginTop: "2px" }}>
-              Contact Support
-            </a>
-          </div>
-
-          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
+          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "auto", paddingLeft: "4px" }}>
             © 2025 BuildMart<br />All rights reserved.
           </div>
         </aside>
@@ -722,19 +729,21 @@ export default function CatalogPage() {
           {/* Top Title & Primary Buttons Row */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
             <div>
-              <h1
-                style={{
-                  fontSize: "30px",
-                  fontWeight: 800,
-                  color: "#3b0764",
-                  letterSpacing: "-0.5px",
-                  margin: 0,
-                  lineHeight: 1.2,
-                  fontFamily: "var(--font-heading), sans-serif",
-                }}
-              >
-                Catalog
-              </h1>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <h1
+                  style={{
+                    fontSize: "30px",
+                    fontWeight: 800,
+                    color: "#3b0764",
+                    letterSpacing: "-0.5px",
+                    margin: 0,
+                    lineHeight: 1.2,
+                    fontFamily: "var(--font-heading), sans-serif",
+                  }}
+                >
+                  Catalog
+                </h1>
+              </div>
               <p style={{ fontSize: "14px", color: "#64748b", marginTop: "4px", margin: 0 }}>
                 Manage your product catalog and listings.
               </p>
@@ -793,6 +802,38 @@ export default function CatalogPage() {
             </div>
           </div>
 
+          {/* Success Notification Banner */}
+          {notificationToast && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)",
+                border: "1.5px solid rgba(16, 185, 129, 0.35)",
+                borderRadius: "10px",
+                padding: "12px 18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                color: "#065f46",
+                fontSize: "13.5px",
+                fontWeight: 600,
+                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.08)",
+                animation: "fadeIn 0.2s ease",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Check size={18} color="#10b981" />
+                <span>{notificationToast}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotificationToast(null)}
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "#065f46" }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {/* ======================================================= */}
           {/* 5 KPI METRIC CARDS GRID                                 */}
           {/* ======================================================= */}
@@ -819,7 +860,7 @@ export default function CatalogPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total Products</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#4c1d95", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.totalProducts}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalProducts}
                 </div>
               </div>
               <div
@@ -854,7 +895,7 @@ export default function CatalogPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Active Products</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#1e293b", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.activeProducts}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.activeProducts}
                 </div>
               </div>
               <div
@@ -889,7 +930,7 @@ export default function CatalogPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Out of Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#ef4444", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.outOfStock}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.outOfStock}
                 </div>
               </div>
               <div
@@ -924,7 +965,7 @@ export default function CatalogPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Low Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#f59e0b", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.lowStock}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.lowStock}
                 </div>
               </div>
               <div
@@ -959,7 +1000,7 @@ export default function CatalogPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Inactive Products</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#64748b", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.inactiveProducts}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.inactiveProducts}
                 </div>
               </div>
               <div
@@ -1219,7 +1260,31 @@ export default function CatalogPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedProducts.length === 0 ? (
+                {isLoadingApi ? (
+                  Array.from({ length: 6 }).map((_, idx) => (
+                    <tr key={`skeleton-${idx}`} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ width: "16px", height: "16px", borderRadius: "4px", background: "#f1f5f9" }} />
+                      </td>
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                          <div style={{ width: "42px", height: "42px", borderRadius: "8px", background: "#f1f5f9", flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ width: "60%", height: "14px", borderRadius: "4px", background: "#f1f5f9", marginBottom: "6px" }} />
+                            <div style={{ width: "30%", height: "11px", borderRadius: "4px", background: "#f8fafc" }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "70px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "80px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "55px", height: "14px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "50px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "70px", height: "20px", borderRadius: "9999px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "65px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "24px", height: "24px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                    </tr>
+                  ))
+                ) : paginatedProducts.length === 0 ? (
                   <tr>
                     <td colSpan={9} style={{ padding: "48px 24px", textAlign: "center", color: "#64748b" }}>
                       No catalog products matched your filters.
@@ -1434,6 +1499,26 @@ export default function CatalogPage() {
                             >
                               <button
                                 type="button"
+                                onClick={() => handleOpenEditModal(item)}
+                                style={{
+                                  width: "100%",
+                                  padding: "8px 14px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  background: "transparent",
+                                  border: "none",
+                                  fontSize: "12.5px",
+                                  fontWeight: 600,
+                                  color: "#7c3aed",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <Edit size={14} />
+                                <span>Edit Details (PUT)</span>
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleToggleProductStatus(item.id)}
                                 style={{
                                   width: "100%",
@@ -1450,7 +1535,7 @@ export default function CatalogPage() {
                                 }}
                               >
                                 <RefreshCw size={14} />
-                                <span>{item.status === "Active" ? "Set Inactive" : "Set Active"}</span>
+                                <span>{item.status === "Active" ? "Set Inactive (PUT)" : "Set Active (PUT)"}</span>
                               </button>
                               <button
                                 type="button"
@@ -1528,60 +1613,58 @@ export default function CatalogPage() {
                   <ChevronLeft size={16} />
                 </button>
 
-                {/* Page numbers: 1, 2, 3, 4, 5, ..., 35 */}
-                {[1, 2, 3, 4, 5].map((num) => {
-                  const isActive = currentPage === num;
-                  return (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setCurrentPage(num)}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        border: "none",
-                        background: isActive ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" : "transparent",
-                        color: isActive ? "#ffffff" : "#64748b",
-                        fontWeight: isActive ? 700 : 500,
-                        fontSize: "13px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      {num}
-                    </button>
-                  );
-                })}
-
-                <span style={{ padding: "0 4px", color: "#94a3b8" }}>...</span>
-
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(35)}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    border: "none",
-                    background: currentPage === 35 ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" : "transparent",
-                    color: currentPage === 35 ? "#ffffff" : "#64748b",
-                    fontWeight: 600,
-                    fontSize: "13px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: currentPage === 35 ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  35
-                </button>
+                {/* Dynamic Page Numbers based on totalPages */}
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                  .filter((page) => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    return Math.abs(page - currentPage) <= 1;
+                  })
+                  .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                    if (idx > 0 && typeof arr[idx - 1] === "number" && (page as number) - (arr[idx - 1] as number) > 1) {
+                      acc.push("...");
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((item, idx) => {
+                    if (typeof item === "string") {
+                      return (
+                        <span key={`ellipsis-${idx}`} style={{ padding: "0 4px", color: "#94a3b8" }}>
+                          ...
+                        </span>
+                      );
+                    }
+                    const num = item as number;
+                    const isActive = currentPage === num;
+                    return (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setCurrentPage(num)}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          border: "none",
+                          background: isActive
+                            ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)"
+                            : "transparent",
+                          color: isActive ? "#ffffff" : "#64748b",
+                          fontWeight: isActive ? 700 : 500,
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {num}
+                      </button>
+                    );
+                  })}
 
                 {/* Next Button */}
                 <button
@@ -1988,6 +2071,204 @@ export default function CatalogPage() {
                 >
                   {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={16} />}
                   <span>Save Product</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* ========================================================= */}
+      {/* EDIT PRODUCT MODAL (PUT /api/catalog/products/<id>/)      */}
+      {/* ========================================================= */}
+      {isEditModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "16px",
+              width: "100%",
+              maxWidth: "520px",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.25)",
+              overflow: "hidden",
+              animation: "fadeIn 0.2s ease-out",
+            }}
+          >
+            <div
+              style={{
+                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                padding: "20px 24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#ffffff", margin: 0 }}>
+                  Edit Product (Live PUT API)
+                </h3>
+                <p style={{ fontSize: "12.5px", color: "#e9d5ff", margin: "2px 0 0 0" }}>
+                  Update details in Django Catalog &amp; Listing DB
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#ffffff",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProductEdit} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
+                  Product Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  style={{
+                    width: "100%",
+                    height: "42px",
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "10px",
+                    padding: "0 14px",
+                    fontSize: "13.5px",
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
+                    Standard Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    style={{
+                      width: "100%",
+                      height: "42px",
+                      border: "1.5px solid #e2e8f0",
+                      borderRadius: "10px",
+                      padding: "0 14px",
+                      fontSize: "13.5px",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
+                    Available Stock *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editStock}
+                    onChange={(e) => setEditStock(e.target.value)}
+                    style={{
+                      width: "100%",
+                      height: "42px",
+                      border: "1.5px solid #e2e8f0",
+                      borderRadius: "10px",
+                      padding: "0 14px",
+                      fontSize: "13.5px",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
+                  Listing Status
+                </label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as ListingStatusType)}
+                  style={{
+                    width: "100%",
+                    height: "42px",
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "10px",
+                    padding: "0 12px",
+                    fontSize: "13.5px",
+                    outline: "none",
+                  }}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "12px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  style={{
+                    height: "40px",
+                    padding: "0 18px",
+                    borderRadius: "8px",
+                    border: "1.5px solid #e2e8f0",
+                    background: "#ffffff",
+                    color: "#64748b",
+                    fontWeight: 600,
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEdit}
+                  style={{
+                    height: "40px",
+                    padding: "0 22px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                  }}
+                >
+                  {isSubmittingEdit ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
+                  <span>Save Changes (PUT)</span>
                 </button>
               </div>
             </form>

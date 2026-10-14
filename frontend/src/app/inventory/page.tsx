@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
   Bell,
-  HelpCircle,
   Menu,
   ChevronDown,
   LayoutDashboard,
@@ -37,6 +36,7 @@ import {
   Warehouse,
   History,
   TrendingDown,
+  Globe,
 } from "lucide-react";
 import ProductThumbnail from "@/components/catalog/ProductThumbnail";
 import {
@@ -45,12 +45,19 @@ import {
   InventoryStockStatus,
   InventoryMovementReasonType,
 } from "@/types/inventory";
-import { INITIAL_INVENTORY_ITEMS, INITIAL_INVENTORY_STATS } from "@/data/inventoryData";
+import { getInventoryListings, postUpdateInventoryStock, updateInventoryListing } from "@/services/inventoryService";
+
 
 export default function InventoryPage() {
-  // Inventory items & dynamic stats state
-  const [inventoryItems, setInventoryItems] = useState<InventoryItemListing[]>(INITIAL_INVENTORY_ITEMS);
-  const [stats, setStats] = useState<InventoryStats>(INITIAL_INVENTORY_STATS);
+  // Inventory items & dynamic stats state (Initialized empty with loading true to prevent mock data flash)
+  const [inventoryItems, setInventoryItems] = useState<InventoryItemListing[]>([]);
+  const [stats, setStats] = useState<InventoryStats>({
+    totalSKUs: 0,
+    totalStock: 0,
+    inStock: 0,
+    lowStock: 0,
+    outOfStock: 0,
+  });
 
   // Search, filter & pagination state
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,9 +73,7 @@ export default function InventoryPage() {
 
   // Add Stock Modal State
   const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
-  const [selectedItemForStock, setSelectedItemForStock] = useState<string>(
-    INITIAL_INVENTORY_ITEMS[0]?.id || ""
-  );
+  const [selectedItemForStock, setSelectedItemForStock] = useState<string>("");
   const [stockActionType, setStockActionType] = useState<"add" | "set">("add");
   const [stockQuantityInput, setStockQuantityInput] = useState<string>("50");
   const [stockWarehouseInput, setStockWarehouseInput] = useState<string>(
@@ -77,6 +82,60 @@ export default function InventoryPage() {
   const [stockReasonInput, setStockReasonInput] = useState<InventoryMovementReasonType>("RESTOCK");
   const [stockReferenceNote, setStockReferenceNote] = useState<string>("");
   const [isSubmittingStock, setIsSubmittingStock] = useState(false);
+
+  // API integration states (start loading to smoothly await real API)
+  const [isLoadingApi, setIsLoadingApi] = useState(true);
+  const [isApiConnected, setIsApiConnected] = useState(false);
+  const [notificationToast, setNotificationToast] = useState<string | null>(null);
+
+  // Fetch inventory listings from Backend API
+  const loadInventoryData = async (search?: string, status?: string) => {
+    setIsLoadingApi(true);
+    try {
+      const res = await getInventoryListings(search, status);
+      if (res.items) {
+        setInventoryItems(res.items);
+        setStats(res.stats);
+        setIsApiConnected(res.isFromApi);
+        if (res.items.length > 0 && res.items[0]) {
+          setSelectedItemForStock(res.items[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching inventory listings:", err);
+    } finally {
+      setIsLoadingApi(false);
+    }
+  };
+
+  // Run on mount
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingApi(true);
+
+    getInventoryListings()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.items) {
+          setInventoryItems(res.items);
+          setStats(res.stats);
+          setIsApiConnected(res.isFromApi);
+          if (res.items.length > 0 && res.items[0]) {
+            setSelectedItemForStock(res.items[0].id);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching inventory listings:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingApi(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter inventory items based on search query, category, and status
   const filteredItems = useMemo(() => {
@@ -123,38 +182,61 @@ export default function InventoryPage() {
     );
   };
 
-  // Quick Restock action (+10 units)
-  const handleQuickRestock = (id: string, qty: number = 10) => {
-    setInventoryItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = item.availableStock + qty;
-          let newStatus: InventoryStockStatus = "In Stock";
-          if (newQty === 0) newStatus = "Out of Stock";
-          else if (newQty <= item.safetyStock) newStatus = "Low Stock";
+  // Quick Restock action (+10 units) via POST API
+  const handleQuickRestock = async (id: string, qty: number = 10) => {
+    const target = inventoryItems.find((i) => i.id === id);
+    const currentStock = target ? target.availableStock : 0;
 
-          return {
-            ...item,
-            availableStock: newQty,
-            status: newStatus,
-            lastUpdated: "Just now",
-          };
-        }
-        return item;
-      })
-    );
+    try {
+      const res = await postUpdateInventoryStock(
+        id,
+        qty,
+        "add",
+        currentStock,
+        "RESTOCK",
+        target?.warehouse
+      );
 
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      totalStock: prev.totalStock + qty,
-    }));
+      setInventoryItems((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            return {
+              ...item,
+              availableStock: res.newStock,
+              status: res.newStatus,
+              lastUpdated: "Just now",
+            };
+          }
+          return item;
+        })
+      );
+
+      // Update stats
+      setStats((prev) => ({
+        ...prev,
+        totalStock: prev.totalStock + qty,
+        inStock: res.newStatus === "In Stock" && currentStock === 0 ? prev.inStock + 1 : prev.inStock,
+        outOfStock: currentStock === 0 ? Math.max(0, prev.outOfStock - 1) : prev.outOfStock,
+      }));
+
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live API: Restocked +${qty} units for SKU ${target?.sku || id}! (Database Total: ${res.newStock} units)`
+          : `✓ Restocked +${qty} units for SKU ${target?.sku || id}! (Total: ${res.newStock} units)`
+      );
+      setTimeout(() => setNotificationToast(null), 4000);
+    } catch (err) {
+      console.error("Failed to restock:", err);
+    }
 
     setActiveRowMenu(null);
   };
 
-  // Mark as Out of Stock
-  const handleMarkOutOfStock = (id: string) => {
+  // Mark as Out of Stock via PUT API
+  const handleMarkOutOfStock = async (id: string) => {
+    const target = inventoryItems.find((i) => i.id === id);
+    const currentStock = target ? target.availableStock : 0;
+
     setInventoryItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -171,10 +253,55 @@ export default function InventoryPage() {
 
     setStats((prev) => ({
       ...prev,
+      totalStock: Math.max(0, prev.totalStock - currentStock),
       outOfStock: prev.outOfStock + 1,
     }));
-
     setActiveRowMenu(null);
+
+    try {
+      const res = await updateInventoryListing(id, {
+        status: "Out of Stock",
+        availableStock: 0,
+      });
+
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live PUT API: SKU ${target?.sku || id} updated to Out of Stock in database!`
+          : `✓ SKU ${target?.sku || id} marked as Out of Stock.`
+      );
+      setTimeout(() => setNotificationToast(null), 4000);
+    } catch (err) {
+      console.error("Failed to mark out of stock via PUT:", err);
+    }
+  };
+
+  // Toggle Listing Active / Inactive Status via Live PUT API
+  const handleToggleListingStatus = async (id: string) => {
+    const target = inventoryItems.find((i) => i.id === id);
+    if (!target) return;
+    const nextStatus: InventoryStockStatus = target.status === "In Stock" ? "Out of Stock" : "In Stock";
+    const nextStock = nextStatus === "Out of Stock" ? 0 : (target.availableStock > 0 ? target.availableStock : 50);
+
+    setInventoryItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: nextStatus, availableStock: nextStock, lastUpdated: "Just now" } : item))
+    );
+    setActiveRowMenu(null);
+
+    try {
+      const res = await updateInventoryListing(id, {
+        status: nextStatus,
+        availableStock: nextStock,
+      });
+
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live PUT API: Listing ${target.sku} updated to ${nextStatus} in database!`
+          : `✓ Listing ${target.sku} status updated to ${nextStatus}!`
+      );
+      setTimeout(() => setNotificationToast(null), 4000);
+    } catch (err) {
+      console.error("Failed to toggle listing status via PUT:", err);
+    }
   };
 
   // Open modal pre-configured for a specific item
@@ -189,30 +316,34 @@ export default function InventoryPage() {
     setActiveRowMenu(null);
   };
 
-  // Add / Adjust Stock Submit Handler
-  const handleSaveStock = (e: React.FormEvent) => {
+  // Add / Adjust Stock Submit Handler (Calls POST API)
+  const handleSaveStock = async (e: React.FormEvent) => {
     e.preventDefault();
     const qty = parseInt(stockQuantityInput, 10);
     if (isNaN(qty) || qty < 0) return;
 
     setIsSubmittingStock(true);
+    try {
+      const currentItem = inventoryItems.find((i) => i.id === selectedItemForStock);
+      const currentStock = currentItem ? currentItem.availableStock : 0;
 
-    setTimeout(() => {
+      const res = await postUpdateInventoryStock(
+        selectedItemForStock,
+        qty,
+        stockActionType,
+        currentStock,
+        stockReasonInput,
+        stockWarehouseInput
+      );
+
       setInventoryItems((prev) =>
         prev.map((item) => {
           if (item.id === selectedItemForStock) {
-            const finalStock =
-              stockActionType === "add" ? item.availableStock + qty : qty;
-
-            let newStatus: InventoryStockStatus = "In Stock";
-            if (finalStock === 0) newStatus = "Out of Stock";
-            else if (finalStock <= item.safetyStock) newStatus = "Low Stock";
-
             return {
               ...item,
-              availableStock: finalStock,
+              availableStock: res.newStock,
               warehouse: stockWarehouseInput,
-              status: newStatus,
+              status: res.newStatus,
               lastUpdated: "Just now",
             };
           }
@@ -221,17 +352,33 @@ export default function InventoryPage() {
       );
 
       // Dynamically adjust total stats
-      if (stockActionType === "add") {
-        setStats((prev) => ({
-          ...prev,
-          totalStock: prev.totalStock + qty,
-        }));
-      }
+      const diff = res.newStock - currentStock;
+      setStats((prev) => ({
+        ...prev,
+        totalStock: Math.max(0, prev.totalStock + diff),
+        inStock: res.newStatus === "In Stock" && currentStock === 0 ? prev.inStock + 1 : prev.inStock,
+        outOfStock:
+          res.newStatus === "Out of Stock"
+            ? prev.outOfStock + 1
+            : currentStock === 0
+            ? Math.max(0, prev.outOfStock - 1)
+            : prev.outOfStock,
+      }));
 
-      setIsSubmittingStock(false);
+      setNotificationToast(
+        res.isFromApi
+          ? `✓ Live API: ${res.message || `Stock updated to ${res.newStock} units in DRF database.`}`
+          : `✓ Stock successfully updated to ${res.newStock} units for ${currentItem?.title || 'product'}!`
+      );
+      setTimeout(() => setNotificationToast(null), 4500);
+
       setIsAddStockModalOpen(false);
       setStockReferenceNote("");
-    }, 400);
+    } catch (err) {
+      console.error("Failed to update stock:", err);
+    } finally {
+      setIsSubmittingStock(false);
+    }
   };
 
   return (
@@ -362,87 +509,8 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Right Header Controls: Search, Notification, Help, Profile */}
+        {/* Right Header Controls: Profile */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <button
-            type="button"
-            title="Search"
-            style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#e9d5ff",
-              cursor: "pointer",
-              width: "34px",
-              height: "34px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s ease",
-            }}
-          >
-            <Search size={16} />
-          </button>
-
-          {/* Notification with Badge 12 */}
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              title="Notifications"
-              style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#e9d5ff",
-                cursor: "pointer",
-                width: "34px",
-                height: "34px",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Bell size={16} />
-            </button>
-            <span
-              style={{
-                position: "absolute",
-                top: "-2px",
-                right: "-2px",
-                background: "#ef4444",
-                color: "#ffffff",
-                fontSize: "10px",
-                fontWeight: 800,
-                borderRadius: "9999px",
-                padding: "1px 5px",
-                minWidth: "16px",
-                textAlign: "center",
-                lineHeight: "13px",
-                boxShadow: "0 2px 6px rgba(239, 68, 68, 0.5)",
-              }}
-            >
-              12
-            </span>
-          </div>
-
-          <button
-            type="button"
-            title="Help"
-            style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#e9d5ff",
-              cursor: "pointer",
-              width: "34px",
-              height: "34px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <HelpCircle size={16} />
-          </button>
 
           {/* Profile Dropdown */}
           <div
@@ -511,8 +579,8 @@ export default function InventoryPage() {
           }}
         >
           {/* Menu Items */}
-          <button
-            type="button"
+          <Link
+            href="/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -522,20 +590,19 @@ export default function InventoryPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
-              textAlign: "left",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
-          </button>
+          </Link>
 
-          <button
-            type="button"
+          <Link
+            href="/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -545,11 +612,11 @@ export default function InventoryPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -568,10 +635,11 @@ export default function InventoryPage() {
             >
               128
             </span>
-          </button>
+          </Link>
 
-          <button
-            type="button"
+          {/* Bulk orders */}
+          <Link
+            href="/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -581,17 +649,16 @@ export default function InventoryPage() {
               borderRadius: "8px",
               color: "#d8b4fe",
               background: "transparent",
-              border: "none",
+              textDecoration: "none",
               fontSize: "13.5px",
               fontWeight: 500,
-              cursor: "pointer",
-              textAlign: "left",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <Layers size={18} />
             <span>Bulk orders</span>
-          </button>
+          </Link>
 
           {/* Catalog Link (Non-active on this page) */}
           <Link
@@ -698,30 +765,7 @@ export default function InventoryPage() {
             );
           })}
 
-          {/* Need Help Card */}
-          <div
-            style={{
-              marginTop: "auto",
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(168, 85, 247, 0.25)",
-              borderRadius: "12px",
-              padding: "14px 12px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#f8fafc", fontWeight: 700, fontSize: "12.5px" }}>
-              <HelpCircle size={15} color="#fbbf24" />
-              <span>Need Help?</span>
-            </div>
-            <p style={{ fontSize: "11.5px", color: "#e9d5ff", margin: 0 }}>Our support team is here</p>
-            <a href="#" style={{ color: "#fbbf24", fontSize: "12px", fontWeight: 700, textDecoration: "none", marginTop: "2px" }}>
-              Contact Support
-            </a>
-          </div>
-
-          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
+          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "auto", paddingLeft: "4px" }}>
             © 2025 BuildMart<br />All rights reserved.
           </div>
         </aside>
@@ -742,19 +786,21 @@ export default function InventoryPage() {
           {/* Top Title & Primary Buttons Row */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
             <div>
-              <h1
-                style={{
-                  fontSize: "30px",
-                  fontWeight: 800,
-                  color: "#3b0764",
-                  letterSpacing: "-0.5px",
-                  margin: 0,
-                  lineHeight: 1.2,
-                  fontFamily: "var(--font-heading), sans-serif",
-                }}
-              >
-                Inventory
-              </h1>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <h1
+                  style={{
+                    fontSize: "30px",
+                    fontWeight: 800,
+                    color: "#3b0764",
+                    letterSpacing: "-0.5px",
+                    margin: 0,
+                    lineHeight: 1.2,
+                    fontFamily: "var(--font-heading), sans-serif",
+                  }}
+                >
+                  Inventory
+                </h1>
+              </div>
               <p style={{ fontSize: "14px", color: "#64748b", marginTop: "4px", margin: 0 }}>
                 Track and manage your stock across all products.
               </p>
@@ -786,6 +832,36 @@ export default function InventoryPage() {
                 <span>Add Stock</span>
               </button>
 
+              {/* Refresh Live Inventory Data Button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  await loadInventoryData(searchQuery, selectedStatus);
+                  setNotificationToast("Inventory data refreshed from live server.");
+                  setTimeout(() => setNotificationToast(null), 3000);
+                }}
+                title="Refresh inventory from live database"
+                style={{
+                  height: "40px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  padding: "0 16px",
+                  borderRadius: "8px",
+                  background: "#ffffff",
+                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                  color: "#6d28d9",
+                  fontSize: "13.5px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  boxShadow: "0 1px 4px rgba(124, 58, 237, 0.08)",
+                }}
+              >
+                <RefreshCw size={14} color="#7c3aed" className={isLoadingApi ? "animate-spin" : ""} />
+                <span>Refresh Data</span>
+              </button>
+
               {/* Export Button */}
               <button
                 type="button"
@@ -813,6 +889,38 @@ export default function InventoryPage() {
             </div>
           </div>
 
+          {/* Success Notification Banner */}
+          {notificationToast && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)",
+                border: "1.5px solid rgba(16, 185, 129, 0.35)",
+                borderRadius: "10px",
+                padding: "12px 18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                color: "#065f46",
+                fontSize: "13.5px",
+                fontWeight: 600,
+                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.08)",
+                animation: "fadeIn 0.2s ease",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Check size={18} color="#10b981" />
+                <span>{notificationToast}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotificationToast(null)}
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "#065f46" }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {/* ======================================================= */}
           {/* 5 KPI METRIC CARDS GRID (Matches user screenshot)       */}
           {/* ======================================================= */}
@@ -839,7 +947,7 @@ export default function InventoryPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total SKUs</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#4c1d95", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.totalSKUs}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalSKUs}
                 </div>
               </div>
               <div
@@ -874,7 +982,7 @@ export default function InventoryPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#1e1b4b", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.totalStock.toLocaleString()}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalStock.toLocaleString()}
                 </div>
               </div>
               <div
@@ -909,7 +1017,7 @@ export default function InventoryPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>In Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#10b981", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.inStock.toLocaleString()}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.inStock.toLocaleString()}
                 </div>
               </div>
               <div
@@ -944,7 +1052,7 @@ export default function InventoryPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Low Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#f59e0b", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.lowStock}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.lowStock}
                 </div>
               </div>
               <div
@@ -979,7 +1087,7 @@ export default function InventoryPage() {
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Out of Stock</span>
                 <div style={{ fontSize: "32px", fontWeight: 800, color: "#ef4444", marginTop: "6px", lineHeight: 1 }}>
-                  {stats.outOfStock}
+                  {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.outOfStock}
                 </div>
               </div>
               <div
@@ -1186,7 +1294,30 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedItems.length === 0 ? (
+                {isLoadingApi ? (
+                  Array.from({ length: 6 }).map((_, idx) => (
+                    <tr key={`inv-skeleton-${idx}`} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ width: "16px", height: "16px", borderRadius: "4px", background: "#f1f5f9" }} />
+                      </td>
+                      <td style={{ padding: "16px 18px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                          <div style={{ width: "42px", height: "42px", borderRadius: "8px", background: "#f1f5f9", flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ width: "60%", height: "14px", borderRadius: "4px", background: "#f1f5f9", marginBottom: "6px" }} />
+                            <div style={{ width: "30%", height: "11px", borderRadius: "4px", background: "#f8fafc" }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "80px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "90px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "55px", height: "14px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "70px", height: "20px", borderRadius: "9999px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "80px", height: "13px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                      <td style={{ padding: "16px 18px" }}><div style={{ width: "24px", height: "24px", borderRadius: "4px", background: "#f1f5f9" }} /></td>
+                    </tr>
+                  ))
+                ) : paginatedItems.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ padding: "48px 24px", textAlign: "center", color: "#64748b" }}>
                       No inventory items found matching your filters.
@@ -1403,6 +1534,27 @@ export default function InventoryPage() {
 
                               <button
                                 type="button"
+                                onClick={() => handleToggleListingStatus(item.id)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  padding: "9px 14px",
+                                  fontSize: "12.5px",
+                                  color: "#7c3aed",
+                                  fontWeight: 600,
+                                  background: "transparent",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                }}
+                              >
+                                <RefreshCw size={14} color="#7c3aed" />
+                                <span>{item.status === "In Stock" ? "Pause Listing (PUT)" : "Activate Listing (PUT)"}</span>
+                              </button>
+
+                              <button
+                                type="button"
                                 onClick={() => handleMarkOutOfStock(item.id)}
                                 style={{
                                   display: "flex",
@@ -1419,7 +1571,7 @@ export default function InventoryPage() {
                                 }}
                               >
                                 <Ban size={14} color="#dc2626" />
-                                <span>Mark Out of Stock</span>
+                                <span>Mark Out of Stock (PUT)</span>
                               </button>
                             </div>
                           )}
@@ -1477,60 +1629,58 @@ export default function InventoryPage() {
                   <ChevronLeft size={16} />
                 </button>
 
-                {/* Page numbers: 1, 2, 3, 4, 5, ..., 35 */}
-                {[1, 2, 3, 4, 5].map((num) => {
-                  const isActive = currentPage === num;
-                  return (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setCurrentPage(num)}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        border: "none",
-                        background: isActive ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" : "transparent",
-                        color: isActive ? "#ffffff" : "#64748b",
-                        fontWeight: isActive ? 700 : 500,
-                        fontSize: "13px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      {num}
-                    </button>
-                  );
-                })}
-
-                <span style={{ padding: "0 4px", color: "#94a3b8" }}>...</span>
-
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(35)}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    border: "none",
-                    background: currentPage === 35 ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" : "transparent",
-                    color: currentPage === 35 ? "#ffffff" : "#64748b",
-                    fontWeight: 600,
-                    fontSize: "13px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: currentPage === 35 ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  35
-                </button>
+                {/* Dynamic Page Numbers based on totalPages */}
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                  .filter((page) => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    return Math.abs(page - currentPage) <= 1;
+                  })
+                  .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                    if (idx > 0 && typeof arr[idx - 1] === "number" && (page as number) - (arr[idx - 1] as number) > 1) {
+                      acc.push("...");
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((item, idx) => {
+                    if (typeof item === "string") {
+                      return (
+                        <span key={`inv-ellipsis-${idx}`} style={{ padding: "0 4px", color: "#94a3b8" }}>
+                          ...
+                        </span>
+                      );
+                    }
+                    const num = item as number;
+                    const isActive = currentPage === num;
+                    return (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setCurrentPage(num)}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          border: "none",
+                          background: isActive
+                            ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)"
+                            : "transparent",
+                          color: isActive ? "#ffffff" : "#64748b",
+                          fontWeight: isActive ? 700 : 500,
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {num}
+                      </button>
+                    );
+                  })}
 
                 {/* Next Button */}
                 <button
