@@ -16,7 +16,6 @@ __pycache__/
 # Django media & static
 media/
 staticfiles/
-db.sqlite3
 
 # OS files
 .DS_Store
