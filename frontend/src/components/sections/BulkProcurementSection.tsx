@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface BulkProcurementSectionProps {
   activeCity: string;
@@ -228,7 +229,7 @@ export default function BulkProcurementSection({
                   <label style={{ display: "block", fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--text-secondary)", marginBottom: "6px" }}>
                     OFFLOADING METHOD
                   </label>
-                  <select
+                  <Select
                     value={unloadingType}
                     onChange={(e) => setUnloadingType(e.target.value as any)}
                     style={{
@@ -244,7 +245,7 @@ export default function BulkProcurementSection({
                     <option value="crane">Mobile Crane Unload</option>
                     <option value="dumper">Hydraulic Dumper Tip</option>
                     <option value="manual">Client's Labor (No Surcharge)</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
             </div>

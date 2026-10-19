@@ -55,6 +55,19 @@ class CommerceChannel(models.TextChoices):
     QUICK_COMMERCE = "QUICK_COMMERCE", "Quick Commerce (Local)"
     BOTH = "BOTH", "Both (Bazaar & Quick Commerce)"
 
+
+def channels_serving(channel):
+    """
+    Stored commerce channels whose listings reach buyers on `channel` (a BOTH listing serves Bazaar and
+    Quick Commerce). Returns None for an unknown channel.
+    """
+    channel = str(channel or '').upper()
+    if channel == CommerceChannel.BOTH:
+        return [CommerceChannel.BOTH]
+    if channel in CommerceChannel.values:
+        return [channel, CommerceChannel.BOTH]
+    return None
+
 class ListingStatus(models.TextChoices):
     ACTIVE = "ACTIVE", "Active"
     INACTIVE = "INACTIVE", "Inactive"

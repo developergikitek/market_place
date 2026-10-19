@@ -5,6 +5,7 @@ import { ImagePlus, Loader2, X } from "lucide-react";
 import { ApiError, CategoryAttribute, optionValue, uploadProductImage } from "@/services/addProductService";
 import { validateImageFile } from "./ImageUploader";
 import styles from "./addProduct.module.css";
+import Select from "@/components/ui/Select";
 
 export interface VariantRow {
   sku: string;
@@ -138,7 +139,7 @@ export default function VariationBuilder({
                 {attribute.is_required && <span className={styles.req}>*</span>}
               </span>
               {unitOptions.length > 1 && (
-                <select
+                <Select
                   className={styles.select}
                   style={{ width: "auto", padding: "5px 10px", fontSize: 13 }}
                   value={unit}
@@ -149,7 +150,7 @@ export default function VariationBuilder({
                       {u}
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </div>
 

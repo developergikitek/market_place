@@ -35,6 +35,7 @@ import {
   ExternalLink,
   HelpCircle,
 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 // Sales Overview Chart Data for different time ranges
 const SALES_TIMEFRAME_DATA: Record<
@@ -1169,7 +1170,7 @@ export default function DashboardPage() {
                 <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
                   Sales Overview
                 </h2>
-                <select
+                <Select
                   value={salesTimeframe}
                   onChange={(e) => setSalesTimeframe(e.target.value)}
                   style={{
@@ -1187,7 +1188,7 @@ export default function DashboardPage() {
                   <option value="Last 7 Days">Last 7 Days</option>
                   <option value="Last 14 Days">Last 14 Days</option>
                   <option value="This Month">This Month</option>
-                </select>
+                </Select>
               </div>
 
               {/* Value and Growth Tag */}
@@ -1511,7 +1512,7 @@ export default function DashboardPage() {
                 <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
                   Top Selling Categories
                 </h2>
-                <select
+                <Select
                   value={categoriesTimeframe}
                   onChange={(e) => setCategoriesTimeframe(e.target.value)}
                   style={{
@@ -1529,7 +1530,7 @@ export default function DashboardPage() {
                   <option value="Last 7 Days">Last 7 Days</option>
                   <option value="This Month">This Month</option>
                   <option value="Last 30 Days">Last 30 Days</option>
-                </select>
+                </Select>
               </div>
 
               {/* Categories Ranked List */}
@@ -1623,7 +1624,7 @@ export default function DashboardPage() {
                 <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
                   Sales by Channel
                 </h2>
-                <select
+                <Select
                   value={channelTimeframe}
                   onChange={(e) => setChannelTimeframe(e.target.value)}
                   style={{
@@ -1641,7 +1642,7 @@ export default function DashboardPage() {
                   <option value="Last 7 Days">Last 7 Days</option>
                   <option value="This Month">This Month</option>
                   <option value="Last 30 Days">Last 30 Days</option>
-                </select>
+                </Select>
               </div>
 
               {/* Donut Chart & Legend Row */}
@@ -1754,7 +1755,7 @@ export default function DashboardPage() {
                 <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
                   Performance Score
                 </h2>
-                <select
+                <Select
                   value={performanceTimeframe}
                   onChange={(e) => setPerformanceTimeframe(e.target.value)}
                   style={{
@@ -1772,7 +1773,7 @@ export default function DashboardPage() {
                   <option value="This Week">This Week</option>
                   <option value="This Month">This Month</option>
                   <option value="Last 30 Days">Last 30 Days</option>
-                </select>
+                </Select>
               </div>
 
               {/* Gauge and Checklist */}

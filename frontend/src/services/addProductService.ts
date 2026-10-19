@@ -54,11 +54,13 @@ export interface ImageInput {
   image_url: string;
 }
 
+export type CommerceChannel = "BAZAAR" | "QUICK_COMMERCE" | "BOTH";
+
 export interface OfferInput {
   seller_sku?: string;
   condition?: string;
   fulfillment_channel: "FBA" | "FBM";
-  commerce_channel?: "BAZAAR" | "QUICK_COMMERCE" | "BOTH";
+  commerce_channel?: CommerceChannel;
   handling_time_days: number;
   max_order_quantity?: number | null;
   standard_price?: string;
@@ -164,7 +166,7 @@ export async function searchBrands(
 ): Promise<BrandOption[]> {
   const params = new URLSearchParams({ page_size: "20" });
   if (query.trim()) params.set("search", query.trim());
-  // mine: only brands registered to the seller. categoryId: brands with products anywhere under that category.
+  // mine: only brands registered to the seller. categoryId: brands possible anywhere under that category.
   if (scope.mine) params.set("mine", "true");
   if (scope.categoryId) params.set("category", scope.categoryId);
   const data = await request<{ results: BrandOption[] } | BrandOption[]>(`/api/catalog/brands/?${params}`);
@@ -175,9 +177,10 @@ export interface CategoryBrand extends BrandOption {
   product_count: number;
 }
 
-/** Every brand possible under a category and all its sub-categories, brands with catalog products first. */
-export async function fetchCategoryBrands(categoryId: string): Promise<CategoryBrand[]> {
-  const data = await request<{ brands: CategoryBrand[] }>(`/api/catalog/categories/${categoryId}/brands/`);
+/** Every brand on the marketplace, or every brand possible under a category and its sub-categories; brands with products first. */
+export async function fetchBrandDirectory(categoryId?: string): Promise<CategoryBrand[]> {
+  const path = categoryId ? `/api/catalog/categories/${categoryId}/brands/` : "/api/catalog/brands/directory/";
+  const data = await request<{ brands: CategoryBrand[] }>(path);
   return data.brands;
 }
 

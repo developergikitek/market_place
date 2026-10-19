@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { ApiError, CatalogSearchResult, createOffer } from "@/services/addProductService";
+import { ApiError, CatalogSearchResult, CommerceChannel, createOffer } from "@/services/addProductService";
 import ProductThumb from "./ProductThumb";
 import styles from "./addProduct.module.css";
+import Select from "@/components/ui/Select";
 
 const CONDITIONS = [
   { value: "NEW", label: "New" },
@@ -29,12 +30,12 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
     maxOrderQty: "",
   });
   const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
-  const [commerceChannel, setCommerceChannel] = useState<"BAZAAR" | "QUICK_COMMERCE" | "BOTH">("BAZAAR");
+  const [commerceChannel, setCommerceChannel] = useState<CommerceChannel | null>(null);
   const [showErrors, setShowErrors] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
 
-  const set = (key: keyof typeof offer) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+  const set = (key: keyof typeof offer) => (e: { target: { value: string } }) =>
     setOffer({ ...offer, [key]: e.target.value });
 
   const errors: Record<string, string> = {};
@@ -43,12 +44,13 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
   if (!(Number(offer.price) > 0)) errors.price = "Enter selling price";
   else if (Number(offer.mrp) > 0 && Number(offer.price) > Number(offer.mrp)) errors.price = "Can't exceed MRP";
   if (offer.stock === "" || !Number.isInteger(Number(offer.stock)) || Number(offer.stock) < 0) errors.stock = "Enter stock";
+  if (!commerceChannel) errors.channel = "Choose a selling channel";
   const shown = showErrors ? errors : {};
 
   async function handleSubmit() {
     setShowErrors(true);
     setSubmitErrors([]);
-    if (Object.keys(errors).length) return;
+    if (Object.keys(errors).length || !commerceChannel) return;
     setSubmitting(true);
     try {
       const sameAsMrp = Number(offer.price) === Number(offer.mrp);
@@ -133,13 +135,13 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Condition</label>
-            <select className={styles.select} value={offer.condition} onChange={set("condition")}>
+            <Select className={styles.select} value={offer.condition} onChange={set("condition")}>
               {CONDITIONS.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
@@ -176,12 +178,12 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
           </div>
         </div>
         <span className={styles.label} style={{ marginBottom: 10, display: "block" }}>
-          Selling Channel
+          Selling channel <span className={styles.req}>*</span>
         </span>
-        <div className={styles.channelCards} style={{ marginBottom: 18 }}>
+        <div className={styles.channelCards} style={{ marginBottom: shown.channel ? 16 : 18 }}>
           <button
             type="button"
-            className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""}`}
+            className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""} ${shown.channel ? styles.invalid : ""}`}
             onClick={() => setCommerceChannel("BAZAAR")}
           >
             <strong>Bazaar (Pan-India)</strong>
@@ -189,7 +191,7 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
           </button>
           <button
             type="button"
-            className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""}`}
+            className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""} ${shown.channel ? styles.invalid : ""}`}
             onClick={() => setCommerceChannel("QUICK_COMMERCE")}
           >
             <strong>Quick Commerce</strong>
@@ -197,13 +199,18 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
           </button>
           <button
             type="button"
-            className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""}`}
+            className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""} ${shown.channel ? styles.invalid : ""}`}
             onClick={() => setCommerceChannel("BOTH")}
           >
             <strong>Both (Hybrid)</strong>
             <span>Express for local + Pan-India for other buyers.</span>
           </button>
         </div>
+        {shown.channel && (
+          <span className={styles.error} style={{ display: "block", marginTop: -10, marginBottom: 18 }}>
+            {shown.channel}
+          </span>
+        )}
         <span className={styles.label} style={{ marginBottom: 10, display: "block" }}>
           Fulfilment
         </span>
@@ -227,13 +234,13 @@ export default function OfferForm({ product, onBack, onCreated }: OfferFormProps
         </div>
         <div className={styles.field} style={{ marginTop: 16, maxWidth: 260 }}>
           <label className={styles.label}>Dispatch within</label>
-          <select className={styles.select} value={offer.handlingDays} onChange={set("handlingDays")}>
+          <Select className={styles.select} value={offer.handlingDays} onChange={set("handlingDays")}>
             {[1, 2, 3, 5, 7].map((d) => (
               <option key={d} value={d}>
                 {d} {d === 1 ? "day" : "days"}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </section>
 

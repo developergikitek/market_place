@@ -2,7 +2,7 @@ from rest_framework import serializers
 from decimal import Decimal
 from django.db import transaction
 from django.db.models import Avg, Sum
-from common.enums import VariationTheme
+from common.enums import VariationTheme, CommerceChannel
 from catalog.models import (
     Product, Brand, Category, CategoryAttribute,
     ProductImage, ProductAttributeValue
@@ -182,6 +182,8 @@ class ProductListSerializer(serializers.ModelSerializer):
             'is_official_buildmart': listing.seller.store_slug == 'gikitek',
             'fulfillment_channel': listing.fulfillment_channel,
             'fulfillment_channel_display': listing.get_fulfillment_channel_display(),
+            'commerce_channel': listing.commerce_channel,
+            'commerce_channel_display': listing.get_commerce_channel_display(),
             'standard_price': str(listing.standard_price),
             'sale_price': str(listing.sale_price) if listing.sale_price else None,
             'effective_price': str(effective_price),
@@ -345,8 +347,8 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
 
     def _resolve_brand(self, seller, brand_id, brand_name):
         """
-        Brand is optional. Sellers may only create catalog products under a brand registered to them:
-        an existing brand they own (brand_id), or a new brand name that gets registered to them.
+        Brand is optional. New catalog products only carry the seller's own brand: one registered to them
+        (brand_id), or a new brand name that gets registered to them. Global brands are sold via existing ASINs.
         """
         from django.utils.text import slugify
 
@@ -358,7 +360,7 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             if not brand:
                 raise serializers.ValidationError({"brand_id": "Brand does not exist."})
             if not owned(brand):
-                raise serializers.ValidationError({"brand_id": "You can only add new products under a brand registered to you."})
+                raise serializers.ValidationError({"brand_id": "You can only add new products under your own brand."})
             return brand
 
         brand_name = (brand_name or '').strip()
@@ -370,8 +372,8 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             if owned(brand):
                 return brand
             raise serializers.ValidationError({
-                "brand_name": f"'{brand.name}' is already registered on Makaano and isn't yours. "
-                              "Leave the brand empty, or use 'Sell an existing product' to sell its catalog items."
+                "brand_name": f"'{brand.name}' is already a brand on Makaano. Use a name for your own brand, "
+                              "or leave the brand empty."
             })
         base_slug = slugify(brand_name) or 'brand'
         slug, n = base_slug, 1
@@ -421,6 +423,12 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
         if Listing.objects.filter(seller=seller, seller_sku=sku).exists():
             raise serializers.ValidationError({"seller_sku": f"You already have a listing with SKU '{sku}'."})
 
+        commerce = str(listing_data.get('commerce_channel') or '').upper()
+        if not commerce:
+            raise serializers.ValidationError({"commerce_channel": "Choose a selling channel."})
+        if commerce not in CommerceChannel.values:
+            raise serializers.ValidationError({"commerce_channel": "Choose BAZAAR, QUICK_COMMERCE or BOTH."})
+
         std_price = Decimal(str(listing_data.get('standard_price') or '0'))
         if std_price <= 0:
             raise serializers.ValidationError({"standard_price": "MRP must be greater than zero."})
@@ -439,7 +447,7 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             standard_price=std_price,
             sale_price=sale_price,
             fulfillment_channel=listing_data.get('fulfillment_channel', 'FBM'),
-            commerce_channel=listing_data.get('commerce_channel', 'BAZAAR'),
+            commerce_channel=commerce,
             handling_time_days=int(listing_data.get('handling_time_days') or 1),
             max_order_quantity=listing_data.get('max_order_quantity') or None,
             is_buy_box_winner=True

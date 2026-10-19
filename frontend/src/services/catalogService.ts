@@ -92,12 +92,12 @@ export async function getCatalogProducts(
   isFromApi: boolean;
   totalCount: number;
 }> {
-  const params = new URLSearchParams();
+  // Only products this seller lists; the master catalog also holds other brands' products.
+  const params = new URLSearchParams({ mine: "true" });
   if (search && search.trim()) params.append("search", search.trim());
   if (category && category !== "All Categories") params.append("category", category);
 
-  const queryString = params.toString() ? `?${params.toString()}` : "";
-  const url = `${API_BASE_URL}/api/catalog/products/${queryString}`;
+  const url = `${API_BASE_URL}/api/catalog/products/?${params.toString()}`;
 
   if (inFlightCatalogRequests.has(url)) {
     return inFlightCatalogRequests.get(url)!;

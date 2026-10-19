@@ -56,6 +56,8 @@ class SellerListingSerializer(serializers.ModelSerializer):
             'b2b_tier_prices', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'is_buy_box_winner', 'created_at', 'updated_at']
+        # Sellers must pick where the offer sells (Bazaar / Quick Commerce / Both); no silent default.
+        extra_kwargs = {'commerce_channel': {'required': True}}
 
     def get_effective_price(self, obj):
         return obj.sale_price if obj.sale_price is not None else obj.standard_price

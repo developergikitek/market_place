@@ -42,6 +42,7 @@ import {
   Smartphone,
   Building,
 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 export type PaymentStatus = "Successful" | "Pending" | "Failed";
 export type PaymentMethodType = "UPI" | "Credit Card" | "Debit Card" | "Net Banking" | "Wallet" | "All";
@@ -1350,7 +1351,7 @@ export default function PaymentsPage() {
 
             {/* Method Dropdown */}
             <div style={{ position: "relative" }}>
-              <select
+              <Select
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}
                 style={{
@@ -1371,12 +1372,12 @@ export default function PaymentsPage() {
                 <option value="Cards">Credit / Debit Card</option>
                 <option value="Net Banking">Net Banking</option>
                 <option value="Wallet">Wallet</option>
-              </select>
+              </Select>
             </div>
 
             {/* Status Dropdown */}
             <div style={{ position: "relative" }}>
-              <select
+              <Select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 style={{
@@ -1396,7 +1397,7 @@ export default function PaymentsPage() {
                 <option value="Successful">Successful</option>
                 <option value="Pending">Pending</option>
                 <option value="Failed">Failed</option>
-              </select>
+              </Select>
             </div>
 
             {/* Date Range Preset */}

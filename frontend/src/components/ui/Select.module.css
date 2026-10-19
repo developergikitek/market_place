@@ -1,0 +1,171 @@
+/* Base trigger look; :where() keeps specificity at zero so a page's own className / inline style wins. */
+:where(.trigger) {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0b1220;
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trigger:focus-visible,
+.triggerOpen {
+  border-color: #c2410c !important;
+  box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.14);
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: #64748b;
+  transition: transform 0.15s ease;
+}
+
+.triggerOpen .chevron {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  max-width: min(360px, calc(100vw - 16px));
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -16px rgba(11, 18, 32, 0.35);
+  font-family: var(--font-sans, inherit);
+  overflow: hidden;
+  animation: menuIn 0.12s ease-out;
+}
+
+.menuUp {
+  animation-name: menuInUp;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes menuInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #64748b;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: #0b1220;
+  background: transparent;
+}
+
+.list {
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: #0b1220;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.optionActive {
+  background: #f8fafc;
+}
+
+.optionSelected {
+  font-weight: 600;
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+.optionSelected.optionActive {
+  background: #ffedd5;
+}
+
+.optionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  flex-shrink: 0;
+  color: #c2410c;
+}
+
+.mark {
+  background: #fef3c7;
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.empty {
+  padding: 14px 10px;
+  font-size: 13px;
+  color: #64748b;
+}

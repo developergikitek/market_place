@@ -46,6 +46,7 @@ import ProductThumbnail from "@/components/catalog/ProductThumbnail";
 import { INITIAL_PRODUCTS, INITIAL_CATALOG_STATS } from "@/data/catalogData";
 import { CatalogProductListing, CatalogStats, StockStatusType, ListingStatusType } from "@/types/catalog";
 import { getCatalogProducts, createCatalogProduct, updateCatalogProduct } from "@/services/catalogService";
+import Select from "@/components/ui/Select";
 
 export default function CatalogPage() {
   // Products and Stats State (Initialized empty with loading true to prevent mock data flash)
@@ -1078,7 +1079,7 @@ export default function CatalogPage() {
             </div>
 
             {/* Dropdown 1: Categories */}
-            <select
+            <Select
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
@@ -1106,10 +1107,10 @@ export default function CatalogPage() {
               <option value="Paints & Accessories">Paints & Accessories</option>
               <option value="Plumbing">Plumbing</option>
               <option value="Electricals">Electricals</option>
-            </select>
+            </Select>
 
             {/* Dropdown 2: Status */}
-            <select
+            <Select
               value={selectedStatus}
               onChange={(e) => {
                 setSelectedStatus(e.target.value);
@@ -1133,10 +1134,10 @@ export default function CatalogPage() {
               <option value="Inactive">Inactive</option>
               <option value="Low Stock">Low Stock</option>
               <option value="Out of Stock">Out of Stock</option>
-            </select>
+            </Select>
 
             {/* Dropdown 3: Fulfillment Channel (Matches Django backend FulfillmentChannel enum) */}
-            <select
+            <Select
               value={selectedFulfillment}
               onChange={(e) => {
                 setSelectedFulfillment(e.target.value);
@@ -1158,7 +1159,7 @@ export default function CatalogPage() {
               <option value="All Channels">All Channels</option>
               <option value="FBA">FBA (Makaano Express)</option>
               <option value="FBM">FBM (Merchant Delivery)</option>
-            </select>
+            </Select>
 
             {/* Filters Button */}
             <button
@@ -1787,7 +1788,7 @@ export default function CatalogPage() {
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
                     Brand Name *
                   </label>
-                  <select
+                  <Select
                     value={newBrand}
                     onChange={(e) => setNewBrand(e.target.value)}
                     style={{
@@ -1810,14 +1811,14 @@ export default function CatalogPage() {
                     <option value="Schneider">Schneider</option>
                     <option value="Makita">Makita</option>
                     <option value="Supreme">Supreme</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
                     Category Taxonomy *
                   </label>
-                  <select
+                  <Select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     style={{
@@ -1838,7 +1839,7 @@ export default function CatalogPage() {
                     <option value="Plumbing > Pipes">Plumbing &gt; Pipes</option>
                     <option value="Electricals > Lighting">Electricals &gt; Lighting</option>
                     <option value="Electricals > Switches">Electricals &gt; Switches</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -1894,7 +1895,7 @@ export default function CatalogPage() {
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
                     Fulfillment Channel *
                   </label>
-                  <select
+                  <Select
                     value={newFulfillment}
                     onChange={(e) => setNewFulfillment(e.target.value as "FBA" | "FBM")}
                     style={{
@@ -1909,14 +1910,14 @@ export default function CatalogPage() {
                   >
                     <option value="FBA">FBA (Fulfillment by Makaano)</option>
                     <option value="FBM">FBM (Fulfillment by Merchant)</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
                     Item Condition *
                   </label>
-                  <select
+                  <Select
                     value={newCondition}
                     onChange={(e) => setNewCondition(e.target.value)}
                     style={{
@@ -1932,7 +1933,7 @@ export default function CatalogPage() {
                     <option value="NEW">New (Factory Sealed)</option>
                     <option value="REFURBISHED_EXCELLENT">Refurbished - Excellent</option>
                     <option value="USED_LIKE_NEW">Used - Like New</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -2211,7 +2212,7 @@ export default function CatalogPage() {
                 <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px" }}>
                   Listing Status
                 </label>
-                <select
+                <Select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value as ListingStatusType)}
                   style={{
@@ -2226,7 +2227,7 @@ export default function CatalogPage() {
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
-                </select>
+                </Select>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "12px", marginTop: "8px" }}>

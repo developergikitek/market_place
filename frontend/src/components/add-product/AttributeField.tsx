@@ -2,6 +2,7 @@
 
 import { CategoryAttribute, optionValue } from "@/services/addProductService";
 import styles from "./addProduct.module.css";
+import Select from "@/components/ui/Select";
 
 export interface AttributeValue {
   value: string;
@@ -41,7 +42,7 @@ export default function AttributeField({ attribute, value, onChange, error }: At
     );
   } else if (attribute.data_type === "ENUM" && options.length > 0) {
     const select = (
-      <select
+      <Select
         className={`${styles.select} ${invalidClass}`}
         value={current}
         onChange={(e) => onChange({ value: e.target.value, unit })}
@@ -55,7 +56,7 @@ export default function AttributeField({ attribute, value, onChange, error }: At
             </option>
           );
         })}
-      </select>
+      </Select>
     );
     control = units.length ? (
       <div className={styles.inputGroup}>
@@ -81,13 +82,13 @@ export default function AttributeField({ attribute, value, onChange, error }: At
       control = (
         <div className={styles.inputGroup}>
           {input}
-          <select className={styles.select} value={unit} onChange={(e) => onChange({ value: current, unit: e.target.value })}>
+          <Select className={styles.select} value={unit} onChange={(e) => onChange({ value: current, unit: e.target.value })}>
             {units.map((u) => (
               <option key={u} value={u}>
                 {u}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       );
     } else if (units.length === 1) {

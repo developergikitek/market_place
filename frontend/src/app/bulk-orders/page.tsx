@@ -46,6 +46,7 @@ import {
   Eye,
   Info,
 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 export type BulkOrderStatus = "New" | "Quoted" | "UnderReview" | "Ordered" | "Rejected";
 
@@ -1314,7 +1315,7 @@ export default function BulkOrdersPage() {
               />
             </div>
 
-            <select
+            <Select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               style={{
@@ -1336,9 +1337,9 @@ export default function BulkOrdersPage() {
               <option value="UnderReview">Under Review</option>
               <option value="Ordered">Ordered</option>
               <option value="Rejected">Rejected</option>
-            </select>
+            </Select>
 
-            <select
+            <Select
               value={filterBrand}
               onChange={(e) => setFilterBrand(e.target.value)}
               style={{
@@ -1362,9 +1363,9 @@ export default function BulkOrdersPage() {
               <option value="Supreme">Supreme</option>
               <option value="Tata Steel">Tata Steel</option>
               <option value="Asian Paints">Asian Paints</option>
-            </select>
+            </Select>
 
-            <select
+            <Select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
               style={{
@@ -1385,7 +1386,7 @@ export default function BulkOrdersPage() {
               <option value="Pipes">Pipes & Plumbing</option>
               <option value="Steel">Steel & Rebar</option>
               <option value="Paints">Paints & Waterproofing</option>
-            </select>
+            </Select>
 
             <button
               type="button"
@@ -1790,7 +1791,7 @@ export default function BulkOrdersPage() {
                 <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "6px" }}>
                   Status
                 </label>
-                <select
+                <Select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   style={{
@@ -1811,7 +1812,7 @@ export default function BulkOrdersPage() {
                   <option value="UnderReview">Under Review</option>
                   <option value="Ordered">Ordered</option>
                   <option value="Rejected">Rejected</option>
-                </select>
+                </Select>
               </div>
 
               {/* Brand */}
@@ -1819,7 +1820,7 @@ export default function BulkOrdersPage() {
                 <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "6px" }}>
                   Brand
                 </label>
-                <select
+                <Select
                   value={filterBrand}
                   onChange={(e) => setFilterBrand(e.target.value)}
                   style={{
@@ -1841,7 +1842,7 @@ export default function BulkOrdersPage() {
                   <option value="ACC">ACC</option>
                   <option value="Tata Steel">Tata Steel</option>
                   <option value="Asian Paints">Asian Paints</option>
-                </select>
+                </Select>
               </div>
 
               {/* Category */}
@@ -1849,7 +1850,7 @@ export default function BulkOrdersPage() {
                 <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "6px" }}>
                   Category
                 </label>
-                <select
+                <Select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
                   style={{
@@ -1869,7 +1870,7 @@ export default function BulkOrdersPage() {
                   <option value="Pipes">Pipes & Plumbing</option>
                   <option value="Steel">Steel & Rebar</option>
                   <option value="Paints">Paints & Waterproofing</option>
-                </select>
+                </Select>
               </div>
 
               {/* Min Quantity */}

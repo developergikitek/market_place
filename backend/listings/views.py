@@ -1,9 +1,9 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from common.pagination import StandardResultsSetPagination
-from common.enums import ListingStatus, FulfillmentChannel
+from common.enums import ListingStatus, FulfillmentChannel, CommerceChannel, channels_serving
 from listings.models import Listing
 from listings.serializers import SellerListingSerializer
 from sellers.permissions import IsSellerUser
@@ -71,6 +71,12 @@ class SellerListingViewSet(viewsets.ModelViewSet):
         if fulfillment:
             qs = qs.filter(fulfillment_channel=fulfillment.upper())
 
+        # Filter by commerce channel: QUICK_COMMERCE / BAZAAR also include BOTH (hybrid) listings
+        commerce = params.get('commerce_channel')
+        if commerce:
+            serving = channels_serving(commerce)
+            qs = qs.filter(commerce_channel__in=serving) if serving else qs.none()
+
         return qs.order_by('-updated_at')
 
     def perform_destroy(self, instance):
@@ -121,6 +127,13 @@ class SellerListingViewSet(viewsets.ModelViewSet):
                 listing.fulfillment_channel = channel
             else:
                 errors['fulfillment_channel'] = "Choose FBA or FBM."
+
+        if 'commerce_channel' in data or 'commerceChannel' in data:
+            commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or '').upper()
+            if commerce in CommerceChannel.values:
+                listing.commerce_channel = commerce
+            else:
+                errors['commerce_channel'] = "Choose BAZAAR, QUICK_COMMERCE or BOTH."
 
         if 'seller_sku' in data or 'sku' in data:
             sku = str(data.get('seller_sku') or data.get('sku') or '').strip()
@@ -242,10 +255,13 @@ class SellerListingViewSet(viewsets.ModelViewSet):
         # Out of stock listings
         out_of_stock = qs.filter(Q(inventory_items__available_stock__lte=0) | Q(inventory_items__isnull=True)).distinct().count()
 
+        by_channel = dict(qs.values_list('commerce_channel').annotate(n=Count('id')).order_by())
+
         return Response({
             'total_listings': total_listings,
             'active_listings': active_listings,
             'out_of_stock_listings': out_of_stock,
             'buy_box_winners': buy_box_winners,
-            'total_stock_units': total_stock
+            'total_stock_units': total_stock,
+            'listings_by_commerce_channel': {ch: by_channel.get(ch, 0) for ch in CommerceChannel.values},
         })

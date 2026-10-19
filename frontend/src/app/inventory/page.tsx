@@ -46,6 +46,7 @@ import {
   InventoryMovementReasonType,
 } from "@/types/inventory";
 import { getInventoryListings, postUpdateInventoryStock, updateInventoryListing } from "@/services/inventoryService";
+import Select from "@/components/ui/Select";
 
 
 export default function InventoryPage() {
@@ -1166,7 +1167,7 @@ export default function InventoryPage() {
             </div>
 
             {/* Dropdown 1: Categories */}
-            <select
+            <Select
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
@@ -1194,10 +1195,10 @@ export default function InventoryPage() {
               <option value="Paints & Accessories">Paints & Accessories</option>
               <option value="Plumbing">Plumbing</option>
               <option value="Electricals">Electricals</option>
-            </select>
+            </Select>
 
             {/* Dropdown 2: Status */}
-            <select
+            <Select
               value={selectedStatus}
               onChange={(e) => {
                 setSelectedStatus(e.target.value);
@@ -1220,7 +1221,7 @@ export default function InventoryPage() {
               <option value="In Stock">In Stock</option>
               <option value="Low Stock">Low Stock</option>
               <option value="Out of Stock">Out of Stock</option>
-            </select>
+            </Select>
 
             {/* Filters Button */}
             <button
@@ -1779,7 +1780,7 @@ export default function InventoryPage() {
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                   Select Product / SKU *
                 </label>
-                <select
+                <Select
                   value={selectedItemForStock}
                   onChange={(e) => setSelectedItemForStock(e.target.value)}
                   style={{
@@ -1799,7 +1800,7 @@ export default function InventoryPage() {
                       {item.title} ({item.sku}) - Current: {item.availableStock}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* Action Type Toggle */}
@@ -1880,7 +1881,7 @@ export default function InventoryPage() {
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                     Fulfillment Warehouse
                   </label>
-                  <select
+                  <Select
                     value={stockWarehouseInput}
                     onChange={(e) => setStockWarehouseInput(e.target.value)}
                     style={{
@@ -1899,7 +1900,7 @@ export default function InventoryPage() {
                     <option value="Makaano FC-Pune (MH-01)">Makaano FC-Pune (MH-01)</option>
                     <option value="Makaano FC-Bhiwandi (MH-02)">Makaano FC-Bhiwandi (MH-02)</option>
                     <option value="Merchant Hub Delhi-North">Merchant Hub Delhi-North</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -1908,7 +1909,7 @@ export default function InventoryPage() {
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                   Movement Reason *
                 </label>
-                <select
+                <Select
                   value={stockReasonInput}
                   onChange={(e) => setStockReasonInput(e.target.value as InventoryMovementReasonType)}
                   style={{
@@ -1928,7 +1929,7 @@ export default function InventoryPage() {
                   <option value="CYCLE_COUNT_ADJUSTMENT">Physical Cycle Count Audit</option>
                   <option value="DAMAGED_IN_WAREHOUSE">Damaged / Shrinkage Adjustment</option>
                   <option value="STOCK_TRANSFER">Inter-Warehouse Stock Transfer</option>
-                </select>
+                </Select>
               </div>
 
               {/* Reference Note */}

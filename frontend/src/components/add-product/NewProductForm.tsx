@@ -7,6 +7,7 @@ import {
   AttributeValueInput,
   CategoryAttribute,
   CategoryNode,
+  CommerceChannel,
   CreateProductRequest,
   CreateProductResponse,
   createProduct,
@@ -18,6 +19,7 @@ import ImageUploader, { UploadedImage } from "./ImageUploader";
 import SearchSelect, { SearchSelectOption } from "./SearchSelect";
 import VariationBuilder, { EMPTY_ROW, VariantRow, buildCombos } from "./VariationBuilder";
 import styles from "./addProduct.module.css";
+import Select from "@/components/ui/Select";
 
 // Rates after the Sept 2025 GST rationalisation; cement, tiles, sanitaryware etc. sit at 18%.
 const GST_RATES = ["0", "5", "18", "40"];
@@ -39,7 +41,7 @@ const SECTIONS: { id: SectionId; label: string }[] = [
 function sectionOf(errorKey: string): SectionId {
   if (["title", "brand", "brandName"].includes(errorKey)) return "identity";
   if (errorKey.startsWith("attr:")) return "specs";
-  if (errorKey.startsWith("var") || errorKey.startsWith("single:")) return "pricing";
+  if (errorKey.startsWith("var") || errorKey.startsWith("single:") || errorKey === "channel") return "pricing";
   if (errorKey === "images") return "images";
   if (errorKey === "description") return "description";
   if (errorKey.startsWith("ship:")) return "shipping";
@@ -79,7 +81,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const [rows, setRows] = useState<Record<string, VariantRow>>({});
   const [single, setSingle] = useState<VariantRow>(EMPTY_ROW);
   const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
-  const [commerceChannel, setCommerceChannel] = useState<"BAZAAR" | "QUICK_COMMERCE" | "BOTH">("BAZAAR");
+  const [commerceChannel, setCommerceChannel] = useState<CommerceChannel | null>(null);
   const [handlingDays, setHandlingDays] = useState("2");
   const [maxOrderQty, setMaxOrderQty] = useState("");
 
@@ -127,10 +129,13 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const combos = useMemo(() => buildCombos(variationAttrs, selection, units), [variationAttrs, selection, units]);
   const isMulti = combos.length > 1;
 
-  // New catalog products can only carry a brand registered to this seller; other brands are sold via existing ASINs.
+  // Only the seller's own brands; global brands are sold through "Sell an existing product".
   const loadBrands = useCallback(async (query: string) => {
     const found = await searchBrands(query, { mine: true });
-    return [...found.map((b) => ({ value: b.id, label: b.name })), { value: OTHERS, label: "Add my own brand" }];
+    return [
+      ...found.map((b) => ({ value: b.id, label: b.name })),
+      { value: OTHERS, label: "Add my own brand", sublabel: "Register a new brand under your store", action: true },
+    ];
   }, []);
 
   const errors = useMemo(() => {
@@ -161,6 +166,8 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
       validatePrice(single.mrp, single.price, single.stock, "single:", e);
     }
 
+    if (!commerceChannel) e.channel = "Choose a selling channel";
+
     if (!images.some((img) => img.status === "done")) e.images = "Add at least one product photo";
     else if (images.some((img) => img.status === "uploading")) e.images = "Wait for photos to finish uploading";
 
@@ -169,7 +176,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
     if (!gst) e.gst = "Select GST rate";
     if (ean && !/^\d{8,14}$/.test(ean)) e.ean = "Barcode must be 8–14 digits";
     return e;
-  }, [title, brand, brandName, specAttrs, variationAttrs, attrValues, selection, combos, rows, single, images, description, hsn, gst, ean]);
+  }, [title, brand, brandName, specAttrs, variationAttrs, attrValues, selection, combos, rows, single, commerceChannel, images, description, hsn, gst, ean]);
 
   const visibleErrors = showErrors ? errors : {};
   const sectionHasError = (id: SectionId) => Object.keys(errors).some((key) => sectionOf(key) === id);
@@ -196,7 +203,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
 
     const listingBase = {
       fulfillment_channel: fulfillment,
-      commerce_channel: commerceChannel,
+      commerce_channel: commerceChannel ?? undefined,
       handling_time_days: Number(handlingDays) || 1,
       max_order_quantity: maxOrderQty ? Number(maxOrderQty) : null,
       condition: "NEW",
@@ -330,8 +337,16 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Brand (optional)</label>
-                <SearchSelect placeholder="Your brands" selected={brand} onChange={setBrand} loadOptions={loadBrands} />
-                <span className={styles.hint}>Only brands registered to you. Leave empty to list without a brand.</span>
+                <SearchSelect
+                  placeholder="Your brands"
+                  selected={brand}
+                  onChange={setBrand}
+                  loadOptions={loadBrands}
+                  noun="brand"
+                  avatars
+                  emptyText="You haven't added a brand yet"
+                />
+                <span className={styles.hint}>Only your own brands. Leave empty to list without a brand.</span>
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Model / part number</label>
@@ -461,12 +476,12 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
 
             <div style={{ borderTop: "1px solid #f1f5f9", marginTop: 20, paddingTop: 18 }}>
               <span className={styles.label} style={{ marginBottom: 10 }}>
-                Selling Channel
+                Selling channel <span className={styles.req}>*</span>
               </span>
-              <div className={styles.channelCards} style={{ marginBottom: 18 }}>
+              <div className={styles.channelCards} style={{ marginBottom: visibleErrors.channel ? 16 : 18 }}>
                 <button
                   type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""}`}
+                  className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
                   onClick={() => setCommerceChannel("BAZAAR")}
                 >
                   <strong>Bazaar (Pan-India)</strong>
@@ -474,7 +489,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
                 </button>
                 <button
                   type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""}`}
+                  className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
                   onClick={() => setCommerceChannel("QUICK_COMMERCE")}
                 >
                   <strong>Quick Commerce</strong>
@@ -482,13 +497,18 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
                 </button>
                 <button
                   type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""}`}
+                  className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
                   onClick={() => setCommerceChannel("BOTH")}
                 >
                   <strong>Both (Hybrid)</strong>
                   <span>Local buyers get quick delivery + Pan-India gets courier.</span>
                 </button>
               </div>
+              {visibleErrors.channel && (
+                <span className={styles.error} style={{ display: "block", marginTop: -10, marginBottom: 18 }}>
+                  {visibleErrors.channel}
+                </span>
+              )}
 
               <span className={styles.label} style={{ marginBottom: 10 }}>
                 Fulfilment
@@ -514,13 +534,13 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
               <div className={styles.grid2} style={{ marginTop: 16 }}>
                 <div className={styles.field}>
                   <label className={styles.label}>Dispatch within</label>
-                  <select className={styles.select} value={handlingDays} onChange={(e) => setHandlingDays(e.target.value)}>
+                  <Select className={styles.select} value={handlingDays} onChange={(e) => setHandlingDays(e.target.value)}>
                     {[1, 2, 3, 5, 7].map((d) => (
                       <option key={d} value={d}>
                         {d} {d === 1 ? "day" : "days"}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>Max quantity per order</label>

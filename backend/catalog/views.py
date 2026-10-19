@@ -5,14 +5,14 @@ from django.db.models import Q, Min, Count
 from django.db.models.functions import Lower
 from django.http import Http404
 from common.pagination import StandardResultsSetPagination
-from common.enums import CatalogStatus
+from common.enums import CatalogStatus, CommerceChannel, channels_serving
 from catalog.models import Product, Brand, Category, CategoryAttribute
+from sellers.utils import resolve_request_seller
 from catalog.serializers import (
     ProductListSerializer, ProductDetailSerializer,
     CategorySimpleSerializer, CategoryDetailSerializer, CategoryAttributeSerializer,
     BrandSimpleSerializer, ListingOfferSerializer
 )
-from sellers.utils import resolve_request_seller
 
 
 def category_subtree_ids(root):
@@ -58,6 +58,13 @@ def category_brands(root):
     )
 
 
+def brand_count_rows(brands):
+    return [
+        {'id': b.id, 'name': b.name, 'slug': b.slug, 'logo_url': b.logo_url, 'product_count': b.product_count}
+        for b in brands
+    ]
+
+
 class ProductViewSet(viewsets.ModelViewSet):
     """
     Complete Marketplace Product Catalog API.
@@ -101,6 +108,11 @@ class ProductViewSet(viewsets.ModelViewSet):
                 Q(model_number__icontains=search)
             )
 
+        # Seller's own catalog: only products this seller has a listing on
+        if params.get('mine') in ['true', '1', 'True']:
+            seller = resolve_request_seller(self.request)
+            qs = qs.filter(listings__seller=seller) if seller else qs.none()
+
         # 2. Category Filter (by UUID, browse_node_id, or slug) — includes every sub-category below it
         category_param = params.get('category')
         if category_param:
@@ -140,6 +152,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         fulfillment = params.get('fulfillment')
         if fulfillment:
             qs = qs.filter(listings__status='ACTIVE', listings__fulfillment_channel__iexact=fulfillment)
+
+        # Commerce channel: products with an active offer reaching that channel (BOTH counts for either)
+        commerce = params.get('commerce_channel')
+        if commerce:
+            serving = channels_serving(commerce)
+            qs = qs.filter(listings__status='ACTIVE', listings__commerce_channel__in=serving) if serving else qs.none()
 
         # 7. Ordering
         sort = params.get('sort') or params.get('ordering')
@@ -242,6 +260,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         sku = data.get('sku') or data.get('seller_sku') or f"SKU-{asin}"
         channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel') or 'FBA').upper()
+        commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or CommerceChannel.BAZAAR).upper()
+        if commerce not in CommerceChannel.values:
+            return Response({'commerce_channel': 'Choose BAZAAR, QUICK_COMMERCE or BOTH.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if seller:
             listing = Listing.objects.create(
@@ -250,6 +271,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                 seller_sku=sku,
                 standard_price=price_val,
                 fulfillment_channel=channel,
+                commerce_channel=commerce,
                 is_buy_box_winner=True,
                 status=product.status
             )
@@ -279,6 +301,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         product = self.get_object()
         data = request.data
+
+        commerce = None
+        if 'commerce_channel' in data or 'commerceChannel' in data:
+            commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or '').upper()
+            if commerce not in CommerceChannel.values:
+                return Response({'commerce_channel': 'Choose BAZAAR, QUICK_COMMERCE or BOTH.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if 'title' in data:
             product.title = data['title']
@@ -322,6 +350,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 listing.status = product.status
             if 'fulfillment_channel' in data or 'fulfillmentChannel' in data:
                 listing.fulfillment_channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel')).upper()
+            if commerce:
+                listing.commerce_channel = commerce
             listing.save()
 
             if 'stock' in data or 'available_stock' in data:
@@ -433,17 +463,17 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         """
         All brands possible under this category and every sub-category below it (unpaginated),
         brands with products in the catalog first.
+        ?sellable=true keeps only brands that already have products there (what a seller can list offers on).
         """
         category = self.get_object()
         brands = category_brands(category).order_by('-product_count', 'name')
+        if request.query_params.get('sellable') in ['true', '1', 'True']:
+            brands = brands.filter(product_count__gt=0)
         return Response({
             'category_id': category.id,
             'category_name': category.name,
             'brands_count': len(brands),
-            'brands': [
-                {'id': b.id, 'name': b.name, 'slug': b.slug, 'logo_url': b.logo_url, 'product_count': b.product_count}
-                for b in brands
-            ],
+            'brands': brand_count_rows(brands),
         })
 
     @action(detail=True, methods=['get'])
@@ -478,7 +508,7 @@ class BrandViewSet(viewsets.ReadOnlyModelViewSet):
         if search:
             qs = qs.filter(name__icontains=search.strip())
 
-        # Brands registered to the requesting seller (new products can only be created under these)
+        # Brands registered to the requesting seller (the only brands a new catalog product can carry)
         if params.get('mine') in ['true', '1', 'True']:
             seller = resolve_request_seller(self.request)
             qs = qs.filter(owner_seller=seller) if seller else qs.none()
@@ -489,6 +519,17 @@ class BrandViewSet(viewsets.ReadOnlyModelViewSet):
             root = resolve_category(category_param)
             qs = qs.filter(id__in=category_brands(root).values('id')) if root else qs.none()
         return qs
+
+    @action(detail=False, methods=['get'])
+    def directory(self, request):
+        """
+        Every brand on the marketplace (unpaginated) with its sellable product count, brands with products first.
+        Category-scoped version: /categories/<id>/brands/.
+        """
+        brands = Brand.objects.annotate(
+            product_count=Count('products', filter=Q(products__is_parent=False), distinct=True)
+        ).order_by('-product_count', 'name')
+        return Response({'brands_count': len(brands), 'brands': brand_count_rows(brands)})
 
     @action(detail=True, methods=['get'])
     def products(self, request, pk=None):
