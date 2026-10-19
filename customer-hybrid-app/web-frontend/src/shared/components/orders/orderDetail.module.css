@@ -1,0 +1,391 @@
+/* ============================================================
+   ORDER DETAIL — Swiggy order summary; live orders add a tracking hero. Coloured from the
+   section theme (globals.css SECTION THEMES), like the orders list.
+   ============================================================ */
+.page {
+  min-height: 100vh;
+  background: var(--bg-canvas);
+  padding-bottom: 180px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, var(--hero-top) 0%, var(--hero-from) 100%);
+}
+
+.backBtn {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  color: var(--text-body);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.headTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--hero-ink);
+}
+
+.headSub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.missing {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.block {
+  padding: 18px 16px;
+  background: #ffffff;
+}
+
+/* Route: store -> delivery address */
+.route {
+  display: flex;
+  flex-direction: column;
+}
+
+.routeStop {
+  display: flex;
+  gap: 14px;
+}
+
+.routeStop > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.routeIcon {
+  flex-shrink: 0;
+  color: var(--text-body);
+  padding-top: 2px;
+}
+
+.routeDash {
+  width: 0;
+  height: 26px;
+  margin: 4px 0 4px 10px;
+  border-left: 2px dotted var(--text-dim);
+}
+
+.routeFrom {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--section-accent-strong);
+}
+
+.routeTo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.routeLine {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-body);
+}
+
+.deliveredLine {
+  display: flex;
+  gap: 14px;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  font-size: 15px;
+  color: var(--text-dark);
+}
+
+.deliveredLine > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.check {
+  flex-shrink: 0;
+  width: 22px;
+  color: var(--retail-green);
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.deliveredSub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Live tracking view */
+.liveHero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, var(--section-accent-strong) 0%, color-mix(in srgb, var(--section-accent-strong) 78%, #000) 100%);
+  color: #ffffff;
+}
+
+.liveTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.liveDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.liveHeadline {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.liveEta {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.liveBar {
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.liveBar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  border-bottom: 8px solid var(--bg-canvas);
+}
+
+.timeline li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 26px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  background: #ffffff;
+}
+
+.timeline li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 19px;
+  width: 2px;
+  height: calc(100% + 0px);
+  background: var(--border-light);
+}
+
+.stepDone { color: var(--text-body) !important; }
+.stepDone::before { border-color: var(--retail-green) !important; background: var(--retail-green) !important; }
+.stepDone::after { background: var(--retail-green) !important; }
+.stepNow { color: var(--text-dark) !important; font-weight: 800; }
+.stepNow::before { border-color: var(--section-accent-strong) !important; box-shadow: 0 0 0 4px var(--section-tint); }
+
+.stepTime {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.partner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-bottom: 8px solid var(--bg-canvas);
+}
+
+.partner > span {
+  display: flex;
+  flex-direction: column;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.partner strong {
+  font-size: 15px;
+  color: var(--text-dark);
+}
+
+.callBtn {
+  height: 38px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--section-accent-strong);
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Bill */
+.billLabel {
+  margin: 0;
+  padding: 18px 16px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-body);
+}
+
+.bill {
+  padding: 16px;
+  background: #ffffff;
+}
+
+.billItems {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 1px dotted var(--text-dim);
+}
+
+.billItems li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+  color: var(--text-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.billQty {
+  color: var(--text-muted);
+}
+
+.billRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.billRows div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.billGood { color: var(--retail-green) !important; }
+
+.billTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 14px;
+  font-size: 14px;
+  color: var(--text-body);
+}
+
+.billTotal strong {
+  margin-left: 10px;
+  font-size: 16px;
+  color: var(--text-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.paidVia {
+  color: var(--text-muted);
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(transparent, var(--bg-canvas) 30%);
+}
+
+.reorder {
+  width: 100%;
+  height: 52px;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background: var(--section-tint);
+  border-color: var(--section-tint-line);
+  color: var(--section-accent-strong);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
