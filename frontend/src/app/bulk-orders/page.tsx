@@ -822,8 +822,8 @@ export default function BulkOrdersPage() {
           </Link>
 
           {/* Returns & Payouts */}
-          <button
-            type="button"
+          <Link
+            href="/returns"
             title="Returns"
             style={{
               display: "flex",
@@ -837,6 +837,7 @@ export default function BulkOrdersPage() {
               fontSize: "13px",
               fontWeight: 500,
               cursor: "pointer",
+              textDecoration: "none",
               width: "100%",
             }}
           >
@@ -856,7 +857,7 @@ export default function BulkOrdersPage() {
             >
               8
             </span>
-          </button>
+          </Link>
 
           <button
             type="button"

@@ -632,7 +632,7 @@ export default function CatalogPage() {
           {[
             { label: "Inventory", icon: Boxes, href: "/inventory" },
             { label: "Pricing", icon: Tag, hasChevron: true },
-            { label: "Returns", icon: RotateCcw, badge: "8" },
+            { label: "Returns", icon: RotateCcw, href: "/returns" },
             { label: "Payments", icon: CreditCard, hasChevron: true },
             { label: "Payouts", icon: Wallet, hasChevron: true },
             { label: "Reports", icon: BarChart3, hasChevron: true },
@@ -650,20 +650,6 @@ export default function CatalogPage() {
                   <span>{item.label}</span>
                 </div>
                 {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
-                {item.badge && (
-                  <span
-                    style={{
-                      background: "rgba(194, 65, 12, 0.3)",
-                      color: "#E2E8F0",
-                      fontSize: "11px",
-                      padding: "1px 6px",
-                      borderRadius: "9999px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
               </>
             );
 

@@ -878,8 +878,8 @@ export default function PaymentsPage() {
           </div>
 
           {/* Returns & Payouts */}
-          <button
-            type="button"
+          <Link
+            href="/returns"
             title="Returns"
             style={{
               display: "flex",
@@ -893,6 +893,7 @@ export default function PaymentsPage() {
               fontSize: "13px",
               fontWeight: 500,
               cursor: "pointer",
+              textDecoration: "none",
               width: "100%",
             }}
           >
@@ -912,7 +913,7 @@ export default function PaymentsPage() {
             >
               8
             </span>
-          </button>
+          </Link>
 
           <button
             type="button"

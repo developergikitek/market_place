@@ -132,7 +132,8 @@ function flattenErrors(body: unknown, prefix = ""): string[] {
   return [String(body)];
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** JSON request against the Makaano API; non-2xx responses throw ApiError with readable messages. */
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {

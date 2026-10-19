@@ -41,6 +41,7 @@ urlpatterns = [
     # 🏪 Seller Portal APIs (Listings, Products, Profile & Stock)
     path('api/seller/', include('sellers.urls')),
     path('api/listings/', include('listings.urls')),
+    path('api/returns/', include('returns.urls')),
 ]
 
 if settings.DEBUG:
