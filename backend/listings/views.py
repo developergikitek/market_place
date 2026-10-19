@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q, Sum
 from common.pagination import StandardResultsSetPagination
-from common.enums import ListingStatus
+from common.enums import ListingStatus, FulfillmentChannel
 from listings.models import Listing
 from listings.serializers import SellerListingSerializer
 from sellers.permissions import IsSellerUser
@@ -91,37 +91,63 @@ class SellerListingViewSet(viewsets.ModelViewSet):
         return self._handle_listing_update(request, partial=True)
 
     def _handle_listing_update(self, request, partial=False):
-        from decimal import Decimal
+        from decimal import Decimal, InvalidOperation
+        from django.db import transaction
         from warehouses.models import Warehouse, InventoryItem
 
         listing = self.get_object()
         data = request.data
+        errors = {}
 
         if 'standard_price' in data or 'price' in data:
-            p_val = data.get('standard_price') or data.get('price')
+            p_val = data.get('standard_price', data.get('price'))
             try:
-                listing.standard_price = Decimal(str(p_val))
-            except Exception:
-                pass
+                price = Decimal(str(p_val))
+                if not price.is_finite() or price <= 0:
+                    raise InvalidOperation
+                listing.standard_price = price
+            except (InvalidOperation, ValueError, TypeError):
+                errors['standard_price'] = "Enter a price greater than zero."
 
         if 'status' in data:
-            s_val = data['status'].upper()
+            # Unknown UI labels (e.g. "Low Stock") are ignored rather than rejected.
+            s_val = str(data.get('status') or '').upper()
             if s_val in ['ACTIVE', 'INACTIVE', 'ARCHIVED']:
                 listing.status = s_val
 
         if 'fulfillment_channel' in data or 'fulfillmentChannel' in data:
-            listing.fulfillment_channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel')).upper()
+            channel = str(data.get('fulfillment_channel') or data.get('fulfillmentChannel') or '').upper()
+            if channel in FulfillmentChannel.values:
+                listing.fulfillment_channel = channel
+            else:
+                errors['fulfillment_channel'] = "Choose FBA or FBM."
 
         if 'seller_sku' in data or 'sku' in data:
-            listing.seller_sku = data.get('seller_sku') or data.get('sku')
+            sku = str(data.get('seller_sku') or data.get('sku') or '').strip()
+            if not sku:
+                errors['seller_sku'] = "SKU can't be empty."
+            elif Listing.objects.filter(seller=listing.seller, seller_sku=sku).exclude(pk=listing.pk).exists():
+                errors['seller_sku'] = f"You already have another listing with SKU '{sku}'."
+            else:
+                listing.seller_sku = sku
 
-        listing.save()
-
-        # Update available stock if provided
+        qty_int = None
         if 'available_stock' in data or 'quantity' in data or 'stock' in data:
             qty_val = data.get('available_stock') if 'available_stock' in data else data.get('quantity') if 'quantity' in data else data.get('stock')
             try:
                 qty_int = int(qty_val)
+                if qty_int < 0:
+                    raise ValueError
+            except (ValueError, TypeError):
+                errors['available_stock'] = "Stock must be a non-negative whole number."
+
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            listing.save()
+
+            if qty_int is not None:
                 inv = listing.inventory_items.first()
                 if inv:
                     inv.available_stock = qty_int
@@ -135,8 +161,6 @@ class SellerListingViewSet(viewsets.ModelViewSet):
                             warehouse=wh,
                             available_stock=qty_int
                         )
-            except Exception:
-                pass
 
         serializer = self.get_serializer(listing)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -177,7 +201,7 @@ class SellerListingViewSet(viewsets.ModelViewSet):
             qty = int(qty)
             if qty < 0:
                 raise ValueError()
-        except ValueError:
+        except (ValueError, TypeError):
             return Response({"error": "Quantity must be a non-negative integer."}, status=status.HTTP_400_BAD_REQUEST)
 
         inv_item = listing.inventory_items.first()

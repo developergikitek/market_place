@@ -330,10 +330,6 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        brand_id = attrs.get('brand_id')
-        if (not brand_id or brand_id == 'others') and not attrs.get('brand_name'):
-            raise serializers.ValidationError({"brand_name": "Enter the brand name."})
-
         category = Category.objects.filter(id=attrs['category_id']).first()
         if not category:
             raise serializers.ValidationError({"category_id": "Category does not exist."})
@@ -345,24 +341,42 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"initial_listing": "Price and stock are required."})
         return attrs
 
-    def _resolve_brand(self, brand_id, brand_name):
+    def _resolve_brand(self, seller, brand_id, brand_name):
+        """
+        Brand is optional. Sellers may only create catalog products under a brand registered to them:
+        an existing brand they own (brand_id), or a new brand name that gets registered to them.
+        """
         from django.utils.text import slugify
+
+        def owned(brand):
+            return seller is not None and brand.owner_seller_id == seller.id
 
         if brand_id and brand_id != 'others':
             brand = Brand.objects.filter(id=brand_id).first()
             if not brand:
                 raise serializers.ValidationError({"brand_id": "Brand does not exist."})
+            if not owned(brand):
+                raise serializers.ValidationError({"brand_id": "You can only add new products under a brand registered to you."})
             return brand
 
-        brand = Brand.objects.filter(name__iexact=brand_name.strip()).first()
+        brand_name = (brand_name or '').strip()
+        if not brand_name:
+            return None
+
+        brand = Brand.objects.filter(name__iexact=brand_name).first()
         if brand:
-            return brand
+            if owned(brand):
+                return brand
+            raise serializers.ValidationError({
+                "brand_name": f"'{brand.name}' is already registered on Makaano and isn't yours. "
+                              "Leave the brand empty, or use 'Sell an existing product' to sell its catalog items."
+            })
         base_slug = slugify(brand_name) or 'brand'
         slug, n = base_slug, 1
         while Brand.objects.filter(slug=slug).exists():
             n += 1
             slug = f"{base_slug}-{n}"
-        return Brand.objects.create(name=brand_name.strip(), slug=slug)
+        return Brand.objects.create(name=brand_name, slug=slug, owner_seller=seller)
 
     def _create_product(self, fields, **extra):
         from common.utils import generate_asin
@@ -448,12 +462,12 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop('category_id')
         category = validated_data.pop('resolved_category')
-        brand = self._resolve_brand(validated_data.pop('brand_id', None), validated_data.pop('brand_name', ''))
+        seller = resolve_request_seller(self.context.get('request'))
+        brand = self._resolve_brand(seller, validated_data.pop('brand_id', None), validated_data.pop('brand_name', ''))
         images_data = validated_data.pop('images', [])
         attributes_data = validated_data.pop('attributes', [])
         listing_data = validated_data.pop('initial_listing', None) or {}
         variations_data = validated_data.pop('variations', [])
-        seller = resolve_request_seller(self.context.get('request'))
 
         if not variations_data:
             product = self._create_product(validated_data, brand=brand, category=category)

@@ -11,11 +11,13 @@ interface CategoryPickerProps {
   /** Initially opened path (e.g. when coming back to change category). */
   initialLeafId?: string | null;
   onLeafChange: (leaf: CategoryNode | null) => void;
+  /** Report every clicked category, not only leaves (browsing filters cover a node's whole subtree). */
+  anyLevel?: boolean;
 }
 
 const COLUMN_TITLES = ["Category", "Sub-category", "Type", "Product type", "Variant type"];
 
-export default function CategoryPicker({ index, initialLeafId, onLeafChange }: CategoryPickerProps) {
+export default function CategoryPicker({ index, initialLeafId, onLeafChange, anyLevel = false }: CategoryPickerProps) {
   const [path, setPath] = useState<string[]>(() =>
     initialLeafId ? categoryPath(index, initialLeafId).map((c) => c.id) : []
   );
@@ -44,17 +46,17 @@ export default function CategoryPicker({ index, initialLeafId, onLeafChange }: C
     if (q.length < 2) return [];
     const matches: { leaf: CategoryNode; label: string }[] = [];
     for (const node of index.byId.values()) {
-      if (!node.is_leaf) continue;
+      if (!anyLevel && !node.is_leaf) continue;
       const label = pathLabel(categoryPath(index, node.id));
       if (label.toLowerCase().includes(q)) matches.push({ leaf: node, label });
       if (matches.length >= 40) break;
     }
     return matches;
-  }, [index, query]);
+  }, [index, query, anyLevel]);
 
   function select(node: CategoryNode, columnIndex: number) {
     setPath([...path.slice(0, columnIndex), node.id]);
-    onLeafChange(node.is_leaf ? node : null);
+    onLeafChange(anyLevel || node.is_leaf ? node : null);
   }
 
   function selectFromSearch(leaf: CategoryNode) {
@@ -69,7 +71,7 @@ export default function CategoryPicker({ index, initialLeafId, onLeafChange }: C
         <Search size={17} />
         <input
           className={styles.input}
-          placeholder="Search a category, e.g. OPC 53, PVC pipe, wall tiles"
+          placeholder={anyLevel ? "Search any category, e.g. Cement, Pipes, Tiles" : "Search a category, e.g. OPC 53, PVC pipe, wall tiles"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -103,7 +105,11 @@ export default function CategoryPicker({ index, initialLeafId, onLeafChange }: C
                     onClick={() => select(node, columnIndex)}
                   >
                     <span>{node.name}</span>
-                    {node.is_leaf ? <span className={styles.leafTag}>Select</span> : <ChevronRight size={15} />}
+                    {node.is_leaf ? (
+                      !anyLevel && <span className={styles.leafTag}>Select</span>
+                    ) : (
+                      <ChevronRight size={15} />
+                    )}
                   </button>
                 );
               })}

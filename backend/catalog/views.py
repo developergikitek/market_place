@@ -1,7 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q, Min
+from django.db.models import Q, Min, Count
+from django.db.models.functions import Lower
 from django.http import Http404
 from common.pagination import StandardResultsSetPagination
 from common.enums import CatalogStatus
@@ -11,6 +12,50 @@ from catalog.serializers import (
     CategorySimpleSerializer, CategoryDetailSerializer, CategoryAttributeSerializer,
     BrandSimpleSerializer, ListingOfferSerializer
 )
+from sellers.utils import resolve_request_seller
+
+
+def category_subtree_ids(root):
+    """The category's id plus every descendant id, walking parent_id links level by level."""
+    ids, frontier = [root.id], [root.id]
+    while frontier:
+        frontier = list(Category.objects.filter(parent_id__in=frontier).values_list('id', flat=True))
+        ids.extend(frontier)
+    return ids
+
+
+def resolve_category(value):
+    """Look a category up by UUID, slug or browse_node_id."""
+    return Category.objects.filter(Q(id=value) | Q(slug=value) | Q(browse_node_id=value)).first()
+
+
+def category_brands(root):
+    """
+    Every brand possible anywhere under `root` (down to the last-level sub-categories):
+    brands allowed by the leaf categories' `brand` attribute, plus brands that already have products there.
+    Annotated with `product_count` (sellable, non-parent products in the subtree).
+    """
+    subtree = category_subtree_ids(root)
+    ids, names = set(), set()
+    options_lists = CategoryAttribute.objects.filter(
+        category_id__in=subtree, code='brand'
+    ).values_list('allowed_options_json', flat=True)
+    for options in options_lists:
+        for option in options or []:
+            if isinstance(option, dict):
+                if option.get('id'):
+                    ids.add(option['id'])
+                if option.get('name'):
+                    names.add(option['name'].strip().lower())
+            elif isinstance(option, str):
+                names.add(option.strip().lower())
+    ids.update(Product.objects.filter(category_id__in=subtree, brand__isnull=False).values_list('brand_id', flat=True))
+
+    return Brand.objects.annotate(lname=Lower('name')).filter(Q(id__in=ids) | Q(lname__in=names)).annotate(
+        product_count=Count(
+            'products', filter=Q(products__category_id__in=subtree, products__is_parent=False), distinct=True
+        )
+    )
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -59,10 +104,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         # 2. Category Filter (by UUID, browse_node_id, or slug) — includes every sub-category below it
         category_param = params.get('category')
         if category_param:
-            root = Category.objects.filter(
-                Q(id=category_param) | Q(slug=category_param) | Q(browse_node_id=category_param)
-            ).first()
-            qs = qs.filter(category_id__in=self._category_subtree_ids(root)) if root else qs.none()
+            root = resolve_category(category_param)
+            qs = qs.filter(category_id__in=category_subtree_ids(root)) if root else qs.none()
 
         # 3. Brand Filter (by UUID, slug, or name)
         brand_param = params.get('brand')
@@ -112,14 +155,6 @@ class ProductViewSet(viewsets.ModelViewSet):
             qs = qs.order_by('-created_at')
 
         return qs.distinct()
-
-    @staticmethod
-    def _category_subtree_ids(root):
-        ids, frontier = [root.id], [root.id]
-        while frontier:
-            frontier = list(Category.objects.filter(parent_id__in=frontier).values_list('id', flat=True))
-            ids.extend(frontier)
-        return ids
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -394,6 +429,24 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
     @action(detail=True, methods=['get'])
+    def brands(self, request, pk=None):
+        """
+        All brands possible under this category and every sub-category below it (unpaginated),
+        brands with products in the catalog first.
+        """
+        category = self.get_object()
+        brands = category_brands(category).order_by('-product_count', 'name')
+        return Response({
+            'category_id': category.id,
+            'category_name': category.name,
+            'brands_count': len(brands),
+            'brands': [
+                {'id': b.id, 'name': b.name, 'slug': b.slug, 'logo_url': b.logo_url, 'product_count': b.product_count}
+                for b in brands
+            ],
+        })
+
+    @action(detail=True, methods=['get'])
     def attributes(self, request, pk=None):
         """
         Fetch all catalog schema attributes for this category with allowed options.
@@ -420,9 +473,21 @@ class BrandViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        search = self.request.query_params.get('search') or self.request.query_params.get('q')
+        params = self.request.query_params
+        search = params.get('search') or params.get('q')
         if search:
             qs = qs.filter(name__icontains=search.strip())
+
+        # Brands registered to the requesting seller (new products can only be created under these)
+        if params.get('mine') in ['true', '1', 'True']:
+            seller = resolve_request_seller(self.request)
+            qs = qs.filter(owner_seller=seller) if seller else qs.none()
+
+        # Brands that have products anywhere under this category (incl. all sub-categories)
+        category_param = params.get('category')
+        if category_param:
+            root = resolve_category(category_param)
+            qs = qs.filter(id__in=category_brands(root).values('id')) if root else qs.none()
         return qs
 
     @action(detail=True, methods=['get'])

@@ -1,9 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, Loader2, Search } from "lucide-react";
-import { ApiError, CatalogSearchResult, searchBrands, searchCatalog } from "@/services/addProductService";
-import { CategoryIndex, categoryPath, pathLabel } from "./categoryTree";
+import { AlertCircle, ChevronRight, Loader2, Search } from "lucide-react";
+import {
+  ApiError,
+  CatalogSearchResult,
+  CategoryBrand,
+  CategoryNode,
+  fetchCategoryBrands,
+  searchBrands,
+  searchCatalog,
+} from "@/services/addProductService";
+import CategoryPicker from "./CategoryPicker";
+import { CategoryIndex, categoryPath } from "./categoryTree";
 import ProductThumb from "./ProductThumb";
 import SearchSelect, { SearchSelectOption } from "./SearchSelect";
 import styles from "./addProduct.module.css";
@@ -18,28 +27,70 @@ const formatINR = (value: string) => `₹${Number(value).toLocaleString("en-IN",
 
 export default function ExistingProductFinder({ index, onPick, onCreateNew }: ExistingProductFinderProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<SearchSelectOption | null>(null);
+  const [category, setCategory] = useState<CategoryNode | null>(null);
+  const [browsing, setBrowsing] = useState(false);
   const [brand, setBrand] = useState<SearchSelectOption | null>(null);
   const [results, setResults] = useState<CatalogSearchResult[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Keyed by category so a late response for a previous category is never shown.
+  const [brandsFor, setBrandsFor] = useState<{ categoryId: string; brands: CategoryBrand[]; error: string | null } | null>(
+    null
+  );
+  const [brandQuery, setBrandQuery] = useState("");
 
-  const categoryOptions = useMemo(
+  const categoryCrumbs = useMemo(() => (category ? categoryPath(index, category.id) : []), [index, category]);
+
+  // All brands possible under the chosen category, down to its last-level sub-categories.
+  useEffect(() => {
+    if (!category) return;
+    let cancelled = false;
+    fetchCategoryBrands(category.id)
+      .then((list) => {
+        if (cancelled) return;
+        setBrandsFor({ categoryId: category.id, brands: list, error: null });
+        // Drop a brand picked earlier that doesn't exist under the new category.
+        setBrand((current) => (current && !list.some((b) => b.id === current.value) ? null : current));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        const error = err instanceof ApiError ? err.messages[0] : "Couldn't load brands.";
+        setBrandsFor({ categoryId: category.id, brands: [], error });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
+
+  const loaded = category && brandsFor?.categoryId === category.id ? brandsFor : null;
+  const categoryBrands = loaded && !loaded.error ? loaded.brands : null;
+  const brandsError = loaded?.error ?? null;
+
+  function changeCategory(node: CategoryNode | null) {
+    setCategory(node);
+    setBrandQuery("");
+  }
+
+  const brandOptions = useMemo<SearchSelectOption[] | undefined>(
     () =>
-      Array.from(index.byId.values())
-        .map((node) => {
-          const path = categoryPath(index, node.id);
-          return { value: node.id, label: node.name, sublabel: pathLabel(path.slice(0, -1)) || "Top level" };
-        })
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [index]
+      categoryBrands?.map((b) => ({
+        value: b.id,
+        label: b.name,
+        sublabel: b.product_count ? `${b.product_count} in catalog` : undefined,
+      })),
+    [categoryBrands]
   );
 
   const loadBrands = useCallback(
     async (q: string) => (await searchBrands(q)).map((b) => ({ value: b.id, label: b.name })),
     []
   );
+
+  const visibleBrandChips = useMemo(() => {
+    const q = brandQuery.trim().toLowerCase();
+    return (categoryBrands ?? []).filter((b) => !q || b.name.toLowerCase().includes(q));
+  }, [categoryBrands, brandQuery]);
 
   const hasFilter = query.trim().length >= 2 || !!category || !!brand;
 
@@ -49,7 +100,7 @@ export default function ExistingProductFinder({ index, onPick, onCreateNew }: Ex
     const timer = setTimeout(() => {
       setLoading(true);
       setError(null);
-      searchCatalog({ search: query, categoryId: category?.value, brandId: brand?.value })
+      searchCatalog({ search: query, categoryId: category?.id, brandId: brand?.value })
         .then((data) => {
           if (cancelled) return;
           // Parent ASINs are not sellable; sellers pick the exact child variant.
@@ -78,9 +129,100 @@ export default function ExistingProductFinder({ index, onPick, onCreateNew }: Ex
             autoFocus
           />
         </div>
-        <SearchSelect placeholder="All categories" selected={category} onChange={setCategory} options={categoryOptions} />
-        <SearchSelect placeholder="All brands" selected={brand} onChange={setBrand} loadOptions={loadBrands} />
+        <SearchSelect
+          placeholder={category ? `Brands in ${category.name}` : "All brands"}
+          selected={brand}
+          onChange={setBrand}
+          options={category ? brandOptions ?? [] : undefined}
+          loadOptions={category ? undefined : loadBrands}
+        />
       </div>
+
+      <div className={styles.categoryFilter}>
+        <span className={styles.categoryFilterLabel}>Category</span>
+        <span className={styles.breadcrumb}>
+          {categoryCrumbs.length === 0
+            ? "All categories"
+            : categoryCrumbs.map((node, i) => (
+                <span key={node.id} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {i === categoryCrumbs.length - 1 ? <strong>{node.name}</strong> : node.name}
+                  {i < categoryCrumbs.length - 1 && <ChevronRight size={12} />}
+                </span>
+              ))}
+        </span>
+        <span className={styles.categoryFilterActions}>
+          {category && (
+            <button
+              type="button"
+              className={styles.linkBtn}
+              onClick={() => {
+                changeCategory(null);
+                setBrowsing(false);
+              }}
+            >
+              Clear
+            </button>
+          )}
+          <button type="button" className={styles.linkBtn} onClick={() => setBrowsing(!browsing)}>
+            {browsing ? "Done" : category ? "Change" : "Browse categories"}
+          </button>
+        </span>
+      </div>
+
+      {browsing && (
+        <div style={{ marginBottom: 18 }}>
+          <CategoryPicker index={index} initialLeafId={category?.id} onLeafChange={changeCategory} anyLevel />
+          <p className={styles.hint} style={{ marginTop: 8 }}>
+            Pick any level — products from all its sub-categories are included.
+          </p>
+        </div>
+      )}
+
+      {category && (
+        <div className={styles.brandPanel}>
+          <div className={styles.brandPanelHead}>
+            <span className={styles.categoryFilterLabel}>
+              Brands in {category.name}
+              {categoryBrands && ` · ${categoryBrands.length}`}
+            </span>
+            {categoryBrands && categoryBrands.length > 12 && (
+              <input
+                className={`${styles.input} ${styles.brandPanelSearch}`}
+                placeholder="Filter brands"
+                value={brandQuery}
+                onChange={(e) => setBrandQuery(e.target.value)}
+              />
+            )}
+          </div>
+          {brandsError ? (
+            <div className={styles.hint}>{brandsError}</div>
+          ) : !categoryBrands ? (
+            <div className={styles.hint}>
+              <Loader2 size={13} className={styles.spin} /> Loading brands…
+            </div>
+          ) : categoryBrands.length === 0 ? (
+            <div className={styles.hint}>No brands are mapped to this category yet.</div>
+          ) : (
+            <div className={styles.brandChips}>
+              {visibleBrandChips.map((b) => {
+                const active = brand?.value === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    className={`${styles.brandChip} ${active ? styles.brandChipOn : ""}`}
+                    onClick={() => setBrand(active ? null : { value: b.id, label: b.name })}
+                  >
+                    {b.name}
+                    {b.product_count > 0 && <span>{b.product_count}</span>}
+                  </button>
+                );
+              })}
+              {visibleBrandChips.length === 0 && <span className={styles.hint}>No brand matches “{brandQuery}”.</span>}
+            </div>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className={`${styles.alert} ${styles.alertError}`}>

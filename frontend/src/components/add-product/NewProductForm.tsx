@@ -126,24 +126,16 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const combos = useMemo(() => buildCombos(variationAttrs, selection, units), [variationAttrs, selection, units]);
   const isMulti = combos.length > 1;
 
-  const brandOptions = useMemo<SearchSelectOption[] | undefined>(() => {
-    const opts = brandAttr?.allowed_options_json;
-    if (!opts?.length) return undefined;
-    return opts.map((o) =>
-      typeof o === "string" ? { value: o, label: o } : { value: o.id, label: o.name }
-    );
-  }, [brandAttr]);
-
+  // New catalog products can only carry a brand registered to this seller; other brands are sold via existing ASINs.
   const loadBrands = useCallback(async (query: string) => {
-    const found = await searchBrands(query);
-    return [...found.map((b) => ({ value: b.id, label: b.name })), { value: OTHERS, label: "Others (enter brand name)" }];
+    const found = await searchBrands(query, { mine: true });
+    return [...found.map((b) => ({ value: b.id, label: b.name })), { value: OTHERS, label: "Add my own brand" }];
   }, []);
 
   const errors = useMemo(() => {
     const e: Record<string, string> = {};
     if (title.trim().length < 10) e.title = "Enter a product name of at least 10 characters";
-    if (!brand) e.brand = "Select a brand";
-    else if (brand.value.toLowerCase() === OTHERS && !brandName.trim()) e.brandName = "Enter the brand name";
+    if (brand?.value === OTHERS && !brandName.trim()) e.brandName = "Enter your brand name";
 
     for (const attr of specAttrs) {
       if (attr.is_required && !attrValues[attr.id]?.value?.trim()) e[`attr:${attr.id}`] = `${attr.label} is required`;
@@ -186,10 +178,8 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   }
 
   function buildPayload(): CreateProductRequest {
-    const isOthers = brand?.value.toLowerCase() === OTHERS;
+    const isOthers = brand?.value === OTHERS;
     const resolvedBrandName = isOthers ? brandName.trim() : brand?.label ?? "";
-    // Plain-string brand options carry names, not Brand ids; the backend then matches or creates by name.
-    const brandIsCatalogId = !isOthers && !brandAttr?.allowed_options_json?.every((o) => typeof o === "string");
 
     const sharedAttributes: AttributeValueInput[] = specAttrs
       .filter((attr) => attrValues[attr.id]?.value?.trim())
@@ -198,7 +188,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
         value: attrValues[attr.id].value.trim(),
         unit_of_measure: attrValues[attr.id].unit ?? attr.unit_of_measure_options?.[0],
       }));
-    if (brandAttr) sharedAttributes.push({ attribute_id: brandAttr.id, value: resolvedBrandName });
+    if (brandAttr && resolvedBrandName) sharedAttributes.push({ attribute_id: brandAttr.id, value: resolvedBrandName });
 
     const comboAttributes = (index: number): AttributeValueInput[] =>
       combos[index].values.map((v) => ({ attribute_id: v.attribute.id, value: v.value, unit_of_measure: v.unit }));
@@ -216,8 +206,8 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
 
     return {
       category_id: leaf.id,
-      brand_id: brandIsCatalogId ? brand?.value : undefined,
-      brand_name: resolvedBrandName,
+      brand_id: brand && !isOthers ? brand.value : undefined,
+      brand_name: resolvedBrandName || undefined,
       title: title.trim(),
       description: description.trim(),
       bullet_points: bullets.map((b) => b.trim()).filter(Boolean),
@@ -337,27 +327,18 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
                 </span>
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>
-                  Brand <span className={styles.req}>*</span>
-                </label>
-                <SearchSelect
-                  placeholder="Search brand"
-                  selected={brand}
-                  onChange={setBrand}
-                  options={brandOptions}
-                  loadOptions={brandOptions ? undefined : loadBrands}
-                  invalid={!!visibleErrors.brand}
-                />
-                {visibleErrors.brand && <span className={styles.error}>{visibleErrors.brand}</span>}
+                <label className={styles.label}>Brand (optional)</label>
+                <SearchSelect placeholder="Your brands" selected={brand} onChange={setBrand} loadOptions={loadBrands} />
+                <span className={styles.hint}>Only brands registered to you. Leave empty to list without a brand.</span>
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Model / part number</label>
                 <input className={styles.input} value={modelNumber} onChange={(e) => setModelNumber(e.target.value)} />
               </div>
-              {brand?.value.toLowerCase() === OTHERS && (
+              {brand?.value === OTHERS && (
                 <div className={styles.field}>
                   <label className={styles.label}>
-                    Brand name <span className={styles.req}>*</span>
+                    Your brand name <span className={styles.req}>*</span>
                   </label>
                   <input
                     className={`${styles.input} ${visibleErrors.brandName ? styles.invalid : ""}`}
