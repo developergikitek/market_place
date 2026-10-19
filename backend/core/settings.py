@@ -159,3 +159,7 @@ SPECTACULAR_SETTINGS = {
         'filter': True,
     },
 }
+
+# Quick Commerce Platform Configuration (Centrally managed by platform)
+QUICK_COMMERCE_MAX_RADIUS_KM = float(os.environ.get('QUICK_COMMERCE_MAX_RADIUS_KM', 10.0))
+QUICK_COMMERCE_DEFAULT_SLA_MINUTES = int(os.environ.get('QUICK_COMMERCE_DEFAULT_SLA_MINUTES', 60))

@@ -33,6 +33,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
     # Read-only enriched fields
     product = ProductMiniSerializer(read_only=True)
     fulfillment_channel_display = serializers.CharField(source='get_fulfillment_channel_display', read_only=True)
+    commerce_channel_display = serializers.CharField(source='get_commerce_channel_display', read_only=True)
     effective_price = serializers.SerializerMethodField()
     available_stock = serializers.SerializerMethodField()
     b2b_tier_prices = ListingTierPriceInputSerializer(many=True, required=False)
@@ -48,6 +49,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'seller_sku', 'product', 'product_asin', 'product_id',
             'condition', 'condition_note', 'fulfillment_channel', 'fulfillment_channel_display',
+            'commerce_channel', 'commerce_channel_display',
             'status', 'standard_price', 'sale_price', 'effective_price',
             'handling_time_days', 'max_order_quantity', 'is_buy_box_winner',
             'available_stock', 'initial_stock', 'warehouse_id',

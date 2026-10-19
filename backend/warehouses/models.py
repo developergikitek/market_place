@@ -15,6 +15,8 @@ class Warehouse(models.Model):
     state_or_province = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=30)
     country_code = models.CharField(max_length=10, default="US")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

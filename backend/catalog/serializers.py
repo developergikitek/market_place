@@ -92,6 +92,7 @@ class SellerSummarySerializer(serializers.Serializer):
 class ListingOfferSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
     fulfillment_channel_display = serializers.CharField(source='get_fulfillment_channel_display', read_only=True)
+    commerce_channel_display = serializers.CharField(source='get_commerce_channel_display', read_only=True)
     effective_price = serializers.SerializerMethodField()
     b2b_tier_prices = ListingTierPriceSerializer(many=True, read_only=True)
     in_stock = serializers.SerializerMethodField()
@@ -102,6 +103,7 @@ class ListingOfferSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'seller_sku', 'seller', 'condition', 'condition_note',
             'fulfillment_channel', 'fulfillment_channel_display',
+            'commerce_channel', 'commerce_channel_display',
             'standard_price', 'sale_price', 'effective_price',
             'is_buy_box_winner', 'handling_time_days',
             'in_stock', 'available_stock', 'b2b_tier_prices'
@@ -437,6 +439,7 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             standard_price=std_price,
             sale_price=sale_price,
             fulfillment_channel=listing_data.get('fulfillment_channel', 'FBM'),
+            commerce_channel=listing_data.get('commerce_channel', 'BAZAAR'),
             handling_time_days=int(listing_data.get('handling_time_days') or 1),
             max_order_quantity=listing_data.get('max_order_quantity') or None,
             is_buy_box_winner=True

@@ -1,5 +1,5 @@
 from django.db import models
-from common.enums import ProductCondition, FulfillmentChannel, ListingStatus
+from common.enums import ProductCondition, FulfillmentChannel, ListingStatus, CommerceChannel
 from common.utils import generate_id
 
 class Listing(models.Model):
@@ -14,6 +14,12 @@ class Listing(models.Model):
     condition = models.CharField(max_length=50, choices=ProductCondition.choices, default=ProductCondition.NEW)
     condition_note = models.TextField(null=True, blank=True)
     fulfillment_channel = models.CharField(max_length=10, choices=FulfillmentChannel.choices, default=FulfillmentChannel.FBA)
+    commerce_channel = models.CharField(
+        max_length=20,
+        choices=CommerceChannel.choices,
+        default=CommerceChannel.BAZAAR,
+        help_text="BAZAAR for Pan-India, QUICK_COMMERCE for 8-10 km hyperlocal, BOTH for hybrid."
+    )
     status = models.CharField(max_length=30, choices=ListingStatus.choices, default=ListingStatus.ACTIVE)
 
     # Pricing & Currency
