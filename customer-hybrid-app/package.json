@@ -1,0 +1,13 @@
+{
+  "name": "customer-hybrid-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix web-frontend run dev",
+    "web": "npm --prefix web-frontend run dev",
+    "mobile": "npm --prefix mobile-shell run start",
+    "mobile:android": "npm --prefix mobile-shell run android",
+    "mobile:ios": "npm --prefix mobile-shell run ios",
+    "mobile:ota": "cd mobile-shell && eas update --branch production --message 'Instant update'"
+  }
+}
