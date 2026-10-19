@@ -79,6 +79,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const [rows, setRows] = useState<Record<string, VariantRow>>({});
   const [single, setSingle] = useState<VariantRow>(EMPTY_ROW);
   const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
+  const [commerceChannel, setCommerceChannel] = useState<"BAZAAR" | "QUICK_COMMERCE" | "BOTH">("BAZAAR");
   const [handlingDays, setHandlingDays] = useState("2");
   const [maxOrderQty, setMaxOrderQty] = useState("");
 
@@ -205,6 +206,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
 
     const listingBase = {
       fulfillment_channel: fulfillment,
+      commerce_channel: commerceChannel,
       handling_time_days: Number(handlingDays) || 1,
       max_order_quantity: maxOrderQty ? Number(maxOrderQty) : null,
       condition: "NEW",
@@ -477,6 +479,36 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
             )}
 
             <div style={{ borderTop: "1px solid #f1f5f9", marginTop: 20, paddingTop: 18 }}>
+              <span className={styles.label} style={{ marginBottom: 10 }}>
+                Selling Channel
+              </span>
+              <div className={styles.channelCards} style={{ marginBottom: 18 }}>
+                <button
+                  type="button"
+                  className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""}`}
+                  onClick={() => setCommerceChannel("BAZAAR")}
+                >
+                  <strong>Bazaar (Pan-India)</strong>
+                  <span>Standard delivery across India via courier / transport.</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""}`}
+                  onClick={() => setCommerceChannel("QUICK_COMMERCE")}
+                >
+                  <strong>Quick Commerce</strong>
+                  <span>Hyperlocal express delivery within 8–10 km radius.</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""}`}
+                  onClick={() => setCommerceChannel("BOTH")}
+                >
+                  <strong>Both (Hybrid)</strong>
+                  <span>Local buyers get quick delivery + Pan-India gets courier.</span>
+                </button>
+              </div>
+
               <span className={styles.label} style={{ marginBottom: 10 }}>
                 Fulfilment
               </span>

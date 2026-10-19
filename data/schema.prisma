@@ -92,6 +92,13 @@ enum FulfillmentChannel {
   FBM // Fulfillment by Merchant (stored & shipped directly by third-party seller)
 }
 
+/// Delivery scope for seller listings: Pan-India, Hyperlocal, or Both.
+enum CommerceChannel {
+  BAZAAR           // Pan-India standard logistics
+  QUICK_COMMERCE   // Hyperlocal 8-10 km radius
+  BOTH             // Hybrid (Local quick + National courier)
+}
+
 /// Catalog state of a seller's specific offer / SKU listing.
 enum ListingStatus {
   ACTIVE
@@ -696,7 +703,7 @@ model Product {
   // Enhanced Brand Content / A+ Content
   aPlusContentHtml    String?            @db.Text
 
-  createdAt           DateTime           @default(now())
+  createdAt           DateTim=e           @default(now())
   updatedAt           DateTime           @updatedAt
 
   // Relationships
@@ -761,6 +768,7 @@ model Listing {
   condition            ProductCondition   @default(NEW)
   conditionNote        String?            @db.Text // Required if used/refurbished to state scratches or wear
   fulfillmentChannel   FulfillmentChannel @default(FBA)
+  commerceChannel      CommerceChannel    @default(BAZAAR)
   status               ListingStatus      @default(ACTIVE)
 
   // Pricing & Currency
@@ -825,6 +833,8 @@ model Warehouse {
   stateOrProvince String
   postalCode      String
   countryCode     String          @default("US")
+  latitude        Decimal?        @db.Decimal(9, 6)
+  longitude       Decimal?        @db.Decimal(9, 6)
   isActive        Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

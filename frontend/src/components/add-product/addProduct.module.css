@@ -444,6 +444,18 @@
   gap: 12px;
 }
 
+.channelCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .channelCards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .radioCard {
   border: 1.5px solid var(--line);
   border-radius: 10px;

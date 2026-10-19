@@ -58,6 +58,7 @@ export interface OfferInput {
   seller_sku?: string;
   condition?: string;
   fulfillment_channel: "FBA" | "FBM";
+  commerce_channel?: "BAZAAR" | "QUICK_COMMERCE" | "BOTH";
   handling_time_days: number;
   max_order_quantity?: number | null;
   standard_price?: string;
