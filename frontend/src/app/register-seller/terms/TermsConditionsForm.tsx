@@ -64,7 +64,7 @@ export default function TermsConditionsForm({
           style={{
             fontSize: "27px",
             fontWeight: 800,
-            color: "#1e1b4b",
+            color: "#0B1220",
             lineHeight: 1.15,
             letterSpacing: "-0.5px",
             marginBottom: "6px",
@@ -108,7 +108,7 @@ export default function TermsConditionsForm({
             style={{
               fontSize: "16.5px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               lineHeight: 1.3,
               marginBottom: "14px",
             }}
@@ -195,7 +195,7 @@ export default function TermsConditionsForm({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                alert("BuildMart Terms & Conditions: All seller listings must adhere to NABL quality benchmarks.");
+                alert("Makaano Terms & Conditions: All seller listings must adhere to NABL quality benchmarks.");
               }}
             >
               Terms &amp; Conditions
@@ -209,7 +209,7 @@ export default function TermsConditionsForm({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                alert("BuildMart Privacy Policy: 256-bit encrypted data handling strictly according to Indian DPDP Act.");
+                alert("Makaano Privacy Policy: 256-bit encrypted data handling strictly according to Indian DPDP Act.");
               }}
             >
               Privacy Policy
@@ -247,15 +247,15 @@ export default function TermsConditionsForm({
             width: "100%",
             height: "56px",
             background: isAgreed
-              ? "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)"
-              : "#e9d5ff",
-            color: isAgreed ? "#ffffff" : "#7c3aed",
+              ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+              : "#E2E8F0",
+            color: isAgreed ? "#ffffff" : "#C2410C",
             border: "none",
             borderRadius: "9999px",
             fontSize: "16px",
             fontWeight: 700,
             cursor: isAgreed && !isLoading ? "pointer" : "not-allowed",
-            boxShadow: isAgreed ? "0 10px 25px -5px rgba(124, 58, 237, 0.45)" : "none",
+            boxShadow: isAgreed ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)" : "none",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -266,13 +266,13 @@ export default function TermsConditionsForm({
           onMouseEnter={(e) => {
             if (isAgreed && !isLoading) {
               e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(124, 58, 237, 0.55)";
+              e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(194, 65, 12, 0.55)";
             }
           }}
           onMouseLeave={(e) => {
             if (isAgreed) {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(124, 58, 237, 0.45)";
+              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(194, 65, 12, 0.45)";
             }
           }}
         >
@@ -298,14 +298,15 @@ export default function TermsConditionsForm({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
-      {/* 1. Curved Brand Header (Royal Purple Theme) */}
+      {/* 1. Curved Brand Header (Navy Theme) */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -313,7 +314,7 @@ export default function TermsConditionsForm({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -330,7 +331,7 @@ export default function TermsConditionsForm({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -345,7 +346,7 @@ export default function TermsConditionsForm({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -356,7 +357,7 @@ export default function TermsConditionsForm({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -366,14 +367,17 @@ export default function TermsConditionsForm({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

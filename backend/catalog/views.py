@@ -56,15 +56,13 @@ class ProductViewSet(viewsets.ModelViewSet):
                 Q(model_number__icontains=search)
             )
 
-        # 2. Category Filter (by UUID, browse_node_id, or slug)
+        # 2. Category Filter (by UUID, browse_node_id, or slug) — includes every sub-category below it
         category_param = params.get('category')
         if category_param:
-            qs = qs.filter(
-                Q(category__id=category_param) |
-                Q(category__slug=category_param) |
-                Q(category__browse_node_id=category_param) |
-                Q(category__parent__slug=category_param)
-            )
+            root = Category.objects.filter(
+                Q(id=category_param) | Q(slug=category_param) | Q(browse_node_id=category_param)
+            ).first()
+            qs = qs.filter(category_id__in=self._category_subtree_ids(root)) if root else qs.none()
 
         # 3. Brand Filter (by UUID, slug, or name)
         brand_param = params.get('brand')
@@ -114,6 +112,14 @@ class ProductViewSet(viewsets.ModelViewSet):
             qs = qs.order_by('-created_at')
 
         return qs.distinct()
+
+    @staticmethod
+    def _category_subtree_ids(root):
+        ids, frontier = [root.id], [root.id]
+        while frontier:
+            frontier = list(Category.objects.filter(parent_id__in=frontier).values_list('id', flat=True))
+            ids.extend(frontier)
+        return ids
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

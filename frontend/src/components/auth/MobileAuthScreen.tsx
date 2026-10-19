@@ -194,11 +194,11 @@ export default function MobileAuthScreen({
 
 
       {/* ========================================================== */}
-      {/* 2. THE SINGLE BUILDMART CURVED BRAND HEADER               */}
+      {/* 2. THE SINGLE MAKAANO CURVED BRAND HEADER               */}
       {/* ========================================================== */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -206,10 +206,10 @@ export default function MobileAuthScreen({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
-        {/* BuildMart Official Brand Logo */}
+        {/* Makaano Official Brand Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {/* Logo Geometric House Cube */}
           <div
@@ -230,7 +230,7 @@ export default function MobileAuthScreen({
                 fill="#F59E0B"
                 fillOpacity="0.9"
               />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -247,7 +247,7 @@ export default function MobileAuthScreen({
                 fontFamily: "var(--font-heading), sans-serif",
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -259,7 +259,7 @@ export default function MobileAuthScreen({
                 fontFamily: "var(--font-sans), sans-serif",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -276,7 +276,7 @@ export default function MobileAuthScreen({
             setErrorMsg("");
           }}
           onLoginSuccess={(val) => {
-            alert(`Welcome back to BuildMart Seller Portal!\nLogged in as: ${val}`);
+            alert(`Welcome back to Makaano Seller Portal!\nLogged in as: ${val}`);
           }}
         />
       )}
@@ -319,7 +319,7 @@ export default function MobileAuthScreen({
                 style={{
                   fontSize: "26px",
                   fontWeight: 800,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   lineHeight: 1.25,
                   letterSpacing: "-0.4px",
                   marginBottom: "8px",
@@ -358,7 +358,7 @@ export default function MobileAuthScreen({
                 style={{
                   objectFit: "contain",
                   borderRadius: "16px",
-                  filter: "drop-shadow(0 10px 18px rgba(76, 29, 149, 0.12))",
+                  filter: "drop-shadow(0 10px 18px rgba(15, 23, 42, 0.12))",
                 }}
                 priority
               />
@@ -395,11 +395,11 @@ export default function MobileAuthScreen({
                   padding: "0 16px",
                   height: "56px",
                   background: "#ffffff",
-                  border: isCountryDropdownOpen ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                  border: isCountryDropdownOpen ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                   borderRadius: "9999px",
                   fontSize: "15px",
                   fontWeight: 700,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                   boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
@@ -472,11 +472,11 @@ export default function MobileAuthScreen({
                           width: "100%",
                           padding: "8px 10px",
                           border: "none",
-                          background: selectedCountry.code === c.code ? "rgba(124, 58, 237, 0.08)" : "transparent",
+                          background: selectedCountry.code === c.code ? "rgba(194, 65, 12, 0.08)" : "transparent",
                           borderRadius: "8px",
                           cursor: "pointer",
                           fontSize: "13px",
-                          color: "#1e1b4b",
+                          color: "#0B1220",
                           textAlign: "left",
                         }}
                       >
@@ -511,13 +511,13 @@ export default function MobileAuthScreen({
                   borderRadius: "9999px",
                   fontSize: "15px",
                   fontWeight: 600,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   outline: "none",
                   transition: "all 0.15s ease",
                   boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
                   fontFamily: "var(--font-sans), sans-serif",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#7c3aed")}
+                onFocus={(e) => (e.target.style.borderColor = "#C2410C")}
                 onBlur={(e) => (e.target.style.borderColor = errorMsg ? "#ef4444" : "#e2e8f0")}
               />
 
@@ -568,7 +568,7 @@ export default function MobileAuthScreen({
             </div>
           )}
 
-          {/* Primary CTA: "Send OTP" Button (Royal Purple) */}
+          {/* Primary CTA: "Send OTP" Button (Brand) */}
           <button
             type="button"
             onClick={handleSendOtp}
@@ -578,9 +578,9 @@ export default function MobileAuthScreen({
               height: "56px",
               background:
                 phoneNumber.length === 10
-                  ? "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)"
-                  : "#e9d5ff",
-              color: phoneNumber.length === 10 ? "#ffffff" : "#7c3aed",
+                  ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                  : "#E2E8F0",
+              color: phoneNumber.length === 10 ? "#ffffff" : "#C2410C",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
@@ -588,7 +588,7 @@ export default function MobileAuthScreen({
               cursor: phoneNumber.length === 10 ? "pointer" : "not-allowed",
               boxShadow:
                 phoneNumber.length === 10
-                  ? "0 10px 25px -5px rgba(124, 58, 237, 0.45)"
+                  ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
                   : "none",
               display: "flex",
               alignItems: "center",
@@ -611,8 +611,8 @@ export default function MobileAuthScreen({
           {/* Notice Card Banner (Soft Lavender Theme) */}
           <div
             style={{
-              background: "#FAF5FF",
-              border: "1px solid #E9D5FF",
+              background: "#FFF7ED",
+              border: "1px solid #E2E8F0",
               borderRadius: "9999px",
               padding: "12px 18px",
               display: "flex",
@@ -621,27 +621,27 @@ export default function MobileAuthScreen({
               marginBottom: "20px",
             }}
           >
-            {/* Purple Icon Circle */}
+            {/* Brand Icon Circle */}
             <div
               style={{
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                border: "1px solid #C4B5FD",
+                border: "1px solid #CBD5E1",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                background: "#EDE9FE",
+                background: "#FFEDD5",
               }}
             >
-              <FileCheck2 size={17} color="#7C3AED" />
+              <FileCheck2 size={17} color="#C2410C" />
             </div>
 
             <p
               style={{
                 fontSize: "12.5px",
-                color: "#4C1D95",
+                color: "#172036",
                 lineHeight: 1.4,
                 margin: 0,
                 fontWeight: 500,
@@ -662,7 +662,7 @@ export default function MobileAuthScreen({
               style={{
                 background: "none",
                 border: "none",
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontSize: "13px",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -713,7 +713,7 @@ export default function MobileAuthScreen({
                 style={{
                   fontSize: "27px",
                   fontWeight: 800,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   lineHeight: 1.15,
                   letterSpacing: "-0.5px",
                   marginBottom: "6px",
@@ -771,7 +771,7 @@ export default function MobileAuthScreen({
               style={{
                 fontSize: "19px",
                 fontWeight: 800,
-                color: "#1e1b4b",
+                color: "#0B1220",
                 letterSpacing: "0.2px",
               }}
             >
@@ -783,7 +783,7 @@ export default function MobileAuthScreen({
               style={{
                 background: "none",
                 border: "none",
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontSize: "12px",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -820,21 +820,21 @@ export default function MobileAuthScreen({
                   width: "48px",
                   height: "48px",
                   borderRadius: "50%",
-                  border: digit ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                  border: digit ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                   background: "#ffffff",
                   fontSize: "20px",
                   fontWeight: 700,
                   textAlign: "center",
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   outline: "none",
                   transition: "all 0.15s ease",
                   boxShadow: digit
-                    ? "0 4px 12px rgba(124, 58, 237, 0.22)"
+                    ? "0 4px 12px rgba(194, 65, 12, 0.22)"
                     : "0 2px 8px rgba(0, 0, 0, 0.06)",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#7c3aed";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.2)";
+                  e.target.style.borderColor = "#C2410C";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.2)";
                 }}
                 onBlur={(e) => {
                   if (!digit) {
@@ -860,7 +860,7 @@ export default function MobileAuthScreen({
             <span>Resend OTP in </span>
             <span
               style={{
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontWeight: 800,
                 fontFamily: "var(--font-mono), monospace",
               }}
@@ -888,7 +888,7 @@ export default function MobileAuthScreen({
             </div>
           )}
 
-          {/* Verify OTP Button (Unified Royal Purple Theme) */}
+          {/* Verify OTP Button (Unified Brand Theme) */}
           <button
             type="button"
             onClick={handleVerifyOtp}
@@ -898,9 +898,9 @@ export default function MobileAuthScreen({
               height: "56px",
               background:
                 otp.join("").length === 6
-                  ? "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)"
-                  : "#e9d5ff",
-              color: otp.join("").length === 6 ? "#ffffff" : "#7c3aed",
+                  ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                  : "#E2E8F0",
+              color: otp.join("").length === 6 ? "#ffffff" : "#C2410C",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
@@ -908,7 +908,7 @@ export default function MobileAuthScreen({
               cursor: otp.join("").length === 6 ? "pointer" : "not-allowed",
               boxShadow:
                 otp.join("").length === 6
-                  ? "0 10px 25px -5px rgba(124, 58, 237, 0.45)"
+                  ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
                   : "none",
               display: "flex",
               alignItems: "center",
@@ -935,11 +935,11 @@ export default function MobileAuthScreen({
               alignItems: "center",
               justifyContent: "center",
               gap: "10px",
-              background: "#FAF5FF",
-              border: "1px solid #E9D5FF",
+              background: "#FFF7ED",
+              border: "1px solid #E2E8F0",
               borderRadius: "9999px",
               padding: "12px 20px",
-              boxShadow: "0 2px 8px rgba(124, 58, 237, 0.05)",
+              boxShadow: "0 2px 8px rgba(194, 65, 12, 0.05)",
             }}
           >
             <div
@@ -947,11 +947,11 @@ export default function MobileAuthScreen({
                 width: "24px",
                 height: "24px",
                 borderRadius: "50%",
-                background: "rgba(124, 58, 237, 0.12)",
+                background: "rgba(194, 65, 12, 0.12)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#7C3AED",
+                color: "#C2410C",
                 fontWeight: 800,
                 fontSize: "12px",
                 flexShrink: 0,
@@ -959,7 +959,7 @@ export default function MobileAuthScreen({
             >
               ?
             </div>
-            <span style={{ fontSize: "13px", color: "#4C1D95", fontWeight: 600 }}>
+            <span style={{ fontSize: "13px", color: "#172036", fontWeight: 600 }}>
               Didn’t receive OTP?
             </span>
             <button
@@ -968,7 +968,7 @@ export default function MobileAuthScreen({
               style={{
                 background: "transparent",
                 border: "none",
-                color: "#7C3AED",
+                color: "#C2410C",
                 fontSize: "13px",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -988,6 +988,7 @@ export default function MobileAuthScreen({
       {step === "business" && (
         <BusinessDetailsForm
           showHeaderFooter={false}
+          defaultValues={businessData || undefined}
           onSuccess={(data) => {
             setBusinessData(data);
             setStep("contact");
@@ -1001,6 +1002,7 @@ export default function MobileAuthScreen({
       {step === "contact" && (
         <ContactPersonForm
           showHeaderFooter={false}
+          defaultValues={contactData || undefined}
           onSuccess={(data) => {
             setContactData(data);
             setStep("address");
@@ -1014,6 +1016,7 @@ export default function MobileAuthScreen({
       {step === "address" && (
         <BusinessAddressForm
           showHeaderFooter={false}
+          defaultValues={addressData || undefined}
           onSuccess={(data: BusinessAddressData) => {
             setAddressData(data);
             setStep("documents");
@@ -1083,7 +1086,7 @@ export default function MobileAuthScreen({
             style={{
               fontSize: "23px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               textAlign: "center",
               marginBottom: "6px",
             }}
@@ -1118,36 +1121,36 @@ export default function MobileAuthScreen({
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>Mobile Number</span>
-              <span style={{ fontSize: "13px", fontFamily: "var(--font-mono), monospace", color: "#1e1b4b", fontWeight: 700 }}>
-                {selectedCountry.code} {phoneNumber || "98201 54321"}
+              <span style={{ fontSize: "13px", fontFamily: "var(--font-mono), monospace", color: "#0B1220", fontWeight: 700 }}>
+                {selectedCountry.code} {phoneNumber || "—"}
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>Company Name</span>
-              <span style={{ fontSize: "13px", color: "#1e1b4b", fontWeight: 700 }}>
-                {businessData?.companyName || "BuildWell Traders Pvt. Ltd."}
+              <span style={{ fontSize: "13px", color: "#0B1220", fontWeight: 700 }}>
+                {businessData?.companyName || "—"}
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>GSTIN</span>
-              <span style={{ fontSize: "12px", fontFamily: "var(--font-mono), monospace", color: "#6d28d9", fontWeight: 700 }}>
-                {businessData?.gstin || "29ABCDE1234F1Z5"}
+              <span style={{ fontSize: "12px", fontFamily: "var(--font-mono), monospace", color: "#9A3412", fontWeight: 700 }}>
+                {businessData?.gstin || "—"}
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>Contact Person</span>
-              <span style={{ fontSize: "13px", color: "#1e1b4b", fontWeight: 700 }}>
-                {contactData?.fullName || "Archit Tiwari"}
+              <span style={{ fontSize: "13px", color: "#0B1220", fontWeight: 700 }}>
+                {contactData?.fullName || "—"}
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600, flexShrink: 0 }}>Business Address</span>
-              <span style={{ fontSize: "12.5px", color: "#1e1b4b", fontWeight: 700, textAlign: "right", maxWidth: "60%" }}>
-                {addressData ? `${addressData.address}, ${addressData.city}, ${addressData.state} - ${addressData.pinCode}` : "C 292 Kidwai Nagar, Kanpur, Uttar Pradesh - 208027"}
+              <span style={{ fontSize: "12.5px", color: "#0B1220", fontWeight: 700, textAlign: "right", maxWidth: "60%" }}>
+                {addressData ? `${addressData.address}, ${addressData.city}, ${addressData.state} - ${addressData.pinCode}` : "—"}
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
@@ -1155,7 +1158,11 @@ export default function MobileAuthScreen({
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>KYC Documents</span>
               <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
                 <Check size={14} strokeWidth={2.5} />
-                <span>4/4 Uploaded</span>
+                <span>
+                  {documentData?.documents
+                    ? `${Object.values(documentData.documents).filter(Boolean).length}/4 Uploaded`
+                    : "Submitted"}
+                </span>
               </span>
             </div>
           </div>
@@ -1171,14 +1178,14 @@ export default function MobileAuthScreen({
             style={{
               width: "100%",
               height: "56px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1195,11 +1202,13 @@ export default function MobileAuthScreen({
       {/* 6. BOTTOM ARCHITECTURAL 3D SILHOUETTE (CRANES & SILOS)     */}
       {/* ========================================================== */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",

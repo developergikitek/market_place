@@ -47,10 +47,10 @@ export default function SellerLoginForm({
   useEffect(() => {
     setLoginMethod(initialMethod);
   }, [initialMethod]);
-  const [email, setEmail] = useState("seller@buildmart.com");
-  const [password, setPassword] = useState("••••••••••••");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState("9820154321");
+  const [mobileNumber, setMobileNumber] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -141,7 +141,7 @@ export default function SellerLoginForm({
             style={{
               fontSize: "27px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               lineHeight: 1.15,
               letterSpacing: "-0.5px",
               marginBottom: "6px",
@@ -165,7 +165,7 @@ export default function SellerLoginForm({
             <span
               onClick={handleSignUp}
               style={{
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontWeight: 700,
                 cursor: "pointer",
                 textDecoration: "underline",
@@ -184,8 +184,8 @@ export default function SellerLoginForm({
             height: "84px",
             borderRadius: "18px",
             overflow: "hidden",
-            boxShadow: "0 8px 20px -4px rgba(124, 58, 237, 0.25)",
-            border: "2px solid rgba(124, 58, 237, 0.25)",
+            boxShadow: "0 8px 20px -4px rgba(194, 65, 12, 0.25)",
+            border: "2px solid rgba(194, 65, 12, 0.25)",
             background: "#ffffff",
             flexShrink: 0,
           }}
@@ -264,14 +264,14 @@ export default function SellerLoginForm({
                     padding: "0 18px",
                     fontSize: "14.5px",
                     fontWeight: 600,
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                     transition: "all 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#7c3aed";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e2e8f0";
@@ -334,14 +334,14 @@ export default function SellerLoginForm({
                     padding: "0 46px 0 18px",
                     fontSize: "14.5px",
                     fontWeight: 600,
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                     transition: "all 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#7c3aed";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e2e8f0";
@@ -380,7 +380,7 @@ export default function SellerLoginForm({
               style={{
                 background: "none",
                 border: "none",
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontSize: "12.5px",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -419,14 +419,14 @@ export default function SellerLoginForm({
             style={{
               width: "100%",
               height: "56px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
               fontWeight: 700,
               cursor: isLoading ? "not-allowed" : "pointer",
-              boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -437,12 +437,12 @@ export default function SellerLoginForm({
             onMouseEnter={(e) => {
               if (!isLoading) {
                 e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(124, 58, 237, 0.55)";
+                e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(194, 65, 12, 0.55)";
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(124, 58, 237, 0.45)";
+              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(194, 65, 12, 0.45)";
             }}
           >
             {isLoading ? (
@@ -499,7 +499,7 @@ export default function SellerLoginForm({
               alignItems: "center",
               justifyContent: "center",
               gap: "10px",
-              color: "#1e1b4b",
+              color: "#0B1220",
               fontSize: "14px",
               fontWeight: 700,
               cursor: "pointer",
@@ -507,15 +507,15 @@ export default function SellerLoginForm({
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#7c3aed";
-              e.currentTarget.style.background = "rgba(124, 58, 237, 0.04)";
-              e.currentTarget.style.color = "#7c3aed";
+              e.currentTarget.style.borderColor = "#C2410C";
+              e.currentTarget.style.background = "rgba(194, 65, 12, 0.04)";
+              e.currentTarget.style.color = "#C2410C";
               e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "#e2e8f0";
               e.currentTarget.style.background = "#ffffff";
-              e.currentTarget.style.color = "#1e1b4b";
+              e.currentTarget.style.color = "#0B1220";
               e.currentTarget.style.transform = "translateY(0)";
             }}
           >
@@ -524,8 +524,8 @@ export default function SellerLoginForm({
                 width: "28px",
                 height: "28px",
                 borderRadius: "8px",
-                background: "rgba(124, 58, 237, 0.1)",
-                color: "#7c3aed",
+                background: "rgba(194, 65, 12, 0.1)",
+                color: "#C2410C",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -602,7 +602,7 @@ export default function SellerLoginForm({
                       padding: "0 14px",
                       fontSize: "14px",
                       fontWeight: 700,
-                      color: "#1e1b4b",
+                      color: "#0B1220",
                       borderRight: "1px solid #e2e8f0",
                       display: "flex",
                       alignItems: "center",
@@ -627,7 +627,7 @@ export default function SellerLoginForm({
                       padding: "0 16px",
                       fontSize: "14.5px",
                       fontWeight: 600,
-                      color: "#1e1b4b",
+                      color: "#0B1220",
                       outline: "none",
                       background: "transparent",
                     }}
@@ -676,14 +676,14 @@ export default function SellerLoginForm({
             style={{
               width: "100%",
               height: "56px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
               fontWeight: 700,
               cursor: isLoading ? "not-allowed" : "pointer",
-              boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -694,12 +694,12 @@ export default function SellerLoginForm({
             onMouseEnter={(e) => {
               if (!isLoading) {
                 e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(124, 58, 237, 0.55)";
+                e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(194, 65, 12, 0.55)";
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(124, 58, 237, 0.45)";
+              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(194, 65, 12, 0.45)";
             }}
           >
             {isLoading ? (
@@ -756,7 +756,7 @@ export default function SellerLoginForm({
               alignItems: "center",
               justifyContent: "center",
               gap: "10px",
-              color: "#1e1b4b",
+              color: "#0B1220",
               fontSize: "14px",
               fontWeight: 700,
               cursor: "pointer",
@@ -764,15 +764,15 @@ export default function SellerLoginForm({
               boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#7c3aed";
-              e.currentTarget.style.background = "rgba(124, 58, 237, 0.04)";
-              e.currentTarget.style.color = "#7c3aed";
+              e.currentTarget.style.borderColor = "#C2410C";
+              e.currentTarget.style.background = "rgba(194, 65, 12, 0.04)";
+              e.currentTarget.style.color = "#C2410C";
               e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "#e2e8f0";
               e.currentTarget.style.background = "#ffffff";
-              e.currentTarget.style.color = "#1e1b4b";
+              e.currentTarget.style.color = "#0B1220";
               e.currentTarget.style.transform = "translateY(0)";
             }}
           >
@@ -781,8 +781,8 @@ export default function SellerLoginForm({
                 width: "28px",
                 height: "28px",
                 borderRadius: "8px",
-                background: "rgba(124, 58, 237, 0.1)",
-                color: "#7c3aed",
+                background: "rgba(194, 65, 12, 0.1)",
+                color: "#C2410C",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -814,8 +814,8 @@ export default function SellerLoginForm({
       {/* Register New Account CTA Button (Leads to Registration Funnel) */}
       <div
         style={{
-          background: "linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, rgba(168, 85, 247, 0.08) 100%)",
-          border: "1.5px solid rgba(124, 58, 237, 0.25)",
+          background: "linear-gradient(135deg, rgba(194, 65, 12, 0.06) 0%, rgba(148, 163, 184, 0.08) 100%)",
+          border: "1.5px solid rgba(194, 65, 12, 0.25)",
           borderRadius: "18px",
           padding: "14px 16px",
           display: "flex",
@@ -826,12 +826,12 @@ export default function SellerLoginForm({
         }}
         onClick={handleSignUp}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "#7c3aed";
+          e.currentTarget.style.borderColor = "#C2410C";
           e.currentTarget.style.transform = "translateY(-1px)";
-          e.currentTarget.style.boxShadow = "0 6px 16px rgba(124, 58, 237, 0.15)";
+          e.currentTarget.style.boxShadow = "0 6px 16px rgba(194, 65, 12, 0.15)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "rgba(124, 58, 237, 0.25)";
+          e.currentTarget.style.borderColor = "rgba(194, 65, 12, 0.25)";
           e.currentTarget.style.transform = "translateY(0)";
           e.currentTarget.style.boxShadow = "none";
         }}
@@ -842,7 +842,7 @@ export default function SellerLoginForm({
               width: "38px",
               height: "38px",
               borderRadius: "10px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               display: "flex",
               alignItems: "center",
@@ -854,11 +854,11 @@ export default function SellerLoginForm({
           </div>
 
           <div>
-            <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e1b4b", lineHeight: 1.2 }}>
-              Don&apos;t have an account? <span style={{ color: "#7c3aed" }}>Sign Up</span>
+            <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#0B1220", lineHeight: 1.2 }}>
+              Don&apos;t have an account? <span style={{ color: "#C2410C" }}>Sign Up</span>
             </div>
-            <div style={{ fontSize: "12px", color: "#6d28d9", fontWeight: 600, marginTop: "2px" }}>
-              Sign Up / Register as Seller on BuildMart
+            <div style={{ fontSize: "12px", color: "#9A3412", fontWeight: 600, marginTop: "2px" }}>
+              Sign Up / Register as Seller on Makaano
             </div>
           </div>
         </div>
@@ -869,11 +869,11 @@ export default function SellerLoginForm({
             height: "32px",
             borderRadius: "50%",
             background: "#ffffff",
-            border: "1px solid rgba(124, 58, 237, 0.2)",
+            border: "1px solid rgba(194, 65, 12, 0.2)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#6d28d9",
+            color: "#9A3412",
             flexShrink: 0,
           }}
         >
@@ -892,14 +892,15 @@ export default function SellerLoginForm({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
-      {/* 1. Curved Brand Header (Royal Purple Theme) */}
+      {/* 1. Curved Brand Header (Navy Theme) */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -907,7 +908,7 @@ export default function SellerLoginForm({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -924,7 +925,7 @@ export default function SellerLoginForm({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -939,7 +940,7 @@ export default function SellerLoginForm({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -950,7 +951,7 @@ export default function SellerLoginForm({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -960,14 +961,17 @@ export default function SellerLoginForm({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

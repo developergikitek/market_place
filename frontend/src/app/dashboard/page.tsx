@@ -164,13 +164,13 @@ const TOP_CATEGORIES = [
 // Sales By Channel Dataset
 const SALES_CHANNELS = [
   {
-    name: "BuildMart App",
+    name: "Makaano App",
     percentage: "65%",
     amount: "₹8,29,030",
     color: "#f59e0b", // Amber
   },
   {
-    name: "BuildMart Website",
+    name: "Makaano Website",
     percentage: "25%",
     amount: "₹3,18,857",
     color: "#3b82f6", // Blue
@@ -179,7 +179,7 @@ const SALES_CHANNELS = [
     name: "API / Integrations",
     percentage: "10%",
     amount: "₹1,27,543",
-    color: "#3b0764", // Royal BuildMart purple
+    color: "#0B1220", // Makaano navy
   },
 ];
 
@@ -225,19 +225,19 @@ export default function DashboardPage() {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#f8f7fc",
+        background: "#F8FAFC",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (BuildMart Royal Purple Theme)  */}
+      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -271,16 +271,16 @@ export default function DashboardPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </Link>
@@ -313,7 +313,7 @@ export default function DashboardPage() {
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -361,7 +361,7 @@ export default function DashboardPage() {
           <div style={{ position: "relative" }}>
             {searchOpen ? (
               <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.15)", borderRadius: "8px", padding: "4px 8px" }}>
-                <Search size={16} color="#d8b4fe" />
+                <Search size={16} color="#CBD5E1" />
                 <input
                   type="text"
                   placeholder="Search orders, SKU..."
@@ -381,7 +381,7 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => setSearchOpen(false)}
-                  style={{ background: "transparent", border: "none", color: "#d8b4fe", cursor: "pointer" }}
+                  style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer" }}
                 >
                   <X size={14} />
                 </button>
@@ -394,7 +394,7 @@ export default function DashboardPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -418,7 +418,7 @@ export default function DashboardPage() {
               style={{
                 background: "transparent",
                 border: "none",
-                color: "#d8b4fe",
+                color: "#CBD5E1",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -444,7 +444,7 @@ export default function DashboardPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "2px solid #4c1d95",
+                  border: "2px solid #172036",
                 }}
               >
                 12
@@ -498,7 +498,7 @@ export default function DashboardPage() {
             style={{
               background: "transparent",
               border: "none",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -525,14 +525,14 @@ export default function DashboardPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -541,11 +541,11 @@ export default function DashboardPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
                 Admin
               </span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -555,19 +555,19 @@ export default function DashboardPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition:
@@ -588,14 +588,14 @@ export default function DashboardPage() {
               padding: "10px 12px",
               borderRadius: "8px",
               color: "#ffffff",
-              background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+              background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
               border: "1px solid rgba(245, 158, 11, 0.4)",
               fontSize: "13.5px",
               fontWeight: 700,
               cursor: "pointer",
               textAlign: "left",
               width: "100%",
-              boxShadow: "0 4px 14px rgba(109, 40, 217, 0.4)",
+              boxShadow: "0 4px 14px rgba(154, 52, 18, 0.4)",
               textDecoration: "none",
               boxSizing: "border-box",
             }}
@@ -617,7 +617,7 @@ export default function DashboardPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -633,8 +633,8 @@ export default function DashboardPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.35)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.35)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "2px 7px",
                 borderRadius: "9999px",
@@ -655,7 +655,7 @@ export default function DashboardPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -678,7 +678,7 @@ export default function DashboardPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -691,7 +691,7 @@ export default function DashboardPage() {
               <BookOpen size={18} />
               <span>Catalog</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* 5. Inventory Link */}
@@ -704,7 +704,7 @@ export default function DashboardPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -717,7 +717,7 @@ export default function DashboardPage() {
               <Boxes size={18} />
               <span>Inventory</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* Other Navigation Links */}
@@ -746,7 +746,7 @@ export default function DashboardPage() {
                     justifyContent: "space-between",
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    color: "#d8b4fe",
+                    color: "#CBD5E1",
                     background: "transparent",
                     textDecoration: "none",
                     fontSize: "13px",
@@ -760,7 +760,7 @@ export default function DashboardPage() {
                     <Icon size={17} />
                     <span>{item.label}</span>
                   </div>
-                  {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                  {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 </Link>
               );
             }
@@ -776,7 +776,7 @@ export default function DashboardPage() {
                   justifyContent: "space-between",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -789,12 +789,12 @@ export default function DashboardPage() {
                   <Icon size={17} />
                   <span>{item.label}</span>
                 </div>
-                {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 {item.badge && (
                   <span
                     style={{
-                      background: "rgba(124, 58, 237, 0.3)",
-                      color: "#e9d5ff",
+                      background: "rgba(194, 65, 12, 0.3)",
+                      color: "#E2E8F0",
                       fontSize: "11px",
                       padding: "1px 6px",
                       borderRadius: "9999px",
@@ -813,13 +813,13 @@ export default function DashboardPage() {
             style={{
               marginTop: "auto",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(168, 85, 247, 0.2)",
+              borderTop: "1px solid rgba(148, 163, 184, 0.2)",
             }}
           >
             <div
               style={{
                 background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(168, 85, 247, 0.25)",
+                border: "1px solid rgba(148, 163, 184, 0.25)",
                 borderRadius: "10px",
                 padding: "12px",
                 display: "flex",
@@ -831,7 +831,7 @@ export default function DashboardPage() {
                 <HelpCircle size={15} color="#fbbf24" />
                 <span>Need Help?</span>
               </div>
-              <span style={{ fontSize: "11px", color: "#d8b4fe" }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
                 Our seller support team is here
               </span>
               <a
@@ -848,8 +848,8 @@ export default function DashboardPage() {
                 Contact Support →
               </a>
             </div>
-            <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
-              © 2025 BuildMart<br />All rights reserved.
+            <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "12px", paddingLeft: "4px" }}>
+              © 2025 Makaano<br />All rights reserved.
             </div>
           </div>
         </aside>
@@ -952,13 +952,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px 22px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
                 transition: "transform 0.15s ease, box-shadow 0.15s ease",
               }}
             >
@@ -1155,13 +1155,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Card Header: Title & Dropdown */}
@@ -1335,13 +1335,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Card Header */}
@@ -1354,7 +1354,7 @@ export default function DashboardPage() {
                   style={{
                     fontSize: "12.5px",
                     fontWeight: 600,
-                    color: "#7c3aed",
+                    color: "#C2410C",
                     textDecoration: "none",
                   }}
                 >
@@ -1405,13 +1405,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Card Header */}
@@ -1424,7 +1424,7 @@ export default function DashboardPage() {
                   style={{
                     fontSize: "12.5px",
                     fontWeight: 600,
-                    color: "#7c3aed",
+                    color: "#C2410C",
                     textDecoration: "none",
                   }}
                 >
@@ -1497,13 +1497,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Header */}
@@ -1609,13 +1609,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Header */}
@@ -1687,7 +1687,7 @@ export default function DashboardPage() {
                       cy="50"
                       r="38"
                       fill="transparent"
-                      stroke="#3b0764"
+                      stroke="#0B1220"
                       strokeWidth="14"
                       strokeDasharray="23.88 238.76"
                       strokeDashoffset="-214.88"
@@ -1740,13 +1740,13 @@ export default function DashboardPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "14px",
                 padding: "20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               {/* Header */}

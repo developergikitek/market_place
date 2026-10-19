@@ -22,26 +22,26 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              background: "rgba(124, 58, 237, 0.08)",
-              border: "1px solid rgba(124, 58, 237, 0.25)",
+              background: "rgba(194, 65, 12, 0.08)",
+              border: "1px solid rgba(194, 65, 12, 0.25)",
               padding: "6px 14px",
               borderRadius: "20px",
               width: "fit-content",
-              color: "#7c3aed",
+              color: "#C2410C",
               fontSize: "12px",
               fontWeight: 700,
               fontFamily: "var(--font-mono), monospace",
             }}
           >
-            <HardHat size={14} color="#7c3aed" />
-            <span>BUILDMART SELLER & BUYER ECOSYSTEM</span>
+            <HardHat size={14} color="#C2410C" />
+            <span>MAKAANO SELLER & BUYER ECOSYSTEM</span>
           </div>
 
           <h1
             style={{
               fontSize: "44px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               lineHeight: 1.16,
               letterSpacing: "-1px",
               fontFamily: "var(--font-heading), sans-serif",
@@ -50,7 +50,7 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
             India&apos;s Institutional <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #F97316 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
@@ -79,14 +79,14 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              color: "#6d28d9",
+              color: "#9A3412",
               fontSize: "12.5px",
               fontWeight: 600,
               fontFamily: "var(--font-mono), monospace",
               paddingTop: "6px",
             }}
           >
-            <PhoneCall size={14} color="#7c3aed" />
+            <PhoneCall size={14} color="#C2410C" />
             <span>INSTITUTIONAL DESK: 1800-419-5566 (TOLL-FREE)</span>
           </div>
         </aside>
@@ -99,7 +99,7 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
 
       {/* Desktop Footer (Hidden on Mobile) */}
       <footer className="auth-desktop-footer">
-        <div>BUILDMART TECHNOLOGIES PVT. LTD. // CIN: U72900MH2024PTC394182</div>
+        <div>MAKAANO TECHNOLOGIES PVT. LTD. // CIN: U72900MH2024PTC394182</div>
         <div>IS:1786 • IS:12269 • ISO 9001:2015 CERTIFIED B2B PLATFORM</div>
       </footer>
     </main>

@@ -77,7 +77,7 @@ export default function InventoryPage() {
   const [stockActionType, setStockActionType] = useState<"add" | "set">("add");
   const [stockQuantityInput, setStockQuantityInput] = useState<string>("50");
   const [stockWarehouseInput, setStockWarehouseInput] = useState<string>(
-    "BuildMart FC-Pune (MH-01)"
+    "Makaano FC-Pune (MH-01)"
   );
   const [stockReasonInput, setStockReasonInput] = useState<InventoryMovementReasonType>("RESTOCK");
   const [stockReferenceNote, setStockReferenceNote] = useState<string>("");
@@ -387,19 +387,19 @@ export default function InventoryPage() {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        background: "#f8f7fc",
+        background: "#F8FAFC",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (BuildMart Royal Purple Theme)  */}
+      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -425,16 +425,16 @@ export default function InventoryPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </div>
@@ -467,7 +467,7 @@ export default function InventoryPage() {
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -527,14 +527,14 @@ export default function InventoryPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -543,11 +543,11 @@ export default function InventoryPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
                 Admin
               </span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -557,19 +557,19 @@ export default function InventoryPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition:
@@ -588,7 +588,7 @@ export default function InventoryPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -610,7 +610,7 @@ export default function InventoryPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -625,8 +625,8 @@ export default function InventoryPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.35)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.35)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "2px 7px",
                 borderRadius: "9999px",
@@ -647,7 +647,7 @@ export default function InventoryPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -670,7 +670,7 @@ export default function InventoryPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -694,14 +694,14 @@ export default function InventoryPage() {
               padding: "10px 12px",
               borderRadius: "8px",
               color: "#ffffff",
-              background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+              background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
               border: "none",
               fontSize: "13.5px",
               fontWeight: 700,
               cursor: "pointer",
               textAlign: "left",
               width: "100%",
-              boxShadow: "0 4px 14px rgba(109, 40, 217, 0.4)",
+              boxShadow: "0 4px 14px rgba(154, 52, 18, 0.4)",
             }}
           >
             <Boxes size={18} color="#ffffff" />
@@ -733,7 +733,7 @@ export default function InventoryPage() {
                   justifyContent: "space-between",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -746,12 +746,12 @@ export default function InventoryPage() {
                   <Icon size={17} />
                   <span>{item.label}</span>
                 </div>
-                {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 {item.badge && (
                   <span
                     style={{
-                      background: "rgba(124, 58, 237, 0.3)",
-                      color: "#e9d5ff",
+                      background: "rgba(194, 65, 12, 0.3)",
+                      color: "#E2E8F0",
                       fontSize: "11px",
                       padding: "1px 6px",
                       borderRadius: "9999px",
@@ -765,8 +765,8 @@ export default function InventoryPage() {
             );
           })}
 
-          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "auto", paddingLeft: "4px" }}>
-            © 2025 BuildMart<br />All rights reserved.
+          <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "auto", paddingLeft: "4px" }}>
+            © 2025 Makaano<br />All rights reserved.
           </div>
         </aside>
 
@@ -791,7 +791,7 @@ export default function InventoryPage() {
                   style={{
                     fontSize: "30px",
                     fontWeight: 800,
-                    color: "#3b0764",
+                    color: "#0B1220",
                     letterSpacing: "-0.5px",
                     margin: 0,
                     lineHeight: 1.2,
@@ -818,13 +818,13 @@ export default function InventoryPage() {
                   gap: "8px",
                   padding: "0 20px",
                   borderRadius: "8px",
-                  background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                  background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                   border: "none",
                   color: "#ffffff",
                   fontSize: "13.5px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                  boxShadow: "0 4px 14px rgba(194, 65, 12, 0.35)",
                   transition: "all 0.15s ease",
                 }}
               >
@@ -849,16 +849,16 @@ export default function InventoryPage() {
                   padding: "0 16px",
                   borderRadius: "8px",
                   background: "#ffffff",
-                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
-                  color: "#6d28d9",
+                  border: "1.5px solid rgba(194, 65, 12, 0.25)",
+                  color: "#9A3412",
                   fontSize: "13.5px",
                   fontWeight: 600,
                   cursor: "pointer",
                   transition: "all 0.15s ease",
-                  boxShadow: "0 1px 4px rgba(124, 58, 237, 0.08)",
+                  boxShadow: "0 1px 4px rgba(194, 65, 12, 0.08)",
                 }}
               >
-                <RefreshCw size={14} color="#7c3aed" className={isLoadingApi ? "animate-spin" : ""} />
+                <RefreshCw size={14} color="#C2410C" className={isLoadingApi ? "animate-spin" : ""} />
                 <span>Refresh Data</span>
               </button>
 
@@ -874,16 +874,16 @@ export default function InventoryPage() {
                   padding: "0 18px",
                   borderRadius: "8px",
                   background: "#ffffff",
-                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
-                  color: "#4c1d95",
+                  border: "1.5px solid rgba(194, 65, 12, 0.25)",
+                  color: "#172036",
                   fontSize: "13.5px",
                   fontWeight: 600,
                   cursor: "pointer",
                   transition: "all 0.15s ease",
-                  boxShadow: "0 1px 3px rgba(124, 58, 237, 0.05)",
+                  boxShadow: "0 1px 3px rgba(194, 65, 12, 0.05)",
                 }}
               >
-                <Download size={15} color="#7c3aed" />
+                <Download size={15} color="#C2410C" />
                 <span>Export</span>
               </button>
             </div>
@@ -935,18 +935,18 @@ export default function InventoryPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.15)",
+                border: "1px solid rgba(194, 65, 12, 0.15)",
                 borderRadius: "14px",
                 padding: "18px 20px",
                 display: "flex",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total SKUs</span>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#4c1d95", marginTop: "6px", lineHeight: 1 }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "#172036", marginTop: "6px", lineHeight: 1 }}>
                   {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalSKUs}
                 </div>
               </div>
@@ -955,8 +955,8 @@ export default function InventoryPage() {
                   width: "40px",
                   height: "40px",
                   borderRadius: "50%",
-                  background: "rgba(124, 58, 237, 0.1)",
-                  color: "#7c3aed",
+                  background: "rgba(194, 65, 12, 0.1)",
+                  color: "#C2410C",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -981,7 +981,7 @@ export default function InventoryPage() {
             >
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total Stock</span>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#1e1b4b", marginTop: "6px", lineHeight: 1 }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "#0B1220", marginTop: "6px", lineHeight: 1 }}>
                   {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalStock.toLocaleString()}
                 </div>
               </div>
@@ -1127,14 +1127,14 @@ export default function InventoryPage() {
                 display: "flex",
                 alignItems: "center",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 height: "40px",
-                boxShadow: "0 1px 3px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 1px 3px rgba(194, 65, 12, 0.04)",
               }}
             >
-              <Search size={16} color="#7c3aed" />
+              <Search size={16} color="#C2410C" />
               <input
                 type="text"
                 value={searchQuery}
@@ -1150,7 +1150,7 @@ export default function InventoryPage() {
                   outline: "none",
                   paddingLeft: "10px",
                   fontSize: "13px",
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   background: "transparent",
                 }}
               />
@@ -1175,12 +1175,12 @@ export default function InventoryPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#4c1d95",
+                color: "#172036",
                 cursor: "pointer",
                 outline: "none",
               }}
@@ -1206,12 +1206,12 @@ export default function InventoryPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#4c1d95",
+                color: "#172036",
                 cursor: "pointer",
                 outline: "none",
               }}
@@ -1228,22 +1228,22 @@ export default function InventoryPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                border: "1.5px solid rgba(194, 65, 12, 0.25)",
                 borderRadius: "8px",
                 padding: "0 16px",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                color: "#4c1d95",
+                color: "#172036",
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
-                boxShadow: "0 1px 3px rgba(124, 58, 237, 0.05)",
+                boxShadow: "0 1px 3px rgba(194, 65, 12, 0.05)",
               }}
             >
-              <Filter size={15} color="#7c3aed" />
+              <Filter size={15} color="#C2410C" />
               <span>Filters</span>
-              <ChevronDown size={14} color="#7c3aed" />
+              <ChevronDown size={14} color="#C2410C" />
             </button>
           </div>
 
@@ -1261,13 +1261,13 @@ export default function InventoryPage() {
           >
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #ede9fe", background: "#fbfaff" }}>
+                <tr style={{ borderBottom: "1px solid #FFEDD5", background: "#fbfaff" }}>
                   <th style={{ padding: "14px 18px", width: "40px" }}>
                     <input
                       type="checkbox"
                       checked={selectedItemIds.length === paginatedItems.length && paginatedItems.length > 0}
                       onChange={handleSelectAll}
-                      style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#7c3aed" }}
+                      style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#C2410C" }}
                     />
                   </th>
                   <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "capitalize" }}>
@@ -1331,7 +1331,7 @@ export default function InventoryPage() {
                         key={item.id}
                         style={{
                           borderBottom: "1px solid #f1f5f9",
-                          background: isSelected ? "rgba(124, 58, 237, 0.05)" : "#ffffff",
+                          background: isSelected ? "rgba(194, 65, 12, 0.05)" : "#ffffff",
                           transition: "background-color 0.15s ease",
                         }}
                       >
@@ -1341,7 +1341,7 @@ export default function InventoryPage() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggleSelect(item.id)}
-                            style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#7c3aed" }}
+                            style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#C2410C" }}
                           />
                         </td>
 
@@ -1350,7 +1350,7 @@ export default function InventoryPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                             <ProductThumbnail type={item.iconType} name={item.title} />
                             <div>
-                              <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e1b4b", lineHeight: 1.3 }}>
+                              <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#0B1220", lineHeight: 1.3 }}>
                                 {item.title}
                               </div>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "3px" }}>
@@ -1479,7 +1479,7 @@ export default function InventoryPage() {
                                 right: "20px",
                                 top: "45px",
                                 background: "#ffffff",
-                                border: "1px solid rgba(124, 58, 237, 0.2)",
+                                border: "1px solid rgba(194, 65, 12, 0.2)",
                                 borderRadius: "10px",
                                 boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
                                 width: "210px",
@@ -1520,7 +1520,7 @@ export default function InventoryPage() {
                                   gap: "8px",
                                   padding: "9px 14px",
                                   fontSize: "12.5px",
-                                  color: "#4c1d95",
+                                  color: "#172036",
                                   fontWeight: 600,
                                   background: "transparent",
                                   border: "none",
@@ -1528,7 +1528,7 @@ export default function InventoryPage() {
                                   textAlign: "left",
                                 }}
                               >
-                                <Warehouse size={14} color="#7c3aed" />
+                                <Warehouse size={14} color="#C2410C" />
                                 <span>Adjust Stock Levels</span>
                               </button>
 
@@ -1541,7 +1541,7 @@ export default function InventoryPage() {
                                   gap: "8px",
                                   padding: "9px 14px",
                                   fontSize: "12.5px",
-                                  color: "#7c3aed",
+                                  color: "#C2410C",
                                   fontWeight: 600,
                                   background: "transparent",
                                   border: "none",
@@ -1549,7 +1549,7 @@ export default function InventoryPage() {
                                   textAlign: "left",
                                 }}
                               >
-                                <RefreshCw size={14} color="#7c3aed" />
+                                <RefreshCw size={14} color="#C2410C" />
                                 <span>{item.status === "In Stock" ? "Pause Listing (PUT)" : "Activate Listing (PUT)"}</span>
                               </button>
 
@@ -1596,14 +1596,14 @@ export default function InventoryPage() {
             >
               <span style={{ fontSize: "13px", color: "#64748b" }}>
                 Showing{" "}
-                <strong style={{ color: "#1e1b4b" }}>
+                <strong style={{ color: "#0B1220" }}>
                   {filteredItems.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}
                 </strong>{" "}
                 to{" "}
-                <strong style={{ color: "#1e1b4b" }}>
+                <strong style={{ color: "#0B1220" }}>
                   {Math.min(currentPage * itemsPerPage, filteredItems.length)}
                 </strong>{" "}
-                of <strong style={{ color: "#1e1b4b" }}>{stats.totalSKUs}</strong> products
+                of <strong style={{ color: "#0B1220" }}>{stats.totalSKUs}</strong> products
               </span>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1616,14 +1616,14 @@ export default function InventoryPage() {
                     width: "32px",
                     height: "32px",
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.22)",
                     background: "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: currentPage === 1 ? "#cbd5e1" : "#4c1d95",
+                    color: currentPage === 1 ? "#cbd5e1" : "#172036",
                     cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                    boxShadow: "0 1px 2px rgba(124, 58, 237, 0.05)",
+                    boxShadow: "0 1px 2px rgba(194, 65, 12, 0.05)",
                   }}
                 >
                   <ChevronLeft size={16} />
@@ -1664,7 +1664,7 @@ export default function InventoryPage() {
                           borderRadius: "50%",
                           border: "none",
                           background: isActive
-                            ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)"
+                            ? "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)"
                             : "transparent",
                           color: isActive ? "#ffffff" : "#64748b",
                           fontWeight: isActive ? 700 : 500,
@@ -1673,7 +1673,7 @@ export default function InventoryPage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
+                          boxShadow: isActive ? "0 2px 8px rgba(194, 65, 12, 0.35)" : "none",
                           transition: "all 0.15s ease",
                         }}
                       >
@@ -1691,14 +1691,14 @@ export default function InventoryPage() {
                     width: "32px",
                     height: "32px",
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.22)",
                     background: "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: currentPage === totalPages ? "#cbd5e1" : "#4c1d95",
+                    color: currentPage === totalPages ? "#cbd5e1" : "#172036",
                     cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                    boxShadow: "0 1px 2px rgba(124, 58, 237, 0.05)",
+                    boxShadow: "0 1px 2px rgba(194, 65, 12, 0.05)",
                   }}
                 >
                   <ChevronRight size={16} />
@@ -1710,7 +1710,7 @@ export default function InventoryPage() {
       </div>
 
       {/* ========================================================= */}
-      {/* ADD / ADJUST STOCK MODAL (BuildMart Royal Purple Theme)   */}
+      {/* ADD / ADJUST STOCK MODAL (Makaano Navy Theme)   */}
       {/* ========================================================= */}
       {isAddStockModalOpen && (
         <div
@@ -1732,8 +1732,8 @@ export default function InventoryPage() {
               borderRadius: "16px",
               width: "100%",
               maxWidth: "560px",
-              boxShadow: "0 20px 40px rgba(59, 7, 100, 0.25)",
-              border: "1px solid rgba(124, 58, 237, 0.2)",
+              boxShadow: "0 20px 40px rgba(11, 18, 32, 0.25)",
+              border: "1px solid rgba(194, 65, 12, 0.2)",
               overflow: "hidden",
               animation: "fadeIn 0.2s ease",
             }}
@@ -1746,11 +1746,11 @@ export default function InventoryPage() {
                 justifyContent: "space-between",
                 padding: "20px 24px",
                 borderBottom: "1px solid #f1f5f9",
-                background: "linear-gradient(135deg, #faf5ff 0%, #ffffff 100%)",
+                background: "linear-gradient(135deg, #FFF7ED 0%, #ffffff 100%)",
               }}
             >
               <div>
-                <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#3b0764", margin: 0 }}>
+                <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#0B1220", margin: 0 }}>
                   Add / Adjust Inventory Stock
                 </h2>
                 <p style={{ fontSize: "13px", color: "#64748b", margin: 0, marginTop: "2px" }}>
@@ -1776,7 +1776,7 @@ export default function InventoryPage() {
             <form onSubmit={handleSaveStock} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Product Select */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", marginBottom: "6px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                   Select Product / SKU *
                 </label>
                 <select
@@ -1786,10 +1786,10 @@ export default function InventoryPage() {
                     width: "100%",
                     height: "42px",
                     borderRadius: "8px",
-                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.25)",
                     padding: "0 12px",
                     fontSize: "13.5px",
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                   }}
@@ -1810,9 +1810,9 @@ export default function InventoryPage() {
                   style={{
                     padding: "10px",
                     borderRadius: "8px",
-                    border: stockActionType === "add" ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                    border: stockActionType === "add" ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                     background: stockActionType === "add" ? "#f5f3ff" : "#ffffff",
-                    color: stockActionType === "add" ? "#6d28d9" : "#64748b",
+                    color: stockActionType === "add" ? "#9A3412" : "#64748b",
                     fontWeight: 700,
                     fontSize: "13px",
                     cursor: "pointer",
@@ -1831,9 +1831,9 @@ export default function InventoryPage() {
                   style={{
                     padding: "10px",
                     borderRadius: "8px",
-                    border: stockActionType === "set" ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                    border: stockActionType === "set" ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                     background: stockActionType === "set" ? "#f5f3ff" : "#ffffff",
-                    color: stockActionType === "set" ? "#6d28d9" : "#64748b",
+                    color: stockActionType === "set" ? "#9A3412" : "#64748b",
                     fontWeight: 700,
                     fontSize: "13px",
                     cursor: "pointer",
@@ -1851,7 +1851,7 @@ export default function InventoryPage() {
               {/* Quantity & Warehouse in 2 columns */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                     Quantity Units *
                   </label>
                   <input
@@ -1865,11 +1865,11 @@ export default function InventoryPage() {
                       width: "100%",
                       height: "42px",
                       borderRadius: "8px",
-                      border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                      border: "1.5px solid rgba(194, 65, 12, 0.25)",
                       padding: "0 12px",
                       fontSize: "14px",
                       fontWeight: 700,
-                      color: "#1e1b4b",
+                      color: "#0B1220",
                       outline: "none",
                       boxSizing: "border-box",
                     }}
@@ -1877,7 +1877,7 @@ export default function InventoryPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                     Fulfillment Warehouse
                   </label>
                   <select
@@ -1887,17 +1887,17 @@ export default function InventoryPage() {
                       width: "100%",
                       height: "42px",
                       borderRadius: "8px",
-                      border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                      border: "1.5px solid rgba(194, 65, 12, 0.25)",
                       padding: "0 12px",
                       fontSize: "13.5px",
-                      color: "#1e1b4b",
+                      color: "#0B1220",
                       outline: "none",
                       background: "#ffffff",
                       boxSizing: "border-box",
                     }}
                   >
-                    <option value="BuildMart FC-Pune (MH-01)">BuildMart FC-Pune (MH-01)</option>
-                    <option value="BuildMart FC-Bhiwandi (MH-02)">BuildMart FC-Bhiwandi (MH-02)</option>
+                    <option value="Makaano FC-Pune (MH-01)">Makaano FC-Pune (MH-01)</option>
+                    <option value="Makaano FC-Bhiwandi (MH-02)">Makaano FC-Bhiwandi (MH-02)</option>
                     <option value="Merchant Hub Delhi-North">Merchant Hub Delhi-North</option>
                   </select>
                 </div>
@@ -1905,7 +1905,7 @@ export default function InventoryPage() {
 
               {/* Movement Reason (Django Enum: InventoryMovementReason) */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", marginBottom: "6px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                   Movement Reason *
                 </label>
                 <select
@@ -1915,10 +1915,10 @@ export default function InventoryPage() {
                     width: "100%",
                     height: "42px",
                     borderRadius: "8px",
-                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.25)",
                     padding: "0 12px",
                     fontSize: "13.5px",
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                   }}
@@ -1933,7 +1933,7 @@ export default function InventoryPage() {
 
               {/* Reference Note */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", marginBottom: "6px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#0B1220", marginBottom: "6px" }}>
                   Reference Note / PO Number
                 </label>
                 <input
@@ -1945,10 +1945,10 @@ export default function InventoryPage() {
                     width: "100%",
                     height: "42px",
                     borderRadius: "8px",
-                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.25)",
                     padding: "0 12px",
                     fontSize: "13.5px",
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     boxSizing: "border-box",
                   }}
@@ -1964,9 +1964,9 @@ export default function InventoryPage() {
                     height: "40px",
                     padding: "0 20px",
                     borderRadius: "8px",
-                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.25)",
                     background: "#ffffff",
-                    color: "#4c1d95",
+                    color: "#172036",
                     fontWeight: 600,
                     fontSize: "13.5px",
                     cursor: "pointer",
@@ -1983,7 +1983,7 @@ export default function InventoryPage() {
                     padding: "0 22px",
                     borderRadius: "8px",
                     border: "none",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     color: "#ffffff",
                     fontWeight: 700,
                     fontSize: "13.5px",
@@ -1991,7 +1991,7 @@ export default function InventoryPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                    boxShadow: "0 4px 14px rgba(194, 65, 12, 0.35)",
                     transition: "all 0.15s ease",
                   }}
                 >

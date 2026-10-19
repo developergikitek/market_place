@@ -12,7 +12,7 @@ interface Step2Props {
 }
 
 export default function Step2_OtpVerification({
-  phone = "98765 43210",
+  phone = "",
   countryCode = "+91",
   onSuccess,
   onEditPhone,
@@ -88,14 +88,15 @@ export default function Step2_OtpVerification({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
-      {/* 1. Curved Brand Header (Royal Purple Theme) */}
+      {/* 1. Curved Brand Header (Navy Theme) */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -103,7 +104,7 @@ export default function Step2_OtpVerification({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -120,7 +121,7 @@ export default function Step2_OtpVerification({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -135,7 +136,7 @@ export default function Step2_OtpVerification({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -146,7 +147,7 @@ export default function Step2_OtpVerification({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -185,7 +186,7 @@ export default function Step2_OtpVerification({
               style={{
                 fontSize: "27px",
                 fontWeight: 800,
-                color: "#1e1b4b",
+                color: "#0B1220",
                 lineHeight: 1.15,
                 letterSpacing: "-0.5px",
                 marginBottom: "6px",
@@ -242,7 +243,7 @@ export default function Step2_OtpVerification({
             style={{
               fontSize: "19px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               letterSpacing: "0.2px",
             }}
           >
@@ -254,7 +255,7 @@ export default function Step2_OtpVerification({
             style={{
               background: "none",
               border: "none",
-              color: "#7c3aed",
+              color: "#C2410C",
               fontSize: "12px",
               fontWeight: 700,
               cursor: "pointer",
@@ -292,21 +293,21 @@ export default function Step2_OtpVerification({
                   width: "48px",
                   height: "48px",
                   borderRadius: "50%",
-                  border: digit ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                  border: digit ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                   background: "#ffffff",
                   fontSize: "20px",
                   fontWeight: 700,
                   textAlign: "center",
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   outline: "none",
                   transition: "all 0.15s ease",
                   boxShadow: digit
-                    ? "0 4px 12px rgba(124, 58, 237, 0.22)"
+                    ? "0 4px 12px rgba(194, 65, 12, 0.22)"
                     : "0 2px 8px rgba(0, 0, 0, 0.06)",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#7c3aed";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.2)";
+                  e.target.style.borderColor = "#C2410C";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.2)";
                 }}
                 onBlur={(e) => {
                   if (!digit) {
@@ -332,7 +333,7 @@ export default function Step2_OtpVerification({
             <span>Resend OTP in </span>
             <span
               style={{
-                color: "#7c3aed",
+                color: "#C2410C",
                 fontWeight: 800,
                 fontFamily: "monospace",
               }}
@@ -360,7 +361,7 @@ export default function Step2_OtpVerification({
             </div>
           )}
 
-          {/* Verify OTP Button (Unified Royal Purple Theme) */}
+          {/* Verify OTP Button (Unified Brand Theme) */}
           <button
             type="submit"
             disabled={isLoading || otp.join("").length < 6}
@@ -369,9 +370,9 @@ export default function Step2_OtpVerification({
               height: "56px",
               background:
                 otp.join("").length === 6
-                  ? "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)"
-                  : "#e9d5ff",
-              color: otp.join("").length === 6 ? "#ffffff" : "#7c3aed",
+                  ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                  : "#E2E8F0",
+              color: otp.join("").length === 6 ? "#ffffff" : "#C2410C",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
@@ -379,7 +380,7 @@ export default function Step2_OtpVerification({
               cursor: otp.join("").length === 6 ? "pointer" : "not-allowed",
               boxShadow:
                 otp.join("").length === 6
-                  ? "0 10px 25px -5px rgba(124, 58, 237, 0.45)"
+                  ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
                   : "none",
               display: "flex",
               alignItems: "center",
@@ -407,11 +408,11 @@ export default function Step2_OtpVerification({
             alignItems: "center",
             justifyContent: "center",
             gap: "10px",
-            background: "#FAF5FF",
-            border: "1px solid #E9D5FF",
+            background: "#FFF7ED",
+            border: "1px solid #E2E8F0",
             borderRadius: "9999px",
             padding: "12px 20px",
-            boxShadow: "0 2px 8px rgba(124, 58, 237, 0.05)",
+            boxShadow: "0 2px 8px rgba(194, 65, 12, 0.05)",
           }}
         >
           <div
@@ -419,11 +420,11 @@ export default function Step2_OtpVerification({
               width: "24px",
               height: "24px",
               borderRadius: "50%",
-              background: "rgba(124, 58, 237, 0.12)",
+              background: "rgba(194, 65, 12, 0.12)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#7C3AED",
+              color: "#C2410C",
               fontWeight: 800,
               fontSize: "12px",
               flexShrink: 0,
@@ -431,7 +432,7 @@ export default function Step2_OtpVerification({
           >
             ?
           </div>
-          <span style={{ fontSize: "13px", color: "#4C1D95", fontWeight: 600 }}>
+          <span style={{ fontSize: "13px", color: "#172036", fontWeight: 600 }}>
             Didn’t receive OTP?
           </span>
           <button
@@ -440,7 +441,7 @@ export default function Step2_OtpVerification({
             style={{
               background: "transparent",
               border: "none",
-              color: "#7C3AED",
+              color: "#C2410C",
               fontSize: "13px",
               fontWeight: 700,
               cursor: "pointer",
@@ -455,14 +456,17 @@ export default function Step2_OtpVerification({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

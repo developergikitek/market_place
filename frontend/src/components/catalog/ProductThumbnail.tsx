@@ -43,8 +43,8 @@ export default function ProductThumbnail({ type, name }: ProductThumbnailProps) 
         return (
           <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
             {/* Asian Paints Apex Bucket */}
-            <path d="M11 14H29L27 32C27 33 26 34 25 34H15C14 34 13 33 13 32L11 14Z" fill="#581c87" />
-            <ellipse cx="20" cy="14" rx="9" ry="2.5" fill="#a855f7" />
+            <path d="M11 14H29L27 32C27 33 26 34 25 34H15C14 34 13 33 13 32L11 14Z" fill="#111A2E" />
+            <ellipse cx="20" cy="14" rx="9" ry="2.5" fill="#F97316" />
             <path d="M9 13C9 7 31 7 31 13" stroke="#cbd5e1" strokeWidth="1.5" fill="none" />
             <rect x="14" y="20" width="12" height="6" rx="1" fill="#facc15" />
           </svg>

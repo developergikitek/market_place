@@ -333,7 +333,7 @@ export default function OrdersPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `BuildMart_Orders_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `Makaano_Orders_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -378,8 +378,8 @@ export default function OrdersPage() {
       case "Returned":
         return {
           background: "#f5f3ff",
-          color: "#8b5cf6",
-          border: "1px solid rgba(139, 92, 246, 0.2)",
+          color: "#EA580C",
+          border: "1px solid rgba(234, 88, 12, 0.2)",
         };
       case "Unshipped":
         return {
@@ -402,19 +402,19 @@ export default function OrdersPage() {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#f8f7fc",
+        background: "#F8FAFC",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (BuildMart Royal Purple Theme)  */}
+      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -448,16 +448,16 @@ export default function OrdersPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </Link>
@@ -490,7 +490,7 @@ export default function OrdersPage() {
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -540,7 +540,7 @@ export default function OrdersPage() {
             style={{
               background: "transparent",
               border: "none",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               cursor: "pointer",
               padding: "6px",
               display: "flex",
@@ -558,7 +558,7 @@ export default function OrdersPage() {
               style={{
                 background: "transparent",
                 border: "none",
-                color: "#d8b4fe",
+                color: "#CBD5E1",
                 cursor: "pointer",
                 padding: "6px",
                 display: "flex",
@@ -581,7 +581,7 @@ export default function OrdersPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "2px solid #4c1d95",
+                  border: "2px solid #172036",
                 }}
               >
                 12
@@ -595,7 +595,7 @@ export default function OrdersPage() {
             style={{
               background: "transparent",
               border: "none",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               cursor: "pointer",
               padding: "6px",
               display: "flex",
@@ -620,14 +620,14 @@ export default function OrdersPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -636,11 +636,11 @@ export default function OrdersPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
                 Admin
               </span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -650,19 +650,19 @@ export default function OrdersPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition:
@@ -682,7 +682,7 @@ export default function OrdersPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -706,13 +706,13 @@ export default function OrdersPage() {
               padding: "10px 12px",
               borderRadius: "8px",
               color: "#ffffff",
-              background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+              background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
               border: "1px solid rgba(245, 158, 11, 0.4)",
               fontSize: "13.5px",
               fontWeight: 700,
               width: "100%",
               boxSizing: "border-box",
-              boxShadow: "0 4px 14px rgba(109, 40, 217, 0.4)",
+              boxShadow: "0 4px 14px rgba(154, 52, 18, 0.4)",
               textDecoration: "none",
             }}
           >
@@ -730,7 +730,7 @@ export default function OrdersPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -753,7 +753,7 @@ export default function OrdersPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -766,7 +766,7 @@ export default function OrdersPage() {
               <BookOpen size={18} />
               <span>Catalog</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* 5. Inventory Link */}
@@ -779,7 +779,7 @@ export default function OrdersPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -792,7 +792,7 @@ export default function OrdersPage() {
               <Boxes size={18} />
               <span>Inventory</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* Other Navigation Links */}
@@ -821,7 +821,7 @@ export default function OrdersPage() {
                     justifyContent: "space-between",
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    color: "#d8b4fe",
+                    color: "#CBD5E1",
                     background: "transparent",
                     textDecoration: "none",
                     fontSize: "13px",
@@ -835,7 +835,7 @@ export default function OrdersPage() {
                     <Icon size={17} />
                     <span>{item.label}</span>
                   </div>
-                  {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                  {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 </Link>
               );
             }
@@ -851,7 +851,7 @@ export default function OrdersPage() {
                   justifyContent: "space-between",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -864,12 +864,12 @@ export default function OrdersPage() {
                   <Icon size={17} />
                   <span>{item.label}</span>
                 </div>
-                {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 {item.badge && (
                   <span
                     style={{
-                      background: "rgba(124, 58, 237, 0.3)",
-                      color: "#e9d5ff",
+                      background: "rgba(194, 65, 12, 0.3)",
+                      color: "#E2E8F0",
                       fontSize: "11px",
                       padding: "1px 6px",
                       borderRadius: "9999px",
@@ -888,13 +888,13 @@ export default function OrdersPage() {
             style={{
               marginTop: "auto",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(168, 85, 247, 0.2)",
+              borderTop: "1px solid rgba(148, 163, 184, 0.2)",
             }}
           >
             <div
               style={{
                 background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(168, 85, 247, 0.25)",
+                border: "1px solid rgba(148, 163, 184, 0.25)",
                 borderRadius: "10px",
                 padding: "12px",
                 display: "flex",
@@ -906,7 +906,7 @@ export default function OrdersPage() {
                 <HelpCircle size={15} color="#fbbf24" />
                 <span>Need Help?</span>
               </div>
-              <span style={{ fontSize: "11px", color: "#d8b4fe" }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
                 Our support team is here
               </span>
               <a
@@ -923,8 +923,8 @@ export default function OrdersPage() {
                 Contact Support →
               </a>
             </div>
-            <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
-              © 2025 BuildMart<br />All rights reserved.
+            <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "12px", paddingLeft: "4px" }}>
+              © 2025 Makaano<br />All rights reserved.
             </div>
           </div>
         </aside>
@@ -977,9 +977,9 @@ export default function OrdersPage() {
           <div
             style={{
               background: "#ffffff",
-              border: "1px solid rgba(124, 58, 237, 0.12)",
+              border: "1px solid rgba(194, 65, 12, 0.12)",
               borderRadius: "16px",
-              boxShadow: "0 2px 12px rgba(124, 58, 237, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)",
+              boxShadow: "0 2px 12px rgba(194, 65, 12, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)",
               padding: "28px 32px",
               display: "flex",
               flexDirection: "column",
@@ -1102,8 +1102,8 @@ export default function OrdersPage() {
                     transition: "border-color 0.15s ease, box-shadow 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "#7c3aed";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.1)";
+                    e.currentTarget.style.borderColor = "#C2410C";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.1)";
                   }}
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = "#e2e8f0";
@@ -1394,7 +1394,7 @@ export default function OrdersPage() {
                                     borderRadius: "6px",
                                   }}
                                 >
-                                  <Eye size={15} color="#7c3aed" />
+                                  <Eye size={15} color="#C2410C" />
                                   <span>View Order Details</span>
                                 </button>
 
@@ -1581,7 +1581,7 @@ export default function OrdersPage() {
             {/* Modal Header */}
             <div
               style={{
-                background: "linear-gradient(135deg, #3b0764 0%, #4c1d95 100%)",
+                background: "linear-gradient(135deg, #0B1220 0%, #172036 100%)",
                 padding: "20px 24px",
                 display: "flex",
                 alignItems: "center",
@@ -1593,7 +1593,7 @@ export default function OrdersPage() {
                 <div style={{ fontSize: "18px", fontWeight: 800 }}>
                   Order #{selectedOrderForModal.orderId}
                 </div>
-                <div style={{ fontSize: "12px", color: "#d8b4fe", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", color: "#CBD5E1", marginTop: "2px" }}>
                   Placed on {selectedOrderForModal.orderDate}
                 </div>
               </div>
@@ -1647,7 +1647,7 @@ export default function OrdersPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div style={{ padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "#64748b" }}>
-                    <User size={14} color="#7c3aed" />
+                    <User size={14} color="#C2410C" />
                     <span>Customer Details</span>
                   </div>
                   <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b", marginTop: "4px" }}>
@@ -1660,7 +1660,7 @@ export default function OrdersPage() {
 
                 <div style={{ padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "#64748b" }}>
-                    <CreditCard size={14} color="#7c3aed" />
+                    <CreditCard size={14} color="#C2410C" />
                     <span>Payment Method</span>
                   </div>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b", marginTop: "4px" }}>
@@ -1675,7 +1675,7 @@ export default function OrdersPage() {
               {/* Delivery Address */}
               <div style={{ padding: "12px", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: "#64748b" }}>
-                  <MapPin size={14} color="#7c3aed" />
+                  <MapPin size={14} color="#C2410C" />
                   <span>Delivery Address</span>
                 </div>
                 <div style={{ fontSize: "13px", color: "#334155", marginTop: "4px", lineHeight: 1.4 }}>
@@ -1720,13 +1720,13 @@ export default function OrdersPage() {
                     height: "40px",
                     padding: "0 20px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     border: "none",
                     color: "#ffffff",
                     fontSize: "13px",
                     fontWeight: 700,
                     cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(124, 58, 237, 0.35)",
+                    boxShadow: "0 4px 12px rgba(194, 65, 12, 0.35)",
                   }}
                 >
                   Close

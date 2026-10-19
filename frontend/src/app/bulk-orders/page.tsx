@@ -276,7 +276,7 @@ export default function BulkOrdersPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `BuildMart_Bulk_Orders_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `Makaano_Bulk_Orders_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -350,19 +350,19 @@ export default function BulkOrdersPage() {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#f8f7fc",
+        background: "#F8FAFC",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (BuildMart Royal Purple Theme)  */}
+      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -395,16 +395,16 @@ export default function BulkOrdersPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </Link>
@@ -434,7 +434,7 @@ export default function BulkOrdersPage() {
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -477,7 +477,7 @@ export default function BulkOrdersPage() {
           <button
             type="button"
             title="Search"
-            style={{ background: "transparent", border: "none", color: "#d8b4fe", cursor: "pointer", padding: "6px" }}
+            style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
           >
             <Search size={19} />
           </button>
@@ -485,7 +485,7 @@ export default function BulkOrdersPage() {
             <button
               type="button"
               title="Notifications"
-              style={{ background: "transparent", border: "none", color: "#d8b4fe", cursor: "pointer", padding: "6px" }}
+              style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
             >
               <Bell size={19} />
               <span
@@ -503,7 +503,7 @@ export default function BulkOrdersPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "2px solid #4c1d95",
+                  border: "2px solid #172036",
                 }}
               >
                 12
@@ -513,7 +513,7 @@ export default function BulkOrdersPage() {
           <button
             type="button"
             title="Help"
-            style={{ background: "transparent", border: "none", color: "#d8b4fe", cursor: "pointer", padding: "6px" }}
+            style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
           >
             <HelpCircle size={19} />
           </button>
@@ -523,14 +523,14 @@ export default function BulkOrdersPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -539,9 +539,9 @@ export default function BulkOrdersPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>Admin</span>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>Admin</span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -551,19 +551,19 @@ export default function BulkOrdersPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition:
@@ -583,7 +583,7 @@ export default function BulkOrdersPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -606,7 +606,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -621,8 +621,8 @@ export default function BulkOrdersPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.35)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.35)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "2px 7px",
                 borderRadius: "9999px",
@@ -690,7 +690,7 @@ export default function BulkOrdersPage() {
                     borderRadius: "6px",
                     border: "none",
                     background: activeSubTab === "all" ? "rgba(245, 158, 11, 0.15)" : "transparent",
-                    color: activeSubTab === "all" ? "#fbbf24" : "#e9d5ff",
+                    color: activeSubTab === "all" ? "#fbbf24" : "#E2E8F0",
                     fontSize: "12.5px",
                     fontWeight: activeSubTab === "all" ? 700 : 500,
                     textAlign: "left",
@@ -707,7 +707,7 @@ export default function BulkOrdersPage() {
                     borderRadius: "6px",
                     border: "none",
                     background: activeSubTab === "quotesSent" ? "rgba(245, 158, 11, 0.15)" : "transparent",
-                    color: activeSubTab === "quotesSent" ? "#fbbf24" : "#e9d5ff",
+                    color: activeSubTab === "quotesSent" ? "#fbbf24" : "#E2E8F0",
                     fontSize: "12.5px",
                     fontWeight: activeSubTab === "quotesSent" ? 700 : 500,
                     textAlign: "left",
@@ -730,7 +730,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -743,7 +743,7 @@ export default function BulkOrdersPage() {
               <BookOpen size={18} />
               <span>Catalog</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           <Link
@@ -755,7 +755,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -768,7 +768,7 @@ export default function BulkOrdersPage() {
               <Boxes size={18} />
               <span>Inventory</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           <button
@@ -780,7 +780,7 @@ export default function BulkOrdersPage() {
               gap: "12px",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -804,7 +804,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13px",
@@ -817,7 +817,7 @@ export default function BulkOrdersPage() {
               <CreditCard size={17} />
               <span>Payments</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* Returns & Payouts */}
@@ -830,7 +830,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -845,8 +845,8 @@ export default function BulkOrdersPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.3)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.3)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "1px 6px",
                 borderRadius: "9999px",
@@ -866,7 +866,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -879,7 +879,7 @@ export default function BulkOrdersPage() {
               <Wallet size={17} />
               <span>Payouts</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </button>
 
           <button
@@ -891,7 +891,7 @@ export default function BulkOrdersPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -904,7 +904,7 @@ export default function BulkOrdersPage() {
               <BarChart3 size={17} />
               <span>Reports</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </button>
 
           {[
@@ -926,7 +926,7 @@ export default function BulkOrdersPage() {
                   gap: "12px",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -946,13 +946,13 @@ export default function BulkOrdersPage() {
             style={{
               marginTop: "auto",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(168, 85, 247, 0.2)",
+              borderTop: "1px solid rgba(148, 163, 184, 0.2)",
             }}
           >
             <div
               style={{
                 background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(168, 85, 247, 0.25)",
+                border: "1px solid rgba(148, 163, 184, 0.25)",
                 borderRadius: "10px",
                 padding: "12px",
                 display: "flex",
@@ -964,7 +964,7 @@ export default function BulkOrdersPage() {
                 <HelpCircle size={15} color="#fbbf24" />
                 <span>Need Help?</span>
               </div>
-              <span style={{ fontSize: "11px", color: "#d8b4fe" }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
                 Our support team is here
               </span>
               <a
@@ -981,8 +981,8 @@ export default function BulkOrdersPage() {
                 Contact Support →
               </a>
             </div>
-            <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
-              © 2025 BuildMart.<br />All rights reserved.
+            <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "12px", paddingLeft: "4px" }}>
+              © 2025 Makaano.<br />All rights reserved.
             </div>
           </div>
         </aside>
@@ -1103,13 +1103,13 @@ export default function BulkOrdersPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
                 padding: "18px 20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -1217,13 +1217,13 @@ export default function BulkOrdersPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
                 padding: "18px 20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -1255,13 +1255,13 @@ export default function BulkOrdersPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
                 padding: "18px 20px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -1277,7 +1277,7 @@ export default function BulkOrdersPage() {
                     height: "36px",
                     borderRadius: "10px",
                     background: "#f5f3ff",
-                    color: "#8b5cf6",
+                    color: "#EA580C",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1416,9 +1416,9 @@ export default function BulkOrdersPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
-                boxShadow: "0 2px 12px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 12px rgba(194, 65, 12, 0.04)",
                 padding: "20px 22px",
                 display: "flex",
                 flexDirection: "column",
@@ -1756,10 +1756,10 @@ export default function BulkOrdersPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
                 padding: "20px",
-                boxShadow: "0 2px 10px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 10px rgba(194, 65, 12, 0.04)",
                 display: "flex",
                 flexDirection: "column",
                 gap: "16px",
@@ -2039,7 +2039,7 @@ export default function BulkOrdersPage() {
           >
             <div
               style={{
-                background: "linear-gradient(135deg, #3b0764 0%, #4c1d95 100%)",
+                background: "linear-gradient(135deg, #0B1220 0%, #172036 100%)",
                 padding: "20px 24px",
                 display: "flex",
                 alignItems: "center",
@@ -2049,7 +2049,7 @@ export default function BulkOrdersPage() {
             >
               <div>
                 <div style={{ fontSize: "18px", fontWeight: 800 }}>Submit Official Quote</div>
-                <div style={{ fontSize: "12px", color: "#d8b4fe", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", color: "#CBD5E1", marginTop: "2px" }}>
                   RFQ Ref: {selectedOrderForQuote.orderId} • {selectedOrderForQuote.companyName}
                 </div>
               </div>
@@ -2165,13 +2165,13 @@ export default function BulkOrdersPage() {
                     height: "40px",
                     padding: "0 22px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     color: "#ffffff",
                     border: "none",
                     fontSize: "13px",
                     fontWeight: 700,
                     cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(124, 58, 237, 0.35)",
+                    boxShadow: "0 4px 12px rgba(194, 65, 12, 0.35)",
                   }}
                 >
                   Submit Official Bid
@@ -2213,7 +2213,7 @@ export default function BulkOrdersPage() {
           >
             <div
               style={{
-                background: "linear-gradient(135deg, #3b0764 0%, #4c1d95 100%)",
+                background: "linear-gradient(135deg, #0B1220 0%, #172036 100%)",
                 padding: "20px 24px",
                 display: "flex",
                 alignItems: "center",
@@ -2225,7 +2225,7 @@ export default function BulkOrdersPage() {
                 <div style={{ fontSize: "18px", fontWeight: 800 }}>
                   Bulk RFQ #{selectedOrderForView.orderId}
                 </div>
-                <div style={{ fontSize: "12px", color: "#d8b4fe", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", color: "#CBD5E1", marginTop: "2px" }}>
                   {selectedOrderForView.companyName} • {selectedOrderForView.requestedDate}
                 </div>
               </div>
@@ -2286,7 +2286,7 @@ export default function BulkOrdersPage() {
                     height: "40px",
                     padding: "0 22px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     border: "none",
                     color: "#ffffff",
                     fontSize: "13px",
@@ -2342,7 +2342,7 @@ export default function BulkOrdersPage() {
               }}
             >
               <div>
-                <div style={{ fontSize: "18px", fontWeight: 800 }}>BuildMart Bulk Order Guide</div>
+                <div style={{ fontSize: "18px", fontWeight: 800 }}>Makaano Bulk Order Guide</div>
                 <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
                   Best practices for institutional RFQ bidding
                 </div>
@@ -2358,13 +2358,13 @@ export default function BulkOrdersPage() {
 
             <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "14px", fontSize: "13px", color: "#475569", lineHeight: 1.5 }}>
               <div>
-                <strong style={{ color: "#1e293b" }}>1. Competitive Pricing:</strong> Quotes submitted on BuildMart are reviewed directly by verified contractors and builders. Ensure transparent GST and freight inclusions.
+                <strong style={{ color: "#1e293b" }}>1. Competitive Pricing:</strong> Quotes submitted on Makaano are reviewed directly by verified contractors and builders. Ensure transparent GST and freight inclusions.
               </div>
               <div>
                 <strong style={{ color: "#1e293b" }}>2. Delivery Timelines:</strong> Bids with faster lead times (e.g. 1-3 days) have a 68% higher win rate.
               </div>
               <div>
-                <strong style={{ color: "#1e293b" }}>3. Escrow Protected:</strong> Once an institutional buyer accepts your quote, payment is held safely in BuildMart Escrow until dispatch and delivery confirmation.
+                <strong style={{ color: "#1e293b" }}>3. Escrow Protected:</strong> Once an institutional buyer accepts your quote, payment is held safely in Makaano Escrow until dispatch and delivery confirmation.
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>

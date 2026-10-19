@@ -300,7 +300,7 @@ export default function PaymentsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `BuildMart_Payments_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `Makaano_Payments_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -339,19 +339,19 @@ export default function PaymentsPage() {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#f8f7fc",
+        background: "#F8FAFC",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (BuildMart Royal Purple Theme)  */}
+      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -385,16 +385,16 @@ export default function PaymentsPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </Link>
@@ -427,7 +427,7 @@ export default function PaymentsPage() {
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -477,7 +477,7 @@ export default function PaymentsPage() {
             style={{
               background: "transparent",
               border: "none",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               cursor: "pointer",
               padding: "6px",
               display: "flex",
@@ -495,7 +495,7 @@ export default function PaymentsPage() {
               style={{
                 background: "transparent",
                 border: "none",
-                color: "#d8b4fe",
+                color: "#CBD5E1",
                 cursor: "pointer",
                 padding: "6px",
                 display: "flex",
@@ -518,7 +518,7 @@ export default function PaymentsPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "2px solid #4c1d95",
+                  border: "2px solid #172036",
                 }}
               >
                 12
@@ -532,7 +532,7 @@ export default function PaymentsPage() {
             style={{
               background: "transparent",
               border: "none",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               cursor: "pointer",
               padding: "6px",
               display: "flex",
@@ -557,14 +557,14 @@ export default function PaymentsPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -573,11 +573,11 @@ export default function PaymentsPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
                 Admin
               </span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -587,19 +587,19 @@ export default function PaymentsPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition:
@@ -619,7 +619,7 @@ export default function PaymentsPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -642,7 +642,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -657,8 +657,8 @@ export default function PaymentsPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.35)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.35)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "2px 7px",
                 borderRadius: "9999px",
@@ -679,7 +679,7 @@ export default function PaymentsPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -702,7 +702,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -715,7 +715,7 @@ export default function PaymentsPage() {
               <BookOpen size={18} />
               <span>Catalog</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* 5. Inventory Link */}
@@ -728,7 +728,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -741,7 +741,7 @@ export default function PaymentsPage() {
               <Boxes size={18} />
               <span>Inventory</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </Link>
 
           {/* 6. Pricing */}
@@ -754,7 +754,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -767,7 +767,7 @@ export default function PaymentsPage() {
               <Tag size={17} />
               <span>Pricing</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </button>
 
           {/* 7. ACTIVE PAYMENTS ACCORDION (Matching Screenshot) */}
@@ -826,7 +826,7 @@ export default function PaymentsPage() {
                     borderRadius: "6px",
                     border: "none",
                     background: activePaymentSubTab === "all" ? "rgba(245, 158, 11, 0.15)" : "transparent",
-                    color: activePaymentSubTab === "all" ? "#fbbf24" : "#e9d5ff",
+                    color: activePaymentSubTab === "all" ? "#fbbf24" : "#E2E8F0",
                     fontSize: "12.5px",
                     fontWeight: activePaymentSubTab === "all" ? 700 : 500,
                     textAlign: "left",
@@ -846,7 +846,7 @@ export default function PaymentsPage() {
                     borderRadius: "6px",
                     border: "none",
                     background: activePaymentSubTab === "methods" ? "rgba(245, 158, 11, 0.15)" : "transparent",
-                    color: activePaymentSubTab === "methods" ? "#fbbf24" : "#e9d5ff",
+                    color: activePaymentSubTab === "methods" ? "#fbbf24" : "#E2E8F0",
                     fontSize: "12.5px",
                     fontWeight: activePaymentSubTab === "methods" ? 700 : 500,
                     textAlign: "left",
@@ -863,7 +863,7 @@ export default function PaymentsPage() {
                     borderRadius: "6px",
                     border: "none",
                     background: activePaymentSubTab === "refunds" ? "rgba(245, 158, 11, 0.15)" : "transparent",
-                    color: activePaymentSubTab === "refunds" ? "#fbbf24" : "#e9d5ff",
+                    color: activePaymentSubTab === "refunds" ? "#fbbf24" : "#E2E8F0",
                     fontSize: "12.5px",
                     fontWeight: activePaymentSubTab === "refunds" ? 700 : 500,
                     textAlign: "left",
@@ -886,7 +886,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -901,8 +901,8 @@ export default function PaymentsPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.3)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.3)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "1px 6px",
                 borderRadius: "9999px",
@@ -922,7 +922,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -935,7 +935,7 @@ export default function PaymentsPage() {
               <Wallet size={17} />
               <span>Payouts</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </button>
 
           <button
@@ -947,7 +947,7 @@ export default function PaymentsPage() {
               justifyContent: "space-between",
               padding: "8px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               border: "none",
               fontSize: "13px",
@@ -960,7 +960,7 @@ export default function PaymentsPage() {
               <BarChart3 size={17} />
               <span>Reports</span>
             </div>
-            <ChevronDown size={14} color="#a855f7" />
+            <ChevronDown size={14} color="#F97316" />
           </button>
 
           {/* Growth, Support, Notifications */}
@@ -983,7 +983,7 @@ export default function PaymentsPage() {
                   gap: "12px",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -1004,13 +1004,13 @@ export default function PaymentsPage() {
             style={{
               marginTop: "auto",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(168, 85, 247, 0.2)",
+              borderTop: "1px solid rgba(148, 163, 184, 0.2)",
             }}
           >
             <div
               style={{
                 background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(168, 85, 247, 0.25)",
+                border: "1px solid rgba(148, 163, 184, 0.25)",
                 borderRadius: "10px",
                 padding: "12px",
                 display: "flex",
@@ -1022,7 +1022,7 @@ export default function PaymentsPage() {
                 <HelpCircle size={15} color="#fbbf24" />
                 <span>Need Help?</span>
               </div>
-              <span style={{ fontSize: "11px", color: "#d8b4fe" }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
                 Our support team is here
               </span>
               <a
@@ -1039,8 +1039,8 @@ export default function PaymentsPage() {
                 Contact Support →
               </a>
             </div>
-            <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "12px", paddingLeft: "4px" }}>
-              © 2025 BuildMart<br />All rights reserved.
+            <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "12px", paddingLeft: "4px" }}>
+              © 2025 Makaano<br />All rights reserved.
             </div>
           </div>
         </aside>
@@ -1143,13 +1143,13 @@ export default function PaymentsPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.12)",
+                border: "1px solid rgba(194, 65, 12, 0.12)",
                 borderRadius: "16px",
                 padding: "20px 22px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -1444,9 +1444,9 @@ export default function PaymentsPage() {
           <div
             style={{
               background: "#ffffff",
-              border: "1px solid rgba(124, 58, 237, 0.12)",
+              border: "1px solid rgba(194, 65, 12, 0.12)",
               borderRadius: "16px",
-              boxShadow: "0 2px 12px rgba(124, 58, 237, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)",
+              boxShadow: "0 2px 12px rgba(194, 65, 12, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)",
               padding: "20px 24px",
               display: "flex",
               flexDirection: "column",
@@ -1561,7 +1561,7 @@ export default function PaymentsPage() {
                                   flexShrink: 0,
                                 }}
                               >
-                                {item.paymentType === "UPI" && <Smartphone size={14} color="#7c3aed" />}
+                                {item.paymentType === "UPI" && <Smartphone size={14} color="#C2410C" />}
                                 {item.paymentType === "Card" && <CreditCard size={14} color="#2563eb" />}
                                 {item.paymentType === "NetBanking" && <Building size={14} color="#059669" />}
                                 {item.paymentType === "Wallet" && <Wallet size={14} color="#f59e0b" />}
@@ -1660,7 +1660,7 @@ export default function PaymentsPage() {
                                     borderRadius: "6px",
                                   }}
                                 >
-                                  <FileText size={15} color="#7c3aed" />
+                                  <FileText size={15} color="#C2410C" />
                                   <span>View Receipt</span>
                                 </button>
                                 <button
@@ -1841,7 +1841,7 @@ export default function PaymentsPage() {
             {/* Header */}
             <div
               style={{
-                background: "linear-gradient(135deg, #3b0764 0%, #4c1d95 100%)",
+                background: "linear-gradient(135deg, #0B1220 0%, #172036 100%)",
                 padding: "20px 24px",
                 display: "flex",
                 alignItems: "center",
@@ -1853,7 +1853,7 @@ export default function PaymentsPage() {
                 <div style={{ fontSize: "18px", fontWeight: 800 }}>
                   Transaction #{selectedTxnForModal.transactionId}
                 </div>
-                <div style={{ fontSize: "12px", color: "#d8b4fe", marginTop: "2px" }}>
+                <div style={{ fontSize: "12px", color: "#CBD5E1", marginTop: "2px" }}>
                   Order Ref: {selectedTxnForModal.orderId} • {selectedTxnForModal.date} {selectedTxnForModal.time}
                 </div>
               </div>
@@ -1946,7 +1946,7 @@ export default function PaymentsPage() {
                     height: "40px",
                     padding: "0 20px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     border: "none",
                     color: "#ffffff",
                     fontSize: "13px",

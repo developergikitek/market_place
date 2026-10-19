@@ -235,7 +235,7 @@ export function addProductToLocalDb(payload: {
     reservedStock: Math.floor(stockNum * 0.05),
     safetyStock: 15,
     status: inventoryStatus,
-    warehouse: "BuildMart FC-Pune (MH-01)",
+    warehouse: "Makaano FC-Pune (MH-01)",
     lastUpdated: "Just now",
     iconType: icon,
   };

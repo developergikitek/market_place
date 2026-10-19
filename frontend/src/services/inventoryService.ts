@@ -14,7 +14,7 @@ function mapBackendListingToInventoryItem(item: any, index: number): InventoryIt
   const brandName =
     item.product?.brand_name ||
     (typeof item.brand === "object" ? item.brand?.name : item.brand) ||
-    "BuildMart Certified";
+    "Makaano Certified";
   const categoryName =
     item.product?.category_name ||
     (typeof item.category === "object" ? item.category?.name : item.category) ||
@@ -52,7 +52,7 @@ function mapBackendListingToInventoryItem(item: any, index: number): InventoryIt
     reservedStock: Math.floor(stockVal * 0.05),
     safetyStock: 15,
     status: status,
-    warehouse: "BuildMart FC-Pune (MH-01)",
+    warehouse: "Makaano FC-Pune (MH-01)",
     lastUpdated: item.updated_at
       ? new Date(item.updated_at).toLocaleDateString("en-IN", {
           day: "2-digit",

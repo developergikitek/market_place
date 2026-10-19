@@ -42,16 +42,16 @@ export default function BusinessDetailsForm({
   showHeaderFooter = true,
 }: BusinessDetailsFormProps) {
   const [businessType, setBusinessType] = useState(
-    defaultValues?.businessType || "Private Limited Company"
+    defaultValues?.businessType || ""
   );
   const [companyName, setCompanyName] = useState(
-    defaultValues?.companyName || "BuildWell Traders Pvt. Ltd."
+    defaultValues?.companyName || ""
   );
   const [gstin, setGstin] = useState(
-    defaultValues?.gstin || "29ABCDE1234F1Z5"
+    defaultValues?.gstin || ""
   );
   const [panNumber, setPanNumber] = useState(
-    defaultValues?.panNumber || "ABCDE1234F"
+    defaultValues?.panNumber || ""
   );
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +63,7 @@ export default function BusinessDetailsForm({
     const val = e.target.value.toUpperCase().slice(0, 15);
     setGstin(val);
     setErrorMsg("");
-    if (val.length >= 12 && (!panNumber || panNumber === "ABCDE1234F")) {
+    if (val.length >= 12 && !panNumber) {
       setPanNumber(val.slice(2, 12));
     }
   };
@@ -75,6 +75,10 @@ export default function BusinessDetailsForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!businessType) {
+      setErrorMsg("Please select your Business Type");
+      return;
+    }
     if (!companyName.trim()) {
       setErrorMsg("Please enter your Company / Business Name");
       return;
@@ -136,7 +140,7 @@ export default function BusinessDetailsForm({
               style={{
                 fontSize: "27px",
                 fontWeight: 800,
-                color: "#1e1b4b",
+                color: "#0B1220",
                 lineHeight: 1.15,
                 letterSpacing: "-0.5px",
                 marginBottom: "6px",
@@ -208,7 +212,7 @@ export default function BusinessDetailsForm({
                   width: "100%",
                   height: "52px",
                   borderRadius: "9999px",
-                  border: isTypeDropdownOpen ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                  border: isTypeDropdownOpen ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                   padding: "0 18px",
                   background: "#ffffff",
                   display: "flex",
@@ -237,8 +241,8 @@ export default function BusinessDetailsForm({
                 >
                   Business Type
                 </span>
-                <span style={{ fontSize: "14.5px", fontWeight: 600, color: "#1e1b4b" }}>
-                  {businessType}
+                <span style={{ fontSize: "14.5px", fontWeight: 600, color: businessType ? "#0B1220" : "#94a3b8" }}>
+                  {businessType || "Select business type"}
                 </span>
                 <ChevronDown size={16} color="#64748b" />
               </button>
@@ -271,8 +275,8 @@ export default function BusinessDetailsForm({
                         borderRadius: "10px",
                         fontSize: "13.5px",
                         fontWeight: businessType === type ? 700 : 500,
-                        color: businessType === type ? "#7c3aed" : "#1e1b4b",
-                        background: businessType === type ? "#f3e8ff" : "transparent",
+                        color: businessType === type ? "#C2410C" : "#0B1220",
+                        background: businessType === type ? "#FFEDD5" : "transparent",
                         cursor: "pointer",
                       }}
                     >
@@ -341,14 +345,14 @@ export default function BusinessDetailsForm({
                     padding: "0 18px",
                     fontSize: "14.5px",
                     fontWeight: 600,
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                     transition: "all 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#7c3aed";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e2e8f0";
@@ -409,7 +413,7 @@ export default function BusinessDetailsForm({
                     padding: "0 18px",
                     fontSize: "14.5px",
                     fontWeight: 600,
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                     fontFamily: "var(--font-mono), monospace",
@@ -417,8 +421,8 @@ export default function BusinessDetailsForm({
                     transition: "all 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#7c3aed";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e2e8f0";
@@ -479,7 +483,7 @@ export default function BusinessDetailsForm({
                     padding: "0 18px",
                     fontSize: "14.5px",
                     fontWeight: 600,
-                    color: "#1e1b4b",
+                    color: "#0B1220",
                     outline: "none",
                     background: "#ffffff",
                     fontFamily: "var(--font-mono), monospace",
@@ -487,8 +491,8 @@ export default function BusinessDetailsForm({
                     transition: "all 0.15s ease",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#7c3aed";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e2e8f0";
@@ -547,7 +551,7 @@ export default function BusinessDetailsForm({
             </div>
 
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: "#1e1b4b", lineHeight: 1.25 }}>
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "#0B1220", lineHeight: 1.25 }}>
                 We keep your information safe
               </div>
               <div style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
@@ -556,21 +560,21 @@ export default function BusinessDetailsForm({
             </div>
           </div>
 
-          {/* Save & Continue CTA Button (Unified Royal Purple Theme) */}
+          {/* Save & Continue CTA Button (Unified Brand Theme) */}
           <button
             type="submit"
             disabled={isLoading}
             style={{
               width: "100%",
               height: "56px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -609,13 +613,14 @@ export default function BusinessDetailsForm({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -623,7 +628,7 @@ export default function BusinessDetailsForm({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -640,7 +645,7 @@ export default function BusinessDetailsForm({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -655,7 +660,7 @@ export default function BusinessDetailsForm({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -666,7 +671,7 @@ export default function BusinessDetailsForm({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -676,14 +681,17 @@ export default function BusinessDetailsForm({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

@@ -6,6 +6,7 @@ from listings.models import Listing, ListingTierPrice
 from catalog.models import Product
 from warehouses.models import Warehouse, InventoryItem
 from common.enums import ProductCondition, FulfillmentChannel, ListingStatus
+from sellers.utils import resolve_request_seller
 
 
 class ListingTierPriceInputSerializer(serializers.ModelSerializer):
@@ -62,7 +63,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
         return total if total is not None else 0
 
     def validate(self, attrs):
-        seller = self.context['request'].user.seller_account
+        seller = resolve_request_seller(self.context['request'])
         
         # When creating a new listing
         if not self.instance:
@@ -87,6 +88,17 @@ class SellerListingSerializer(serializers.ModelSerializer):
             if Listing.objects.filter(seller=seller, seller_sku=sku).exists():
                 raise serializers.ValidationError(f"You already have an active listing with SKU '{sku}'.")
 
+            if Listing.objects.filter(
+                seller=seller,
+                product=product,
+                condition=attrs.get('condition', ProductCondition.NEW),
+                fulfillment_channel=attrs.get('fulfillment_channel', FulfillmentChannel.FBA),
+            ).exists():
+                raise serializers.ValidationError(
+                    "You already sell this product in this condition and fulfilment mode. "
+                    "Update that listing from your catalog instead."
+                )
+
         # Standard price vs Sale price validation
         std_price = attrs.get('standard_price', getattr(self.instance, 'standard_price', None))
         sale_price = attrs.get('sale_price', getattr(self.instance, 'sale_price', None))
@@ -97,7 +109,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        seller = self.context['request'].user.seller_account
+        seller = resolve_request_seller(self.context['request'])
         product = validated_data.pop('resolved_product')
         validated_data.pop('product_asin', None)
         validated_data.pop('product_id', None)

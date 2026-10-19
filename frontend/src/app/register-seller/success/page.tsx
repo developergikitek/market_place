@@ -15,6 +15,7 @@ export default function RegisterSuccessPage() {
         style={{
           display: "flex",
           flexDirection: "column",
+          flex: 1,
           minHeight: "100%",
           background: "#ffffff",
         }}
@@ -22,7 +23,7 @@ export default function RegisterSuccessPage() {
         {/* Curved Brand Header */}
         <header
           style={{
-            background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+            background: "#0B1220",
             borderBottomLeftRadius: "28px",
             borderBottomRightRadius: "28px",
             padding: "24px 20px 20px 20px",
@@ -30,7 +31,7 @@ export default function RegisterSuccessPage() {
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
-            boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+            boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -47,7 +48,7 @@ export default function RegisterSuccessPage() {
               <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
@@ -62,7 +63,7 @@ export default function RegisterSuccessPage() {
                   lineHeight: 1.1,
                 }}
               >
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
               <span
                 style={{
@@ -73,7 +74,7 @@ export default function RegisterSuccessPage() {
                   marginTop: "2px",
                 }}
               >
-                Building Trust • Delivering Quality
+                Seller Central
               </span>
             </div>
           </div>
@@ -113,7 +114,7 @@ export default function RegisterSuccessPage() {
             style={{
               fontSize: "23px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               textAlign: "center",
               marginBottom: "6px",
             }}
@@ -148,15 +149,15 @@ export default function RegisterSuccessPage() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>Application ID</span>
-              <span style={{ fontSize: "12px", fontFamily: "var(--font-mono), monospace", color: "#6d28d9", fontWeight: 700 }}>
+              <span style={{ fontSize: "12px", fontFamily: "var(--font-mono), monospace", color: "#9A3412", fontWeight: 700 }}>
                 BM-SELLER-2026-98214
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>Company Name</span>
-              <span style={{ fontSize: "13px", color: "#1e1b4b", fontWeight: 700 }}>
-                BuildWell Traders Pvt. Ltd.
+              <span style={{ fontSize: "13px", color: "#0B1220", fontWeight: 700 }}>
+                Registered Seller Entity
               </span>
             </div>
             <div style={{ height: "1px", background: "#e2e8f0" }} />
@@ -176,14 +177,14 @@ export default function RegisterSuccessPage() {
             style={{
               width: "100%",
               height: "56px",
-              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -197,14 +198,17 @@ export default function RegisterSuccessPage() {
 
         {/* Footer */}
         <footer
+          className="auth-bottom-banner"
           style={{
             position: "relative",
             width: "100%",
             height: "175px",
             marginTop: "auto",
+            flexShrink: 0,
             overflow: "hidden",
             borderBottomLeftRadius: "28px",
             borderBottomRightRadius: "28px",
+            pointerEvents: "none",
           }}
         >
           <Image

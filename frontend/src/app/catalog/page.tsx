@@ -333,16 +333,16 @@ export default function CatalogPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f8f7fc", fontFamily: "var(--font-sans), sans-serif" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#F8FAFC", fontFamily: "var(--font-sans), sans-serif" }}>
       {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (Unified BuildMart Purple)      */}
+      {/* TOP HEADER NAVIGATION BAR (Unified Makaano Navy)      */}
       {/* ========================================================= */}
       <header
         style={{
           height: "64px",
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
-          borderBottom: "1px solid rgba(168, 85, 247, 0.25)",
-          boxShadow: "0 4px 16px rgba(59, 7, 100, 0.3)",
+          background: "#0B1220",
+          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
+          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -368,16 +368,16 @@ export default function CatalogPage() {
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                 <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
                 <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
                 <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Build<span style={{ color: "#F59E0B" }}>Mart</span>
+                Makaan<span style={{ color: "#F59E0B" }}>o</span>
               </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#d8b4fe", letterSpacing: "0.4px" }}>
-                Building Trust • Delivering Quality
+              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
+                Seller Central
               </span>
             </div>
           </div>
@@ -410,7 +410,7 @@ export default function CatalogPage() {
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#e9d5ff", fontWeight: 500 }}>
+            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
               <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
             </span>
@@ -470,14 +470,14 @@ export default function CatalogPage() {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 color: "#ffffff",
                 fontWeight: 800,
                 fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.4)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
               }}
             >
               A
@@ -486,11 +486,11 @@ export default function CatalogPage() {
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
                 Arjun Sharma
               </span>
-              <span style={{ fontSize: "11px", color: "#d8b4fe", fontWeight: 500 }}>
+              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
                 Admin
               </span>
             </div>
-            <ChevronDown size={14} color="#d8b4fe" />
+            <ChevronDown size={14} color="#CBD5E1" />
           </div>
         </div>
       </header>
@@ -500,19 +500,19 @@ export default function CatalogPage() {
       {/* ========================================================= */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* ======================================================= */}
-        {/* LEFT BUILDMART PURPLE UNIFIED SIDEBAR                   */}
+        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
         {/* ======================================================= */}
         <aside
           style={{
             width: isSidebarOpen ? "250px" : "0px",
             minWidth: isSidebarOpen ? "250px" : "0px",
             maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "linear-gradient(180deg, #3b0764 0%, #4c1d95 100%)",
-            color: "#d8b4fe",
+            background: "#111A2E",
+            color: "#CBD5E1",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(168, 85, 247, 0.25)" : "none",
+            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
             padding: isSidebarOpen ? "16px 12px" : "0px",
             gap: "4px",
             transition: "width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s ease, opacity 0.2s ease",
@@ -530,7 +530,7 @@ export default function CatalogPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -552,7 +552,7 @@ export default function CatalogPage() {
               justifyContent: "space-between",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -567,8 +567,8 @@ export default function CatalogPage() {
             </div>
             <span
               style={{
-                background: "rgba(124, 58, 237, 0.35)",
-                color: "#e9d5ff",
+                background: "rgba(194, 65, 12, 0.35)",
+                color: "#E2E8F0",
                 fontSize: "11px",
                 padding: "2px 7px",
                 borderRadius: "9999px",
@@ -589,7 +589,7 @@ export default function CatalogPage() {
               gap: "12px",
               padding: "9px 12px",
               borderRadius: "8px",
-              color: "#d8b4fe",
+              color: "#CBD5E1",
               background: "transparent",
               textDecoration: "none",
               fontSize: "13.5px",
@@ -602,7 +602,7 @@ export default function CatalogPage() {
             <span>Bulk orders</span>
           </Link>
 
-          {/* ACTIVE CATALOG MENU ITEM (Purple Brand Signature Active) */}
+          {/* ACTIVE CATALOG MENU ITEM (Brand Signature Active) */}
           <button
             type="button"
             title="Catalog"
@@ -613,14 +613,14 @@ export default function CatalogPage() {
               padding: "10px 12px",
               borderRadius: "8px",
               color: "#ffffff",
-              background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+              background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
               border: "none",
               fontSize: "13.5px",
               fontWeight: 700,
               cursor: "pointer",
               textAlign: "left",
               width: "100%",
-              boxShadow: "0 4px 14px rgba(109, 40, 217, 0.4)",
+              boxShadow: "0 4px 14px rgba(154, 52, 18, 0.4)",
             }}
           >
             <BookOpen size={18} color="#ffffff" />
@@ -648,12 +648,12 @@ export default function CatalogPage() {
                   <Icon size={17} />
                   <span>{item.label}</span>
                 </div>
-                {item.hasChevron && <ChevronDown size={14} color="#a855f7" />}
+                {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
                 {item.badge && (
                   <span
                     style={{
-                      background: "rgba(124, 58, 237, 0.3)",
-                      color: "#e9d5ff",
+                      background: "rgba(194, 65, 12, 0.3)",
+                      color: "#E2E8F0",
                       fontSize: "11px",
                       padding: "1px 6px",
                       borderRadius: "9999px",
@@ -678,7 +678,7 @@ export default function CatalogPage() {
                     justifyContent: "space-between",
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    color: "#d8b4fe",
+                    color: "#CBD5E1",
                     background: "transparent",
                     textDecoration: "none",
                     fontSize: "13px",
@@ -703,7 +703,7 @@ export default function CatalogPage() {
                   justifyContent: "space-between",
                   padding: "8px 12px",
                   borderRadius: "8px",
-                  color: "#d8b4fe",
+                  color: "#CBD5E1",
                   background: "transparent",
                   border: "none",
                   fontSize: "13px",
@@ -717,8 +717,8 @@ export default function CatalogPage() {
             );
           })}
 
-          <div style={{ fontSize: "11px", color: "#c084fc", marginTop: "auto", paddingLeft: "4px" }}>
-            © 2025 BuildMart<br />All rights reserved.
+          <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "auto", paddingLeft: "4px" }}>
+            © 2025 Makaano<br />All rights reserved.
           </div>
         </aside>
 
@@ -734,7 +734,7 @@ export default function CatalogPage() {
                   style={{
                     fontSize: "30px",
                     fontWeight: 800,
-                    color: "#3b0764",
+                    color: "#0B1220",
                     letterSpacing: "-0.5px",
                     margin: 0,
                     lineHeight: 1.2,
@@ -762,8 +762,8 @@ export default function CatalogPage() {
                   padding: "0 18px",
                   borderRadius: "8px",
                   background: "#ffffff",
-                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
-                  color: "#4c1d95",
+                  border: "1.5px solid rgba(194, 65, 12, 0.25)",
+                  color: "#172036",
                   fontSize: "13.5px",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -771,14 +771,13 @@ export default function CatalogPage() {
                   boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
                 }}
               >
-                <UploadCloud size={16} color="#7c3aed" />
+                <UploadCloud size={16} color="#C2410C" />
                 <span>Bulk Upload</span>
               </button>
 
-              {/* Add Product Button (BuildMart Purple Signature CTA) */}
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
+              {/* Add Product Button (Makaano Signature CTA) */}
+              <Link
+                href="/catalog/add-product"
                 style={{
                   height: "40px",
                   display: "inline-flex",
@@ -786,19 +785,19 @@ export default function CatalogPage() {
                   gap: "8px",
                   padding: "0 20px",
                   borderRadius: "8px",
-                  background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                  background: "#C2410C",
                   border: "none",
                   color: "#ffffff",
                   fontSize: "13.5px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                  textDecoration: "none",
                   transition: "all 0.15s ease",
                 }}
               >
                 <Plus size={16} />
                 <span>Add Product</span>
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -848,18 +847,18 @@ export default function CatalogPage() {
             <div
               style={{
                 background: "#ffffff",
-                border: "1px solid rgba(124, 58, 237, 0.15)",
+                border: "1px solid rgba(194, 65, 12, 0.15)",
                 borderRadius: "14px",
                 padding: "18px 20px",
                 display: "flex",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.04)",
               }}
             >
               <div>
                 <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>Total Products</span>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#4c1d95", marginTop: "6px", lineHeight: 1 }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "#172036", marginTop: "6px", lineHeight: 1 }}>
                   {isLoadingApi ? <span style={{ opacity: 0.35 }}>—</span> : stats.totalProducts}
                 </div>
               </div>
@@ -868,8 +867,8 @@ export default function CatalogPage() {
                   width: "40px",
                   height: "40px",
                   borderRadius: "50%",
-                  background: "rgba(124, 58, 237, 0.1)",
-                  color: "#7c3aed",
+                  background: "rgba(194, 65, 12, 0.1)",
+                  color: "#C2410C",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1040,14 +1039,14 @@ export default function CatalogPage() {
                 display: "flex",
                 alignItems: "center",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 height: "40px",
-                boxShadow: "0 1px 3px rgba(124, 58, 237, 0.04)",
+                boxShadow: "0 1px 3px rgba(194, 65, 12, 0.04)",
               }}
             >
-              <Search size={16} color="#7c3aed" />
+              <Search size={16} color="#C2410C" />
               <input
                 type="text"
                 value={searchQuery}
@@ -1063,7 +1062,7 @@ export default function CatalogPage() {
                   outline: "none",
                   paddingLeft: "10px",
                   fontSize: "13px",
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   background: "transparent",
                 }}
               />
@@ -1088,12 +1087,12 @@ export default function CatalogPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#4c1d95",
+                color: "#172036",
                 cursor: "pointer",
                 outline: "none",
               }}
@@ -1119,12 +1118,12 @@ export default function CatalogPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#4c1d95",
+                color: "#172036",
                 cursor: "pointer",
                 outline: "none",
               }}
@@ -1146,18 +1145,18 @@ export default function CatalogPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                border: "1.5px solid rgba(194, 65, 12, 0.22)",
                 borderRadius: "8px",
                 padding: "0 14px",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#4c1d95",
+                color: "#172036",
                 cursor: "pointer",
                 outline: "none",
               }}
             >
               <option value="All Channels">All Channels</option>
-              <option value="FBA">FBA (BuildMart Express)</option>
+              <option value="FBA">FBA (Makaano Express)</option>
               <option value="FBM">FBM (Merchant Delivery)</option>
             </select>
 
@@ -1167,22 +1166,22 @@ export default function CatalogPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                border: "1.5px solid rgba(194, 65, 12, 0.25)",
                 borderRadius: "8px",
                 padding: "0 16px",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                color: "#4c1d95",
+                color: "#172036",
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
-                boxShadow: "0 1px 3px rgba(124, 58, 237, 0.05)",
+                boxShadow: "0 1px 3px rgba(194, 65, 12, 0.05)",
               }}
             >
-              <Filter size={15} color="#7c3aed" />
+              <Filter size={15} color="#C2410C" />
               <span>Filters</span>
-              <ChevronDown size={14} color="#7c3aed" />
+              <ChevronDown size={14} color="#C2410C" />
             </button>
 
             {/* Export Button */}
@@ -1192,20 +1191,20 @@ export default function CatalogPage() {
               style={{
                 height: "40px",
                 background: "#ffffff",
-                border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                border: "1.5px solid rgba(194, 65, 12, 0.25)",
                 borderRadius: "8px",
                 padding: "0 16px",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                color: "#4c1d95",
+                color: "#172036",
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
-                boxShadow: "0 1px 3px rgba(124, 58, 237, 0.05)",
+                boxShadow: "0 1px 3px rgba(194, 65, 12, 0.05)",
               }}
             >
-              <Download size={15} color="#7c3aed" />
+              <Download size={15} color="#C2410C" />
               <span>Export</span>
             </button>
           </div>
@@ -1224,13 +1223,13 @@ export default function CatalogPage() {
           >
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #ede9fe", background: "#fbfaff" }}>
+                <tr style={{ borderBottom: "1px solid #FFEDD5", background: "#fbfaff" }}>
                   <th style={{ padding: "14px 18px", width: "40px" }}>
                     <input
                       type="checkbox"
                       checked={selectedProductIds.length === paginatedProducts.length && paginatedProducts.length > 0}
                       onChange={handleSelectAll}
-                      style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#7c3aed" }}
+                      style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#C2410C" }}
                     />
                   </th>
                   <th style={{ padding: "14px 18px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "capitalize" }}>
@@ -1298,7 +1297,7 @@ export default function CatalogPage() {
                         key={item.id}
                         style={{
                           borderBottom: "1px solid #f1f5f9",
-                          background: isSelected ? "rgba(124, 58, 237, 0.05)" : "#ffffff",
+                          background: isSelected ? "rgba(194, 65, 12, 0.05)" : "#ffffff",
                           transition: "background-color 0.15s ease",
                         }}
                       >
@@ -1308,7 +1307,7 @@ export default function CatalogPage() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggleSelect(item.id)}
-                            style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#7c3aed" }}
+                            style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#C2410C" }}
                           />
                         </td>
 
@@ -1449,7 +1448,7 @@ export default function CatalogPage() {
                                 width: "fit-content",
                               }}
                             >
-                              {item.fulfillmentChannel === "FBA" ? "⚡ BuildMart (FBA)" : "📦 Merchant (FBM)"}
+                              {item.fulfillmentChannel === "FBA" ? "⚡ Makaano (FBA)" : "📦 Merchant (FBM)"}
                             </span>
                           </div>
                         </td>
@@ -1510,7 +1509,7 @@ export default function CatalogPage() {
                                   border: "none",
                                   fontSize: "12.5px",
                                   fontWeight: 600,
-                                  color: "#7c3aed",
+                                  color: "#C2410C",
                                   cursor: "pointer",
                                 }}
                               >
@@ -1580,14 +1579,14 @@ export default function CatalogPage() {
             >
               <span style={{ fontSize: "13px", color: "#64748b" }}>
                 Showing{" "}
-                <strong style={{ color: "#1e1b4b" }}>
+                <strong style={{ color: "#0B1220" }}>
                   {filteredProducts.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}
                 </strong>{" "}
                 to{" "}
-                <strong style={{ color: "#1e1b4b" }}>
+                <strong style={{ color: "#0B1220" }}>
                   {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
                 </strong>{" "}
-                of <strong style={{ color: "#1e1b4b" }}>{stats.totalProducts}</strong> products
+                of <strong style={{ color: "#0B1220" }}>{stats.totalProducts}</strong> products
               </span>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1600,14 +1599,14 @@ export default function CatalogPage() {
                     width: "32px",
                     height: "32px",
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.22)",
                     background: "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: currentPage === 1 ? "#cbd5e1" : "#4c1d95",
+                    color: currentPage === 1 ? "#cbd5e1" : "#172036",
                     cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                    boxShadow: "0 1px 2px rgba(124, 58, 237, 0.05)",
+                    boxShadow: "0 1px 2px rgba(194, 65, 12, 0.05)",
                   }}
                 >
                   <ChevronLeft size={16} />
@@ -1648,7 +1647,7 @@ export default function CatalogPage() {
                           borderRadius: "50%",
                           border: "none",
                           background: isActive
-                            ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)"
+                            ? "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)"
                             : "transparent",
                           color: isActive ? "#ffffff" : "#64748b",
                           fontWeight: isActive ? 700 : 500,
@@ -1657,7 +1656,7 @@ export default function CatalogPage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          boxShadow: isActive ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
+                          boxShadow: isActive ? "0 2px 8px rgba(194, 65, 12, 0.35)" : "none",
                           transition: "all 0.15s ease",
                         }}
                       >
@@ -1675,14 +1674,14 @@ export default function CatalogPage() {
                     width: "32px",
                     height: "32px",
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(124, 58, 237, 0.22)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.22)",
                     background: "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: currentPage === totalPages ? "#cbd5e1" : "#4c1d95",
+                    color: currentPage === totalPages ? "#cbd5e1" : "#172036",
                     cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                    boxShadow: "0 1px 2px rgba(124, 58, 237, 0.05)",
+                    boxShadow: "0 1px 2px rgba(194, 65, 12, 0.05)",
                   }}
                 >
                   <ChevronRight size={16} />
@@ -1723,7 +1722,7 @@ export default function CatalogPage() {
             <div
               style={{
                 padding: "20px 24px",
-                background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+                background: "#0B1220",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -1734,7 +1733,7 @@ export default function CatalogPage() {
                 <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#ffffff", margin: 0, fontFamily: "var(--font-heading), sans-serif" }}>
                   Add Product to Catalog
                 </h3>
-                <p style={{ fontSize: "12.5px", color: "#e9d5ff", margin: 0, marginTop: "2px" }}>
+                <p style={{ fontSize: "12.5px", color: "#E2E8F0", margin: 0, marginTop: "2px" }}>
                   Creates Master Product ASIN and Merchant Listing
                 </p>
               </div>
@@ -1908,7 +1907,7 @@ export default function CatalogPage() {
                       outline: "none",
                     }}
                   >
-                    <option value="FBA">FBA (Fulfillment by BuildMart)</option>
+                    <option value="FBA">FBA (Fulfillment by Makaano)</option>
                     <option value="FBM">FBM (Fulfillment by Merchant)</option>
                   </select>
                 </div>
@@ -2038,9 +2037,9 @@ export default function CatalogPage() {
                     height: "40px",
                     padding: "0 20px",
                     borderRadius: "8px",
-                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    border: "1.5px solid rgba(194, 65, 12, 0.25)",
                     background: "#ffffff",
-                    color: "#4c1d95",
+                    color: "#172036",
                     fontWeight: 600,
                     fontSize: "13.5px",
                     cursor: "pointer",
@@ -2057,7 +2056,7 @@ export default function CatalogPage() {
                     padding: "0 22px",
                     borderRadius: "8px",
                     border: "none",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     color: "#ffffff",
                     fontWeight: 700,
                     fontSize: "13.5px",
@@ -2065,7 +2064,7 @@ export default function CatalogPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                    boxShadow: "0 4px 14px rgba(194, 65, 12, 0.35)",
                     transition: "all 0.15s ease",
                   }}
                 >
@@ -2107,7 +2106,7 @@ export default function CatalogPage() {
           >
             <div
               style={{
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                 padding: "20px 24px",
                 display: "flex",
                 alignItems: "center",
@@ -2118,7 +2117,7 @@ export default function CatalogPage() {
                 <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#ffffff", margin: 0 }}>
                   Edit Product (Live PUT API)
                 </h3>
-                <p style={{ fontSize: "12.5px", color: "#e9d5ff", margin: "2px 0 0 0" }}>
+                <p style={{ fontSize: "12.5px", color: "#E2E8F0", margin: "2px 0 0 0" }}>
                   Update details in Django Catalog &amp; Listing DB
                 </p>
               </div>
@@ -2256,7 +2255,7 @@ export default function CatalogPage() {
                     padding: "0 22px",
                     borderRadius: "8px",
                     border: "none",
-                    background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                    background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
                     color: "#ffffff",
                     fontWeight: 700,
                     fontSize: "13.5px",
@@ -2264,7 +2263,7 @@ export default function CatalogPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    boxShadow: "0 4px 14px rgba(124, 58, 237, 0.35)",
+                    boxShadow: "0 4px 14px rgba(194, 65, 12, 0.35)",
                   }}
                 >
                   {isSubmittingEdit ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}

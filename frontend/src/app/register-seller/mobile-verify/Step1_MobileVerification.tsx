@@ -78,14 +78,15 @@ export default function Step1_MobileVerification({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
-      {/* 1. Curved Brand Header (Royal Purple Theme) */}
+      {/* 1. Curved Brand Header (Navy Theme) */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -93,7 +94,7 @@ export default function Step1_MobileVerification({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -110,7 +111,7 @@ export default function Step1_MobileVerification({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -125,7 +126,7 @@ export default function Step1_MobileVerification({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -136,7 +137,7 @@ export default function Step1_MobileVerification({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -174,7 +175,7 @@ export default function Step1_MobileVerification({
               style={{
                 fontSize: "26px",
                 fontWeight: 800,
-                color: "#1e1b4b",
+                color: "#0B1220",
                 lineHeight: 1.25,
                 letterSpacing: "-0.4px",
                 marginBottom: "6px",
@@ -208,7 +209,7 @@ export default function Step1_MobileVerification({
           >
             <Image
               src="/images/auth-phone-shield.jpg"
-              alt="BuildMart Shield Protection"
+              alt="Makaano Shield Protection"
               fill
               sizes="120px"
               style={{ objectFit: "cover" }}
@@ -248,12 +249,12 @@ export default function Step1_MobileVerification({
                   height: "56px",
                   padding: "0 14px",
                   background: "#f8fafc",
-                  border: isCountryDropdownOpen ? "2px solid #7c3aed" : "1.5px solid #e2e8f0",
+                  border: isCountryDropdownOpen ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
                   borderRadius: "9999px",
                   cursor: "pointer",
                   fontSize: "14px",
                   fontWeight: 700,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                 }}
               >
                 <span>{selectedCountry.flag}</span>
@@ -328,8 +329,8 @@ export default function Step1_MobileVerification({
                           borderRadius: "8px",
                           cursor: "pointer",
                           fontSize: "12.5px",
-                          background: selectedCountry.code === c.code ? "#f3e8ff" : "transparent",
-                          color: selectedCountry.code === c.code ? "#7c3aed" : "#1e1b4b",
+                          background: selectedCountry.code === c.code ? "#FFEDD5" : "transparent",
+                          color: selectedCountry.code === c.code ? "#C2410C" : "#0B1220",
                           fontWeight: selectedCountry.code === c.code ? 700 : 500,
                         }}
                       >
@@ -361,13 +362,13 @@ export default function Step1_MobileVerification({
                   padding: "0 22px",
                   fontSize: "15px",
                   fontWeight: 600,
-                  color: "#1e1b4b",
+                  color: "#0B1220",
                   outline: "none",
                   background: "#ffffff",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#7c3aed";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+                  e.target.style.borderColor = "#C2410C";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = errorMsg ? "#ef4444" : "#e2e8f0";
@@ -405,9 +406,9 @@ export default function Step1_MobileVerification({
               height: "56px",
               background:
                 phoneNumber.length === 10
-                  ? "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)"
-                  : "#e9d5ff",
-              color: phoneNumber.length === 10 ? "#ffffff" : "#7c3aed",
+                  ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                  : "#E2E8F0",
+              color: phoneNumber.length === 10 ? "#ffffff" : "#C2410C",
               border: "none",
               borderRadius: "9999px",
               fontSize: "16px",
@@ -415,7 +416,7 @@ export default function Step1_MobileVerification({
               cursor: phoneNumber.length === 10 ? "pointer" : "not-allowed",
               boxShadow:
                 phoneNumber.length === 10
-                  ? "0 10px 25px -5px rgba(124, 58, 237, 0.45)"
+                  ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
                   : "none",
               display: "flex",
               alignItems: "center",
@@ -444,11 +445,11 @@ export default function Step1_MobileVerification({
             display: "flex",
             alignItems: "center",
             gap: "12px",
-            background: "#FAF5FF",
-            border: "1px solid #E9D5FF",
+            background: "#FFF7ED",
+            border: "1px solid #E2E8F0",
             borderRadius: "9999px",
             padding: "12px 18px",
-            boxShadow: "0 2px 8px rgba(124, 58, 237, 0.05)",
+            boxShadow: "0 2px 8px rgba(194, 65, 12, 0.05)",
           }}
         >
           <div
@@ -456,20 +457,20 @@ export default function Step1_MobileVerification({
               width: "30px",
               height: "30px",
               borderRadius: "50%",
-              background: "rgba(124, 58, 237, 0.12)",
+              background: "rgba(194, 65, 12, 0.12)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <FileCheck2 size={17} color="#7C3AED" />
+            <FileCheck2 size={17} color="#C2410C" />
           </div>
 
           <p
             style={{
               fontSize: "12.5px",
-              color: "#4C1D95",
+              color: "#172036",
               lineHeight: 1.4,
               margin: 0,
               fontWeight: 500,
@@ -482,14 +483,17 @@ export default function Step1_MobileVerification({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

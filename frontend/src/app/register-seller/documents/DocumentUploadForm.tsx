@@ -42,24 +42,21 @@ export default function DocumentUploadForm({
       title: "GST Certificate",
       subtitle: "Upload GST Certificate",
       icon: FileText,
-      uploaded: true,
-      fileName: "GST_Certificate_2026.pdf",
+      uploaded: false,
     },
     {
       id: "pan",
       title: "PAN Card",
       subtitle: "Upload PAN Card",
       icon: CreditCard,
-      uploaded: true,
-      fileName: "PAN_ABCDE1234F.jpg",
+      uploaded: false,
     },
     {
       id: "cheque",
       title: "Cancelled Cheque",
       subtitle: "Upload Cancelled Cheque",
       icon: Banknote,
-      uploaded: true,
-      fileName: "Cancelled_Cheque_HDFC.pdf",
+      uploaded: false,
     },
     {
       id: "registration",
@@ -153,7 +150,7 @@ export default function DocumentUploadForm({
             style={{
               fontSize: "27px",
               fontWeight: 800,
-              color: "#1e1b4b",
+              color: "#0B1220",
               lineHeight: 1.15,
               letterSpacing: "-0.5px",
               marginBottom: "6px",
@@ -249,7 +246,7 @@ export default function DocumentUploadForm({
                     style={{
                       fontSize: "14px",
                       fontWeight: 700,
-                      color: "#1e1b4b",
+                      color: "#0B1220",
                       lineHeight: 1.2,
                     }}
                   >
@@ -377,14 +374,14 @@ export default function DocumentUploadForm({
           style={{
             width: "100%",
             height: "56px",
-            background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+            background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
             color: "#ffffff",
             border: "none",
             borderRadius: "9999px",
             fontSize: "16px",
             fontWeight: 700,
             cursor: isLoading ? "not-allowed" : "pointer",
-            boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.45)",
+            boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -395,12 +392,12 @@ export default function DocumentUploadForm({
           onMouseEnter={(e) => {
             if (!isLoading) {
               e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(124, 58, 237, 0.55)";
+              e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(194, 65, 12, 0.55)";
             }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(124, 58, 237, 0.45)";
+            e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(194, 65, 12, 0.45)";
           }}
         >
           {isLoading ? (
@@ -433,14 +430,15 @@ export default function DocumentUploadForm({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: "100%",
         background: "#ffffff",
       }}
     >
-      {/* 1. Curved Brand Header (Royal Purple Theme) */}
+      {/* 1. Curved Brand Header (Navy Theme) */}
       <header
         style={{
-          background: "linear-gradient(135deg, #3b0764 0%, #581c87 50%, #4c1d95 100%)",
+          background: "#0B1220",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
           padding: "24px 20px 20px 20px",
@@ -448,7 +446,7 @@ export default function DocumentUploadForm({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          boxShadow: "0 8px 24px rgba(76, 29, 149, 0.35)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -465,7 +463,7 @@ export default function DocumentUploadForm({
             <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
               <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
               <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
-              <path d="M13 18H19V27H13V18Z" fill="#3b0764" />
+              <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
               <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
             </svg>
           </div>
@@ -480,7 +478,7 @@ export default function DocumentUploadForm({
                 lineHeight: 1.1,
               }}
             >
-              Build<span style={{ color: "#F59E0B" }}>Mart</span>
+              Makaan<span style={{ color: "#F59E0B" }}>o</span>
             </span>
             <span
               style={{
@@ -491,7 +489,7 @@ export default function DocumentUploadForm({
                 marginTop: "2px",
               }}
             >
-              Building Trust • Delivering Quality
+              Seller Central
             </span>
           </div>
         </div>
@@ -501,14 +499,17 @@ export default function DocumentUploadForm({
 
       {/* 3. Bottom 3D Construction Silos & Cranes */}
       <footer
+        className="auth-bottom-banner"
         style={{
           position: "relative",
           width: "100%",
           height: "175px",
           marginTop: "auto",
+          flexShrink: 0,
           overflow: "hidden",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
+          pointerEvents: "none",
         }}
       >
         <Image

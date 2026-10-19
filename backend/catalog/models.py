@@ -194,6 +194,12 @@ class Product(models.Model):
     is_hazmat = models.BooleanField(default=False)
     hazmat_details = models.TextField(null=True, blank=True)
 
+    # India Tax & Legal Metrology
+    hsn_code = models.CharField(max_length=8, null=True, blank=True)
+    gst_rate_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    country_of_origin = models.CharField(max_length=100, default='India')
+    manufacturer_details = models.TextField(null=True, blank=True)
+
     # A+ Content
     a_plus_content_html = models.TextField(null=True, blank=True)
 
