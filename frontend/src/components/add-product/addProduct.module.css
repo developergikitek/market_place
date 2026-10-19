@@ -444,6 +444,18 @@
   gap: 12px;
 }
 
+.channelCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .channelCards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .radioCard {
   border: 1.5px solid var(--line);
   border-radius: 10px;
@@ -754,9 +766,105 @@
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 12px;
+  margin-bottom: 12px;
+}
+
+.categoryFilter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   margin-bottom: 18px;
+}
+
+.categoryFilter .breadcrumb {
+  flex: 1;
+  min-width: 0;
+}
+
+.categoryFilterLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.categoryFilterActions {
+  display: flex;
+  gap: 16px;
+}
+
+.brandPanel {
+  margin: -6px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.brandPanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.brandPanelSearch {
+  max-width: 220px;
+  height: 34px;
+}
+
+.brandChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.brandChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.brandChip:hover {
+  border-color: var(--brand);
+}
+
+.brandChip span {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.brandChipOn {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.brandChipOn span {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .combo {

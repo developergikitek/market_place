@@ -50,6 +50,11 @@ class FulfillmentChannel(models.TextChoices):
     FBA = "FBA", "Fulfillment by Buildmart"
     FBM = "FBM", "Fulfillment by Merchant"
 
+class CommerceChannel(models.TextChoices):
+    BAZAAR = "BAZAAR", "Bazaar (Pan-India)"
+    QUICK_COMMERCE = "QUICK_COMMERCE", "Quick Commerce (Local)"
+    BOTH = "BOTH", "Both (Bazaar & Quick Commerce)"
+
 class ListingStatus(models.TextChoices):
     ACTIVE = "ACTIVE", "Active"
     INACTIVE = "INACTIVE", "Inactive"

@@ -92,6 +92,7 @@ class SellerSummarySerializer(serializers.Serializer):
 class ListingOfferSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
     fulfillment_channel_display = serializers.CharField(source='get_fulfillment_channel_display', read_only=True)
+    commerce_channel_display = serializers.CharField(source='get_commerce_channel_display', read_only=True)
     effective_price = serializers.SerializerMethodField()
     b2b_tier_prices = ListingTierPriceSerializer(many=True, read_only=True)
     in_stock = serializers.SerializerMethodField()
@@ -102,6 +103,7 @@ class ListingOfferSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'seller_sku', 'seller', 'condition', 'condition_note',
             'fulfillment_channel', 'fulfillment_channel_display',
+            'commerce_channel', 'commerce_channel_display',
             'standard_price', 'sale_price', 'effective_price',
             'is_buy_box_winner', 'handling_time_days',
             'in_stock', 'available_stock', 'b2b_tier_prices'
@@ -330,10 +332,6 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        brand_id = attrs.get('brand_id')
-        if (not brand_id or brand_id == 'others') and not attrs.get('brand_name'):
-            raise serializers.ValidationError({"brand_name": "Enter the brand name."})
-
         category = Category.objects.filter(id=attrs['category_id']).first()
         if not category:
             raise serializers.ValidationError({"category_id": "Category does not exist."})
@@ -345,24 +343,42 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"initial_listing": "Price and stock are required."})
         return attrs
 
-    def _resolve_brand(self, brand_id, brand_name):
+    def _resolve_brand(self, seller, brand_id, brand_name):
+        """
+        Brand is optional. Sellers may only create catalog products under a brand registered to them:
+        an existing brand they own (brand_id), or a new brand name that gets registered to them.
+        """
         from django.utils.text import slugify
+
+        def owned(brand):
+            return seller is not None and brand.owner_seller_id == seller.id
 
         if brand_id and brand_id != 'others':
             brand = Brand.objects.filter(id=brand_id).first()
             if not brand:
                 raise serializers.ValidationError({"brand_id": "Brand does not exist."})
+            if not owned(brand):
+                raise serializers.ValidationError({"brand_id": "You can only add new products under a brand registered to you."})
             return brand
 
-        brand = Brand.objects.filter(name__iexact=brand_name.strip()).first()
+        brand_name = (brand_name or '').strip()
+        if not brand_name:
+            return None
+
+        brand = Brand.objects.filter(name__iexact=brand_name).first()
         if brand:
-            return brand
+            if owned(brand):
+                return brand
+            raise serializers.ValidationError({
+                "brand_name": f"'{brand.name}' is already registered on Makaano and isn't yours. "
+                              "Leave the brand empty, or use 'Sell an existing product' to sell its catalog items."
+            })
         base_slug = slugify(brand_name) or 'brand'
         slug, n = base_slug, 1
         while Brand.objects.filter(slug=slug).exists():
             n += 1
             slug = f"{base_slug}-{n}"
-        return Brand.objects.create(name=brand_name.strip(), slug=slug)
+        return Brand.objects.create(name=brand_name, slug=slug, owner_seller=seller)
 
     def _create_product(self, fields, **extra):
         from common.utils import generate_asin
@@ -423,6 +439,7 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
             standard_price=std_price,
             sale_price=sale_price,
             fulfillment_channel=listing_data.get('fulfillment_channel', 'FBM'),
+            commerce_channel=listing_data.get('commerce_channel', 'BAZAAR'),
             handling_time_days=int(listing_data.get('handling_time_days') or 1),
             max_order_quantity=listing_data.get('max_order_quantity') or None,
             is_buy_box_winner=True
@@ -448,12 +465,12 @@ class SellerProductCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop('category_id')
         category = validated_data.pop('resolved_category')
-        brand = self._resolve_brand(validated_data.pop('brand_id', None), validated_data.pop('brand_name', ''))
+        seller = resolve_request_seller(self.context.get('request'))
+        brand = self._resolve_brand(seller, validated_data.pop('brand_id', None), validated_data.pop('brand_name', ''))
         images_data = validated_data.pop('images', [])
         attributes_data = validated_data.pop('attributes', [])
         listing_data = validated_data.pop('initial_listing', None) or {}
         variations_data = validated_data.pop('variations', [])
-        seller = resolve_request_seller(self.context.get('request'))
 
         if not variations_data:
             product = self._create_product(validated_data, brand=brand, category=category)
