@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -87,10 +88,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database
+# Database: PostgreSQL only, from DATABASE_URL. There is deliberately no fallback, so a missing
+# tunnel or wrong URL fails loudly instead of silently writing to some other database.
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+if not DATABASE_URL.startswith(('postgres://', 'postgresql://')):
+    raise ImproperlyConfigured(
+        "DATABASE_URL must be set to a PostgreSQL URL in backend/.env "
+        "(e.g. postgresql://user:password@127.0.0.1:5433/gikitek via the SSH tunnel)."
+    )
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+    'default': dj_database_url.parse(
+        DATABASE_URL,
         conn_max_age=600,
         conn_health_checks=True,
     )

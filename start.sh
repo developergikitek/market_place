@@ -21,23 +21,39 @@ echo -e "${PURPLE}==============================================================
 echo -e "${PURPLE}       🏗️  BuildMart Marketplace - Starting Dev Servers         ${NC}"
 echo -e "${PURPLE}================================================================${NC}"
 
-# Optional SSH tunnel for remote PostgreSQL (does not crash if offline)
+# SSH tunnel to the AWS PostgreSQL database (required: the backend has no other database)
 LOCAL_TUNNEL_PORT=5433
 EC2_USER="ec2-user"
 EC2_HOST="3.7.254.54"
-SSH_KEY="$HOME/.ssh/id_rsa"
 
-if [ -f "$SSH_KEY" ]; then
-    if lsof -Pi :$LOCAL_TUNNEL_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-        echo -e "${GREEN}✓ SSH tunnel already running on port $LOCAL_TUNNEL_PORT.${NC}"
-    else
-        echo -e "${YELLOW}🔐 Attempting optional SSH tunnel to AWS PostgreSQL...${NC}"
-        ssh -i "$SSH_KEY" -f -N \
-            -o ExitOnForwardFailure=no \
-            -o ConnectTimeout=3 \
-            -L "${LOCAL_TUNNEL_PORT}:localhost:5432" \
-            "${EC2_USER}@${EC2_HOST}" 2>/dev/null || true
+# Check available SSH keys
+SSH_KEY=""
+for key_candidate in "$HOME/.ssh/id_rsa" "$HOME/.ssh/id_ed25519" "$HOME/.ssh"/*.pem; do
+    if [ -f "$key_candidate" ]; then
+        SSH_KEY="$key_candidate"
+        break
     fi
+done
+
+if lsof -Pi :$LOCAL_TUNNEL_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo -e "${GREEN}✓ SSH tunnel already running on port $LOCAL_TUNNEL_PORT.${NC}"
+elif [ -n "$SSH_KEY" ]; then
+    echo -e "${YELLOW}🔐 Opening SSH tunnel to AWS PostgreSQL using $(basename "$SSH_KEY")...${NC}"
+    ssh -i "$SSH_KEY" -f -N \
+        -o ExitOnForwardFailure=yes \
+        -o ConnectTimeout=8 \
+        -o ServerAliveInterval=30 \
+        -o ServerAliveCountMax=3 \
+        -o StrictHostKeyChecking=no \
+        -L "${LOCAL_TUNNEL_PORT}:localhost:5432" \
+        "${EC2_USER}@${EC2_HOST}"
+fi
+
+if ! lsof -Pi :$LOCAL_TUNNEL_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo -e "${RED}✗ No database tunnel on port $LOCAL_TUNNEL_PORT, so the backend can't reach PostgreSQL.${NC}"
+    echo -e "${RED}  Open it yourself and run this script again:${NC}"
+    echo -e "    ssh -i <your-ec2-key.pem> -N -o ServerAliveInterval=30 -L ${LOCAL_TUNNEL_PORT}:localhost:5432 ${EC2_USER}@${EC2_HOST}"
+    exit 1
 fi
 
 # Cleanup handler on exit (Ctrl+C)
@@ -75,6 +91,12 @@ BACKEND_PID=$!
 
 # Wait 2 seconds for backend to initialize
 sleep 2
+
+if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+    echo -e "${RED}⚠️  Django Backend failed to keep running on port 8000. Run 'python manage.py runserver' in backend/ to inspect error.${NC}"
+else
+    echo -e "${GREEN}✓ Django Backend started successfully (PID: $BACKEND_PID)${NC}"
+fi
 
 # 2. Start Next.js Frontend
 echo -e "${CYAN}🌐 [2/2] Starting Next.js Frontend on http://localhost:3000 ...${NC}"
