@@ -3,8 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q, Sum
 from common.pagination import StandardResultsSetPagination
-from common.enums import ListingStatus, FulfillmentChannel, CommerceChannel, channels_serving
-from listings.models import Listing
+from datetime import datetime
+from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
+from common.enums import ListingStatus, FulfillmentChannel, CommerceChannel, ProductCondition, channels_serving
+from listings.models import Listing, ListingTierPrice
 from listings.serializers import SellerListingSerializer
 from sellers.permissions import IsSellerUser
 
@@ -90,9 +93,6 @@ class SellerListingViewSet(viewsets.ModelViewSet):
 
     def _handle_listing_update(self, request, partial=False):
         from decimal import Decimal, InvalidOperation
-        from django.db import transaction
-        from warehouses.models import Warehouse, InventoryItem
-
         listing = self.get_object()
         data = request.data
         errors = {}
@@ -106,6 +106,63 @@ class SellerListingViewSet(viewsets.ModelViewSet):
                 listing.standard_price = price
             except (InvalidOperation, ValueError, TypeError):
                 errors['standard_price'] = "Enter a price greater than zero."
+
+        # Optional money fields: blank/null clears them.
+        for field, label in (('sale_price', 'Sale price'), ('minimum_price', 'Minimum price'), ('maximum_price', 'Maximum price')):
+            if field in data:
+                raw = data.get(field)
+                if raw in (None, ''):
+                    setattr(listing, field, None)
+                    continue
+                try:
+                    value = Decimal(str(raw))
+                    if not value.is_finite() or value <= 0:
+                        raise InvalidOperation
+                    setattr(listing, field, value)
+                except (InvalidOperation, ValueError, TypeError):
+                    errors[field] = f"{label} must be greater than zero."
+
+        for field in ('sale_starts_at', 'sale_ends_at', 'restock_date'):
+            if field in data:
+                raw = data.get(field)
+                if raw in (None, ''):
+                    setattr(listing, field, None)
+                    continue
+                parsed = parse_datetime(str(raw)) or (
+                    timezone.make_aware(datetime.combine(parse_date(str(raw)), datetime.min.time()))
+                    if parse_date(str(raw)) else None
+                )
+                if parsed is None:
+                    errors[field] = "Enter a valid date."
+                else:
+                    setattr(listing, field, parsed if timezone.is_aware(parsed) else timezone.make_aware(parsed))
+
+        if 'handling_time_days' in data:
+            try:
+                days = int(data.get('handling_time_days'))
+                if not 1 <= days <= 30:
+                    raise ValueError
+                listing.handling_time_days = days
+            except (ValueError, TypeError):
+                errors['handling_time_days'] = "Dispatch time must be 1 to 30 days."
+
+        if 'max_order_quantity' in data:
+            raw = data.get('max_order_quantity')
+            try:
+                listing.max_order_quantity = None if raw in (None, '') else int(raw)
+                if listing.max_order_quantity is not None and listing.max_order_quantity < 1:
+                    raise ValueError
+            except (ValueError, TypeError):
+                errors['max_order_quantity'] = "Max quantity must be a whole number of at least 1."
+
+        if 'condition' in data:
+            condition = str(data.get('condition') or '').upper()
+            if condition in ProductCondition.values:
+                listing.condition = condition
+            else:
+                errors['condition'] = "Choose a valid condition."
+        if 'condition_note' in data:
+            listing.condition_note = str(data.get('condition_note') or '').strip() or None
 
         if 'status' in data:
             # Unknown UI labels (e.g. "Low Stock") are ignored rather than rejected.
@@ -136,39 +193,65 @@ class SellerListingViewSet(viewsets.ModelViewSet):
             else:
                 listing.seller_sku = sku
 
-        qty_int = None
-        if 'available_stock' in data or 'quantity' in data or 'stock' in data:
-            qty_val = data.get('available_stock') if 'available_stock' in data else data.get('quantity') if 'quantity' in data else data.get('stock')
-            try:
-                qty_int = int(qty_val)
-                if qty_int < 0:
-                    raise ValueError
-            except (ValueError, TypeError):
-                errors['available_stock'] = "Stock must be a non-negative whole number."
+        # Cross-field rules, checked on the values the listing will end up with.
+        if not errors:
+            if listing.sale_price is not None and listing.sale_price >= listing.standard_price:
+                errors['sale_price'] = "Sale price must be lower than the MRP."
+            if listing.minimum_price and listing.maximum_price and listing.minimum_price > listing.maximum_price:
+                errors['minimum_price'] = "Minimum price can't be above the maximum price."
+            if listing.sale_starts_at and listing.sale_ends_at and listing.sale_ends_at <= listing.sale_starts_at:
+                errors['sale_ends_at'] = "Sale must end after it starts."
+            if listing.condition != ProductCondition.NEW and 'condition' in data and not listing.condition_note:
+                errors['condition_note'] = "Describe the item's condition for used or refurbished stock."
 
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-        with transaction.atomic():
-            listing.save()
-
-            if qty_int is not None:
-                inv = listing.inventory_items.first()
-                if inv:
-                    inv.available_stock = qty_int
-                    inv.save()
-                else:
-                    wh = Warehouse.objects.first()
-                    if wh:
-                        InventoryItem.objects.create(
-                            listing=listing,
-                            seller=listing.seller,
-                            warehouse=wh,
-                            available_stock=qty_int
-                        )
+        # Stock is changed only through /api/inventory/adjust/, which records every movement.
+        listing.save()
 
         serializer = self.get_serializer(listing)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def tier_prices(self, request, pk=None):
+        """
+        Replace the B2B quantity tiers: [{"min_quantity": 10, "discounted_price": "390"}, …].
+        Each tier needs 2+ units, a unique quantity, and a unit price below the current selling price.
+        """
+        from decimal import Decimal, InvalidOperation
+        from django.db import transaction
+
+        listing = self.get_object()
+        tiers = request.data if isinstance(request.data, list) else request.data.get('tiers')
+        if not isinstance(tiers, list):
+            return Response({'tiers': "Send a list of tiers."}, status=status.HTTP_400_BAD_REQUEST)
+        effective = listing.sale_price or listing.standard_price
+        clean, seen, errors = [], set(), []
+        for i, tier in enumerate(tiers, start=1):
+            try:
+                qty = int(tier.get('min_quantity'))
+                price = Decimal(str(tier.get('discounted_price')))
+            except (InvalidOperation, ValueError, TypeError, AttributeError):
+                errors.append(f"Tier {i}: enter a quantity and a price.")
+                continue
+            if qty < 2:
+                errors.append(f"Tier {i}: quantity must be at least 2.")
+            elif qty in seen:
+                errors.append(f"Tier {i}: {qty}+ units is already a tier.")
+            elif not price.is_finite() or price <= 0 or price >= effective:
+                errors.append(f"Tier {i}: price must be above 0 and below the selling price (₹{effective}).")
+            else:
+                seen.add(qty)
+                clean.append((qty, price))
+        if errors:
+            return Response({'tiers': errors}, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+            listing.b2b_tier_prices.all().delete()
+            ListingTierPrice.objects.bulk_create([
+                ListingTierPrice(listing=listing, min_quantity=q, discounted_price=p) for q, p in sorted(clean)
+            ])
+        return Response(self.get_serializer(self.get_queryset().get(pk=listing.pk)).data)
 
     @action(detail=True, methods=['post'])
     def toggle_status(self, request, pk=None):
@@ -186,49 +269,6 @@ class SellerListingViewSet(viewsets.ModelViewSet):
             'seller_sku': listing.seller_sku,
             'status': listing.status,
             'message': f"Listing is now {listing.status}."
-        })
-
-    @action(detail=True, methods=['post'])
-    def update_stock(self, request, pk=None):
-        """
-        Quick endpoint to adjust stock quantity.
-        Payload: {"quantity": 100} or {"available_stock": 100}
-        """
-        listing = self.get_object()
-        qty = request.data.get('available_stock')
-        if qty is None:
-            qty = request.data.get('quantity')
-            
-        if qty is None:
-            return Response({"error": "'available_stock' or 'quantity' is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            qty = int(qty)
-            if qty < 0:
-                raise ValueError()
-        except (ValueError, TypeError):
-            return Response({"error": "Quantity must be a non-negative integer."}, status=status.HTTP_400_BAD_REQUEST)
-
-        inv_item = listing.inventory_items.first()
-        if inv_item:
-            inv_item.available_stock = qty
-            inv_item.save()
-        else:
-            from warehouses.models import Warehouse, InventoryItem
-            wh = Warehouse.objects.first()
-            if wh:
-                inv_item = InventoryItem.objects.create(
-                    listing=listing,
-                    seller=listing.seller,
-                    warehouse=wh,
-                    available_stock=qty
-                )
-
-        return Response({
-            'listing_id': listing.id,
-            'seller_sku': listing.seller_sku,
-            'available_stock': qty,
-            'message': "Stock updated successfully."
         })
 
     @action(detail=False, methods=['get'])
@@ -256,4 +296,6 @@ class SellerListingViewSet(viewsets.ModelViewSet):
             'buy_box_winners': buy_box_winners,
             'total_stock_units': total_stock,
             'listings_by_commerce_channel': {ch: by_channel.get(ch, 0) for ch in CommerceChannel.values},
+            'on_sale_listings': qs.filter(sale_price__isnull=False).count(),
+            'inactive_listings': qs.filter(status=ListingStatus.INACTIVE).count(),
         })

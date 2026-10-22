@@ -213,7 +213,7 @@ export default function ExistingProductFinder({ index, onPick, onCreateNew }: Ex
                   )}
                 </div>
                 <button type="button" className={styles.btnSecondary} onClick={() => onPick(product)}>
-                  Sell this product
+                  View details
                 </button>
               </div>
             ))}

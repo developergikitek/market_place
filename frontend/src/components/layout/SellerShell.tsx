@@ -41,11 +41,11 @@ function navLinkStyle(isActive: boolean) {
         alignItems: "center",
         justifyContent: "space-between",
         gap: "12px",
-        padding: "10px 12px",
+        padding: "9px 12px",
         borderRadius: "8px",
         color: "#ffffff",
         background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
-        border: "1px solid rgba(245, 158, 11, 0.4)",
+        border: "1px solid rgba(249, 115, 22, 0.5)",
         fontSize: "13.5px",
         fontWeight: 700,
         width: "100%",
@@ -113,7 +113,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
         {/* Left: Brand Logo + Toggle + Seller Greeting */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link
-            href="/portal/dashboard"
+            href="/dashboard"
             style={{
               display: "flex",
               alignItems: "center",
@@ -132,15 +132,15 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
               }}
             >
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-                <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F59E0B" />
-                <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F59E0B" fillOpacity="0.9" />
+                <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F97316" />
+                <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F97316" fillOpacity="0.9" />
                 <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
-                <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F59E0B" />
+                <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F97316" />
               </svg>
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Makaan<span style={{ color: "#F59E0B" }}>o</span>
+                Makaan<span style={{ color: "#F97316" }}>o</span>
               </span>
               <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
                 Seller Central
@@ -158,11 +158,11 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
             title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
             style={{
-              background: isSidebarOpen ? "rgba(255, 255, 255, 0.12)" : "rgba(245, 158, 11, 0.25)",
-              border: isSidebarOpen ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #f59e0b",
+              background: isSidebarOpen ? "rgba(255, 255, 255, 0.12)" : "rgba(249, 115, 22, 0.25)",
+              border: isSidebarOpen ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #F97316",
               borderRadius: "8px",
               cursor: "pointer",
-              color: isSidebarOpen ? "#ffffff" : "#fbbf24",
+              color: isSidebarOpen ? "#ffffff" : "#F97316",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -184,9 +184,9 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             {/* SELLER ID Badge */}
             <span
               style={{
-                background: "rgba(245, 158, 11, 0.18)",
-                color: "#fbbf24",
-                border: "1px solid rgba(245, 158, 11, 0.45)",
+                background: "rgba(249, 115, 22, 0.18)",
+                color: "#F97316",
+                border: "1px solid rgba(249, 115, 22, 0.45)",
                 fontSize: "11px",
                 fontWeight: 700,
                 padding: "2px 8px",
@@ -358,119 +358,18 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             opacity: isSidebarOpen ? 1 : 0,
           }}
         >
-          {/* 1. Dashboard Link */}
-          <Link
-            href="/portal/dashboard"
-            title="Dashboard"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "9px 12px",
-              borderRadius: "8px",
-              color: "#CBD5E1",
-              background: "transparent",
-              textDecoration: "none",
-              fontSize: "13.5px",
-              fontWeight: 500,
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <LayoutDashboard size={18} />
-            <span>Dashboard</span>
-          </Link>
-
-          {/* 2. Orders */}
-          <Link href="/portal/orders" title="Orders" style={navLinkStyle(active === "Orders")}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <Package size={18} color={active === "Orders" ? "#fbbf24" : undefined} />
-              <span>Orders</span>
-            </div>
-          </Link>
-
-          {/* 3. Bulk orders */}
-          <Link
-            href="/portal/bulk-orders"
-            title="Bulk orders"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "9px 12px",
-              borderRadius: "8px",
-              color: "#CBD5E1",
-              background: "transparent",
-              textDecoration: "none",
-              fontSize: "13.5px",
-              fontWeight: 500,
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <Layers size={18} />
-            <span>Bulk orders</span>
-          </Link>
-
-          {/* 4. Catalog Link */}
-          <Link
-            href="/portal/catalog"
-            title="Catalog"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "9px 12px",
-              borderRadius: "8px",
-              color: "#CBD5E1",
-              background: "transparent",
-              textDecoration: "none",
-              fontSize: "13.5px",
-              fontWeight: 500,
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <BookOpen size={18} />
-              <span>Catalog</span>
-            </div>
-            <ChevronDown size={14} color="#F97316" />
-          </Link>
-
-          {/* 5. Inventory Link */}
-          <Link
-            href="/portal/inventory"
-            title="Inventory"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "9px 12px",
-              borderRadius: "8px",
-              color: "#CBD5E1",
-              background: "transparent",
-              textDecoration: "none",
-              fontSize: "13.5px",
-              fontWeight: 500,
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <Boxes size={18} />
-              <span>Inventory</span>
-            </div>
-            <ChevronDown size={14} color="#F97316" />
-          </Link>
-
-          {/* Other Navigation Links */}
+          {/* Navigation Links */}
           {[
-            { label: "Pricing", icon: Tag, hasChevron: true },
-            { label: "Payments", icon: CreditCard, hasChevron: true, href: "/portal/payments" },
-            { label: "Returns", icon: RotateCcw, href: "/portal/returns", badge: returnsBadge },
-            { label: "Payouts", icon: Wallet, hasChevron: true },
-            { label: "Reports", icon: BarChart3, hasChevron: true },
+            { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { label: "Orders", href: "/orders", icon: Package, badge: "128" },
+            { label: "Bulk orders", href: "/bulk-orders", icon: Layers },
+            { label: "Catalog", href: "/catalog", icon: BookOpen },
+            { label: "Inventory", href: "/inventory", icon: Boxes },
+            { label: "Pricing", href: "/pricing", icon: Tag },
+            { label: "Payments", href: "/payments", icon: CreditCard },
+            { label: "Returns", href: "/returns", icon: RotateCcw, badge: returnsBadge || "8" },
+            { label: "Payouts", icon: Wallet },
+            { label: "Reports", icon: BarChart3 },
             { label: "Growth", icon: TrendingUp },
             { label: "Support", icon: Headphones },
             { label: "Notifications", icon: Bell },
@@ -478,20 +377,35 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             { label: "Help Center", icon: LifeBuoy },
           ].map((item, idx) => {
             const Icon = item.icon;
+            const isActive = active?.toLowerCase().trim() === item.label.toLowerCase().trim();
+
             if (item.href) {
               return (
                 <Link
                   key={idx}
                   href={item.href}
                   title={item.label}
-                  style={{ ...navLinkStyle(active === item.label), padding: "8px 12px", fontSize: "13px" }}
+                  style={navLinkStyle(isActive)}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Icon size={17} color={active === item.label ? "#fbbf24" : undefined} />
+                    <Icon size={18} color={isActive ? "#ffffff" : undefined} />
                     <span>{item.label}</span>
                   </div>
-                  {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
-                  {item.badge ? <span style={badgeStyle}>{item.badge}</span> : null}
+                  {item.badge ? (
+                    <span
+                      style={{
+                        background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(194, 65, 12, 0.35)",
+                        color: isActive ? "#ffffff" : "#FDBA74",
+                        border: isActive ? "1px solid rgba(255, 255, 255, 0.3)" : "1px solid rgba(249, 115, 22, 0.4)",
+                        fontSize: "11px",
+                        padding: "1px 6px",
+                        borderRadius: "9999px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  ) : null}
                 </Link>
               );
             }
@@ -502,30 +416,22 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
                 type="button"
                 title={item.label}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  color: "#CBD5E1",
-                  background: "transparent",
-                  border: "none",
-                  fontSize: "13px",
-                  fontWeight: 500,
+                  ...navLinkStyle(isActive),
+                  border: isActive ? "1px solid rgba(249, 115, 22, 0.5)" : "none",
                   cursor: "pointer",
-                  width: "100%",
+                  textAlign: "left",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Icon size={17} />
+                  <Icon size={18} color={isActive ? "#ffffff" : undefined} />
                   <span>{item.label}</span>
                 </div>
-                {item.hasChevron && <ChevronDown size={14} color="#F97316" />}
-                {item.badge && (
+                {item.badge ? (
                   <span
                     style={{
-                      background: "rgba(194, 65, 12, 0.3)",
-                      color: "#E2E8F0",
+                      background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(194, 65, 12, 0.35)",
+                      color: isActive ? "#ffffff" : "#FDBA74",
+                      border: isActive ? "1px solid rgba(255, 255, 255, 0.3)" : "1px solid rgba(249, 115, 22, 0.4)",
                       fontSize: "11px",
                       padding: "1px 6px",
                       borderRadius: "9999px",
@@ -534,7 +440,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
                   >
                     {item.badge}
                   </span>
-                )}
+                ) : null}
               </button>
             );
           })}
@@ -559,7 +465,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#ffffff", fontSize: "12.5px", fontWeight: 700 }}>
-                <HelpCircle size={15} color="#fbbf24" />
+                <HelpCircle size={15} color="#F97316" />
                 <span>Need Help?</span>
               </div>
               <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
@@ -568,7 +474,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
               <a
                 href="#support"
                 style={{
-                  color: "#fbbf24",
+                  color: "#F97316",
                   fontSize: "11.5px",
                   fontWeight: 700,
                   textDecoration: "none",

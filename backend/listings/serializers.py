@@ -4,8 +4,8 @@ from django.db import transaction
 from django.db.models import Sum
 from listings.models import Listing, ListingTierPrice
 from catalog.models import Product
-from warehouses.models import Warehouse, InventoryItem
-from common.enums import ProductCondition, FulfillmentChannel, ListingStatus
+from warehouses.models import Warehouse, InventoryItem, InventoryMovement
+from common.enums import ProductCondition, FulfillmentChannel, ListingStatus, InventoryMovementReason
 from sellers.utils import resolve_request_seller
 
 
@@ -51,6 +51,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
             'condition', 'condition_note', 'fulfillment_channel', 'fulfillment_channel_display',
             'commerce_channel', 'commerce_channel_display',
             'status', 'standard_price', 'sale_price', 'effective_price',
+            'sale_starts_at', 'sale_ends_at', 'minimum_price', 'maximum_price', 'restock_date', 'buy_box_won_at',
             'handling_time_days', 'max_order_quantity', 'is_buy_box_winner',
             'available_stock', 'initial_stock', 'warehouse_id',
             'b2b_tier_prices', 'created_at', 'updated_at'
@@ -153,11 +154,15 @@ class SellerListingSerializer(serializers.ModelSerializer):
                 warehouse = Warehouse.objects.first()
 
             if warehouse:
-                InventoryItem.objects.create(
+                item = InventoryItem.objects.create(
                     listing=listing,
                     seller=seller,
                     warehouse=warehouse,
                     available_stock=initial_stock
+                )
+                InventoryMovement.objects.create(
+                    inventory_item=item, quantity_change=initial_stock, balance_after=initial_stock,
+                    reason=InventoryMovementReason.FBA_INBOUND_RECEIVED, reference_note="Opening stock for new listing",
                 )
 
         return listing
@@ -165,7 +170,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         tier_prices_data = validated_data.pop('b2b_tier_prices', None)
-        initial_stock = validated_data.pop('initial_stock', None)
+        validated_data.pop('initial_stock', None)
         validated_data.pop('warehouse_id', None)
         validated_data.pop('resolved_product', None)
         validated_data.pop('product_asin', None)
@@ -185,21 +190,5 @@ class SellerListingSerializer(serializers.ModelSerializer):
                     min_quantity=tp['min_quantity'],
                     discounted_price=tp['discounted_price']
                 )
-
-        # Update Stock if provided
-        if initial_stock is not None:
-            inv_item = instance.inventory_items.first()
-            if inv_item:
-                inv_item.available_stock = initial_stock
-                inv_item.save()
-            else:
-                warehouse = Warehouse.objects.first()
-                if warehouse:
-                    InventoryItem.objects.create(
-                        listing=instance,
-                        seller=instance.seller,
-                        warehouse=warehouse,
-                        available_stock=initial_stock
-                    )
 
         return instance
