@@ -1,5 +1,15 @@
+export interface SellerInfo {
+  id: string;
+  display_name: string;
+  legal_business_name: string;
+  store_slug: string;
+  tier?: string;
+  account_status?: string;
+}
+
 export interface UserProfile {
   id: string;
+  username?: string;
   phone: string;
   email: string | null;
   first_name: string;
@@ -7,6 +17,7 @@ export interface UserProfile {
   role: string;
   is_phone_verified: boolean;
   is_email_verified: boolean;
+  seller_info?: SellerInfo | null;
   last_login_at?: string;
   created_at?: string;
 }
