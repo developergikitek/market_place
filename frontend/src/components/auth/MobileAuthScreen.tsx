@@ -989,7 +989,7 @@ export default function MobileAuthScreen({
         <BusinessDetailsForm
           showHeaderFooter={false}
           defaultValues={businessData || undefined}
-          onSuccess={(data) => {
+          onSuccess={(data: BusinessDetailsData) => {
             setBusinessData(data);
             setStep("contact");
           }}
@@ -1003,7 +1003,7 @@ export default function MobileAuthScreen({
         <ContactPersonForm
           showHeaderFooter={false}
           defaultValues={contactData || undefined}
-          onSuccess={(data) => {
+          onSuccess={(data: ContactPersonData) => {
             setContactData(data);
             setStep("address");
           }}
