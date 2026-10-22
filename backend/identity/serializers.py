@@ -26,15 +26,29 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     customer_profile = CustomerProfileSerializer(read_only=True)
+    seller_info = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            'id', 'phone', 'email', 'first_name', 'last_name', 'role',
+            'id', 'username', 'phone', 'email', 'first_name', 'last_name', 'role',
             'is_phone_verified', 'is_email_verified', 'two_factor_enabled',
-            'last_login_at', 'created_at', 'updated_at', 'customer_profile'
+            'last_login_at', 'created_at', 'updated_at', 'customer_profile', 'seller_info'
         ]
         read_only_fields = ['id', 'role', 'is_phone_verified', 'is_email_verified', 'created_at', 'updated_at']
+
+    def get_seller_info(self, obj):
+        seller = getattr(obj, 'seller_account', None)
+        if not seller:
+            return None
+        return {
+            'id': seller.id,
+            'display_name': seller.display_name,
+            'legal_business_name': seller.legal_business_name,
+            'store_slug': seller.store_slug,
+            'tier': seller.tier,
+            'account_status': seller.account_status,
+        }
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6, style={'input_type': 'password'})

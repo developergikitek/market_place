@@ -23,7 +23,10 @@ import {
   Search,
   Check,
   HelpCircle,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const badgeStyle = {
   background: "rgba(194, 65, 12, 0.3)",
@@ -81,6 +84,25 @@ interface SellerShellProps {
 /** Seller Central frame: navy top bar + sidebar, with the page in a scrollable main area. */
 export default function SellerShell({ active, returnsBadge, children }: SellerShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const sellerName =
+    user?.seller_info?.display_name ||
+    user?.seller_info?.legal_business_name ||
+    (user?.first_name ? `${user.first_name} ${user.last_name || ""}`.trim() : user?.username || "Gikitek Certified Store");
+
+  const sellerCode =
+    user?.seller_info?.store_slug?.toUpperCase() ||
+    (user?.id ? `SELLER-${user.id.slice(0, 6).toUpperCase()}` : "SELLER-GIKITEK");
+
+  const userName =
+    user?.first_name
+      ? `${user.first_name} ${user.last_name || ""}`.trim()
+      : user?.username || user?.phone || "Seller Admin";
+
+  const userInitial = (userName || "S").charAt(0).toUpperCase();
+  const userRole = user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "Seller Admin";
 
   return (
     <div
@@ -178,7 +200,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
-              <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
+              <strong style={{ color: "#ffffff", fontWeight: 700 }}>{sellerName}</strong>
             </span>
 
             {/* SELLER ID Badge */}
@@ -194,7 +216,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
                 fontFamily: "var(--font-mono), monospace",
               }}
             >
-              SELLER12345
+              {sellerCode}
             </span>
 
             {/* Verified Badge */}
@@ -291,42 +313,128 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             <HelpCircle size={19} />
           </button>
 
-          {/* Profile Dropdown */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              paddingLeft: "6px",
-              cursor: "pointer",
-            }}
-          >
-            <div
+          {/* Profile Dropdown Container */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen((prev) => !prev)}
               style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
-                color: "#ffffff",
-                fontWeight: 800,
-                fontSize: "14px",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
+                gap: "10px",
+                paddingLeft: "6px",
+                cursor: "pointer",
+                background: "transparent",
+                border: "none",
+                textAlign: "left",
               }}
             >
-              A
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
-                Arjun Sharma
-              </span>
-              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
-                Admin
-              </span>
-            </div>
-            <ChevronDown size={14} color="#CBD5E1" />
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
+                  color: "#ffffff",
+                  fontWeight: 800,
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
+                }}
+              >
+                {userInitial}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
+                  {userName}
+                </span>
+                <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>
+                  {userRole}
+                </span>
+              </div>
+              <ChevronDown size={14} color="#CBD5E1" />
+            </button>
+
+            {/* Profile Menu Popover */}
+            {isProfileMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 10px)",
+                  right: 0,
+                  width: "240px",
+                  background: "#111A2E",
+                  border: "1px solid rgba(148, 163, 184, 0.25)",
+                  borderRadius: "10px",
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.5)",
+                  padding: "12px",
+                  zIndex: 100,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ paddingBottom: "8px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)" }}>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#ffffff" }}>
+                    {userName}
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#94A3B8" }}>
+                    {user?.phone || user?.email || "Seller Account"}
+                  </p>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      marginTop: "6px",
+                      background: "rgba(249, 115, 22, 0.2)",
+                      color: "#F97316",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "1px 6px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {sellerName}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    logout();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    width: "100%",
+                    padding: "8px 10px",
+                    borderRadius: "6px",
+                    background: "rgba(239, 68, 68, 0.12)",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    color: "#fca5a5",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.22)";
+                    e.currentTarget.style.color = "#ffffff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.12)";
+                    e.currentTarget.style.color = "#fca5a5";
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>

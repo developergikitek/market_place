@@ -19,7 +19,7 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
 
     // Read access token from cookie
     const cookieStore = await cookies();
-    const token = cookieStore.get("access_token")?.value;
+    let token = cookieStore.get("access_token")?.value;
 
     const headers = new Headers();
 
@@ -58,7 +58,62 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
       }
     }
 
-    const backendRes = await fetch(targetUrl, init);
+    let backendRes = await fetch(targetUrl, init);
+
+    // =========================================================================
+    // 🔄 SILENT RETRY: If 401 Unauthorized, attempt background token refresh
+    // =========================================================================
+    if (backendRes.status === 401) {
+      const refreshToken = cookieStore.get("refresh_token")?.value;
+      if (refreshToken) {
+        try {
+          const refreshRes = await fetch(`${DJANGO_API_URL}/api/auth/token/refresh/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh: refreshToken }),
+          });
+
+          if (refreshRes.ok) {
+            const refreshData = await refreshRes.json();
+            const newAccessToken = refreshData.access;
+            const newRefreshToken = refreshData.refresh;
+
+            if (newAccessToken) {
+              // 1. Update access_token in cookie store
+              cookieStore.set("access_token", newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 60 * 60 * 24, // 1 day
+              });
+
+              if (newRefreshToken) {
+                cookieStore.set("refresh_token", newRefreshToken, {
+                  httpOnly: true,
+                  secure: process.env.NODE_ENV === "production",
+                  sameSite: "lax",
+                  path: "/",
+                  maxAge: 60 * 60 * 24 * 30, // 30 days
+                });
+              }
+
+              // 2. Silently retry the original request with the new access token
+              headers.set("Authorization", `Bearer ${newAccessToken}`);
+              init.headers = headers;
+              backendRes = await fetch(targetUrl, init);
+            }
+          } else {
+            // Refresh token has also expired/invalidated - clean up stale session cookies
+            cookieStore.delete("access_token");
+            cookieStore.delete("refresh_token");
+            cookieStore.delete("makaano_seller_logged_in");
+          }
+        } catch (refreshErr) {
+          console.warn("[BFF Silent Refresh Failed]:", refreshErr);
+        }
+      }
+    }
 
     const dataBlob = await backendRes.blob();
     const responseHeaders = new Headers();
