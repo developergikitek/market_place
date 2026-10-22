@@ -4,10 +4,10 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Feather } from '@expo/vector-icons';
 import * as SplashScreen from 'expo-splash-screen';
 
-export const SPLASH_COLORS = { from: '#FF3E9A', to: '#7A28DE' }; // same gradient as the app icon
+export const SPLASH_COLORS = { from: '#2F7FD8', to: '#0E2238' }; // launch gradient: Bulk section accent down to its ink (theme/sectionThemes.js)
 // Must match the expo-splash-screen plugin in app.json (backgroundColor, imageWidth) so the
 // hand-off from the system launch screen is seamless: same colour, logo in the same place.
-const NATIVE_SPLASH_COLOR = '#7A28DE';
+const NATIVE_SPLASH_COLOR = '#0E2238';
 const LOGO_SIZE = 220;
 const MIN_VISIBLE_MS = 1500; // long enough to read, short enough not to feel slow
 const HOLD_FOUND_MS = 900; // let the found address register before revealing the app

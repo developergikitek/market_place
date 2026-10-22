@@ -27,7 +27,7 @@
         "ACCESS_FINE_LOCATION"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#B832B8",
+        "backgroundColor": "#C7ECF8",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -48,7 +48,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#7A28DE",
+          "backgroundColor": "#0E2238",
           "image": "./assets/splash-icon.png",
           "imageWidth": 220
         }

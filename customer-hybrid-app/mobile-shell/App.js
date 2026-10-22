@@ -27,7 +27,7 @@ import { NativeHeader, isSectionHome } from './src/components/NativeHeader';
 import { themeFor } from './src/theme/sectionThemes';
 import { LocationSplash, SPLASH_COLORS } from './src/components/LocationSplash';
 import * as SplashScreen from 'expo-splash-screen';
-import { fetchDeliveryLocation } from './src/location/currentLocation';
+import { canUseLocationWithoutPrompting, fetchDeliveryLocation } from './src/location/currentLocation';
 import { NativeTabBar } from './src/components/NativeTabBar';
 import { NativeWholesaleTabBar } from './src/components/NativeWholesaleTabBar';
 import { NativeSkeletonScreen } from './src/components/NativeSkeletonScreen';
@@ -196,12 +196,34 @@ export default function App() {
     else setLoading(false);
   };
 
-  // Launch: find the delivery location (Swiggy-style splash) while the WebView loads underneath
+  // Launch: find the delivery location (Swiggy-style splash) while the WebView loads underneath.
+  // Only when location is already allowed — launch never puts a permission dialog in the way.
   const [deliveryLocation, setDeliveryLocation] = useState(null);
-  const [splashVisible, setSplashVisible] = useState(true);
+  // null while we check: the system launch screen still covers the app, so the user never sees
+  // "Locating you..." flash on a device where we cannot actually locate them
+  const [splashVisible, setSplashVisible] = useState(null);
   useEffect(() => {
-    fetchDeliveryLocation().then(setDeliveryLocation);
+    let cancelled = false;
+    (async () => {
+      if (!(await canUseLocationWithoutPrompting())) {
+        if (!cancelled) setSplashVisible(false);
+        return;
+      }
+      if (cancelled) return;
+      setSplashVisible(true);
+      const found = await fetchDeliveryLocation();
+      if (!cancelled) setDeliveryLocation(found);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // Skipping the splash means LocationSplash never mounts, and it is what normally hides the
+  // system launch screen — so hide it here instead, once fonts are ready to avoid a bare frame
+  useEffect(() => {
+    if (splashVisible === false && fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [splashVisible, fontsLoaded]);
 
   // Profile is native-owned: load the stored copy, keep it in sync, and mirror every change into
   // the WebView so web screens (checkout, order details) use the same copy
