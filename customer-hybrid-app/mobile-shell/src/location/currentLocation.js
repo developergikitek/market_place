@@ -20,13 +20,29 @@ function toDeliveryLabel(place) {
 }
 
 /**
+ * True when location can be read without putting a permission dialog in front of the user:
+ * permission is already granted and the device has location services on. Launch uses this to
+ * decide whether to show the locating splash at all.
+ */
+export async function canUseLocationWithoutPrompting() {
+  try {
+    const { status } = await Location.getForegroundPermissionsAsync();
+    if (status !== 'granted') return false;
+    return await Location.hasServicesEnabledAsync();
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Resolves the user's delivery location for the header.
  * Returns { status: 'found', title, address } or { status: 'denied' | 'unavailable' }.
+ * Never prompts — it only reads permission already given, so it is safe to call on launch.
  * Never throws and never waits longer than ~5s, so app launch can't hang on GPS.
  */
 export async function fetchDeliveryLocation() {
   try {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') return { status: 'denied' };
 
     // Last known fix is instant; a fresh balanced-accuracy fix replaces it when available
@@ -47,4 +63,19 @@ export async function fetchDeliveryLocation() {
   } catch {
     return { status: 'unavailable' };
   }
+}
+
+/**
+ * Asks for location permission and then resolves the delivery location. This one shows the
+ * system dialog, so call it only from an explicit user action (tapping the header location,
+ * an "use my location" control) — never on launch.
+ */
+export async function requestDeliveryLocation() {
+  try {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return { status: 'denied' };
+  } catch {
+    return { status: 'unavailable' };
+  }
+  return fetchDeliveryLocation();
 }
