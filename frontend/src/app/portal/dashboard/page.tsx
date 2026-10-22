@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -36,88 +36,8 @@ import {
   HelpCircle,
 } from "lucide-react";
 import Select from "@/components/ui/Select";
-
-// Sales Overview Chart Data for different time ranges
-const SALES_TIMEFRAME_DATA: Record<
-  string,
-  {
-    total: string;
-    growth: string;
-    isPositive: boolean;
-    labels: string[];
-    values: number[]; // in Lakhs (₹)
-    displayValues: string[];
-  }
-> = {
-  "Last 7 Days": {
-    total: "₹12,75,430",
-    growth: "+23.5% vs last 7 days",
-    isPositive: true,
-    labels: ["13 May", "14 May", "15 May", "16 May", "17 May", "18 May", "19 May"],
-    values: [1.4, 2.2, 1.6, 2.4, 1.9, 2.3, 2.8],
-    displayValues: ["₹1,42,000", "₹2,21,500", "₹1,58,900", "₹2,44,200", "₹1,89,600", "₹2,34,230", "₹2,85,000"],
-  },
-  "Last 14 Days": {
-    total: "₹24,18,650",
-    growth: "+19.2% vs prev 14 days",
-    isPositive: true,
-    labels: ["06 May", "08 May", "10 May", "12 May", "14 May", "16 May", "19 May"],
-    values: [1.8, 2.1, 1.9, 2.5, 2.2, 2.4, 2.8],
-    displayValues: ["₹1,80,000", "₹2,10,000", "₹1,90,000", "₹2,50,000", "₹2,21,500", "₹2,44,200", "₹2,85,000"],
-  },
-  "This Month": {
-    total: "₹38,90,120",
-    growth: "+28.4% vs last month",
-    isPositive: true,
-    labels: ["W1 May", "W2 May", "W3 May", "W4 May", "W5 May"],
-    values: [1.2, 1.9, 2.4, 2.7, 2.9],
-    displayValues: ["₹6,40,000", "₹8,90,000", "₹10,50,000", "₹11,20,000", "₹1,90,120"],
-  },
-};
-
-// Recent Orders Dataset
-const RECENT_ORDERS = [
-  {
-    orderId: "BM12567892",
-    date: "19 May 2025 • 11:45 AM",
-    amount: "₹4,850",
-    status: "Delivered",
-    statusColor: "#10b981", // Emerald green
-    statusBg: "#ecfdf5",
-  },
-  {
-    orderId: "BM12567891",
-    date: "19 May 2025 • 10:30 AM",
-    amount: "₹2,340",
-    status: "Delivered",
-    statusColor: "#10b981",
-    statusBg: "#ecfdf5",
-  },
-  {
-    orderId: "BM12567890",
-    date: "19 May 2025 • 09:15 AM",
-    amount: "₹1,270",
-    status: "Processing",
-    statusColor: "#f59e0b", // Amber
-    statusBg: "#fffbeb",
-  },
-  {
-    orderId: "BM12567889",
-    date: "18 May 2025 • 08:40 PM",
-    amount: "₹3,620",
-    status: "Shipped",
-    statusColor: "#3b82f6", // Blue
-    statusBg: "#eff6ff",
-  },
-  {
-    orderId: "BM12567888",
-    date: "18 May 2025 • 07:20 PM",
-    amount: "₹2,150",
-    status: "Pending",
-    statusColor: "#64748b", // Neutral slate
-    statusBg: "#f1f5f9",
-  },
-];
+import { DashboardData, DashboardRange, fetchDashboard } from "@/services/dashboardService";
+import { ApiError } from "@/services/addProductService";
 
 // Announcements Dataset
 const ANNOUNCEMENTS = [
@@ -153,50 +73,128 @@ const ANNOUNCEMENTS = [
   },
 ];
 
-// Top Selling Categories Dataset
-const TOP_CATEGORIES = [
-  { rank: 1, name: "Power Tools", amount: "₹4,25,000", percent: 33 },
-  { rank: 2, name: "Electricals", amount: "₹3,10,000", percent: 24 },
-  { rank: 3, name: "Hardware", amount: "₹2,05,000", percent: 16 },
-  { rank: 4, name: "Plumbing", amount: "₹1,60,000", percent: 12 },
-  { rank: 5, name: "Paints & Accessories", amount: "₹75,430", percent: 5 },
-];
+const inrFormatter = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+const formatINR = (value: string | number) => inrFormatter.format(Number(value) || 0);
 
-// Sales By Channel Dataset
-const SALES_CHANNELS = [
-  {
-    name: "Makaano App",
-    percentage: "65%",
-    amount: "₹8,29,030",
-    color: "#f59e0b", // Amber
-  },
-  {
-    name: "Makaano Website",
-    percentage: "25%",
-    amount: "₹3,18,857",
-    color: "#3b82f6", // Blue
-  },
-  {
-    name: "API / Integrations",
-    percentage: "10%",
-    amount: "₹1,27,543",
-    color: "#0B1220", // Makaano navy
-  },
-];
+/** Short axis label: ₹0, ₹850, ₹12K, ₹1.5L, ₹2Cr */
+function formatINRShort(value: number) {
+  if (value >= 1e7) return `₹${+(value / 1e7).toFixed(1)}Cr`;
+  if (value >= 1e5) return `₹${+(value / 1e5).toFixed(1)}L`;
+  if (value >= 1e3) return `₹${+(value / 1e3).toFixed(1)}K`;
+  return `₹${Math.round(value)}`;
+}
+
+function formatOrderDate(iso: string) {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const time = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }).toUpperCase();
+  return `${date} • ${time}`;
+}
+
+/** Round the chart ceiling up to 1/2/2.5/5 x 10^n so grid labels stay clean. */
+function niceCeil(value: number) {
+  if (value <= 0) return 1;
+  const pow = 10 ** Math.floor(Math.log10(value));
+  const step = [1, 2, 2.5, 5, 10].find((m) => m * pow >= value) ?? 10;
+  return step * pow;
+}
+
+const ORDER_STATUS_COLORS: Record<string, string> = {
+  DELIVERED: "#10b981",
+  SHIPPED: "#3b82f6",
+  PARTIALLY_SHIPPED: "#3b82f6",
+  PROCESSING: "#f59e0b",
+  PAYMENT_CONFIRMED: "#f59e0b",
+  PENDING_PAYMENT: "#64748b",
+  CANCELLED: "#ef4444",
+  REFUNDED: "#ef4444",
+};
+
+const CHANNEL_COLORS: Record<string, string> = {
+  BAZAAR: "#f59e0b",
+  QUICK_COMMERCE: "#3b82f6",
+  BOTH: "#0B1220",
+};
+
+// 2 * PI * r for the sales-by-channel donut (r = 38)
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * 38;
+
+const PERFORMANCE_GRADES: Record<string, { label: string; color: string; title: string; subtitle: string }> = {
+  GREAT: { label: "Great", color: "#10b981", title: "You're doing great!", subtitle: "Keep up the good work." },
+  GOOD: { label: "Good", color: "#f59e0b", title: "Good going!", subtitle: "A few areas can still improve." },
+  NEEDS_IMPROVEMENT: { label: "Low", color: "#ef4444", title: "Needs attention", subtitle: "Review the areas below." },
+  NO_DATA: { label: "—", color: "#94a3b8", title: "Not enough data yet", subtitle: "Scores appear once orders come in." },
+};
+
+function ChangeIndicator({ change, invert = false }: { change: number | null | undefined; invert?: boolean }) {
+  if (change === null || change === undefined) {
+    return <span style={{ color: "#94a3b8", fontWeight: 700 }}>—</span>;
+  }
+  const up = change >= 0;
+  const good = invert ? !up : up;
+  return (
+    <span style={{ color: good ? "#10b981" : "#ef4444", fontWeight: 700, display: "flex", alignItems: "center" }}>
+      {up ? <ArrowUpRight size={15} /> : <ArrowDownRight size={15} />}
+      {Math.abs(change)}%
+    </span>
+  );
+}
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showProfileBanner, setShowProfileBanner] = useState(true);
-  const [salesTimeframe, setSalesTimeframe] = useState("Last 7 Days");
+  const [salesTimeframe, setSalesTimeframe] = useState<DashboardRange>("7d");
   const [activeChartHoverIdx, setActiveChartHoverIdx] = useState<number | null>(null);
-  const [categoriesTimeframe, setCategoriesTimeframe] = useState("Last 7 Days");
-  const [channelTimeframe, setChannelTimeframe] = useState("Last 7 Days");
-  const [performanceTimeframe, setPerformanceTimeframe] = useState("This Week");
+  const [categoriesTimeframe, setCategoriesTimeframe] = useState<DashboardRange>("7d");
+  const [channelTimeframe, setChannelTimeframe] = useState<DashboardRange>("7d");
+  const [performanceTimeframe, setPerformanceTimeframe] = useState<DashboardRange>("week");
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const currentSalesData = SALES_TIMEFRAME_DATA[salesTimeframe] || SALES_TIMEFRAME_DATA["Last 7 Days"];
+  useEffect(() => {
+    let cancelled = false;
+    fetchDashboard({
+      range: salesTimeframe,
+      categories_range: categoriesTimeframe,
+      channel_range: channelTimeframe,
+      performance_range: performanceTimeframe,
+    })
+      .then((data) => {
+        if (cancelled) return;
+        setDashboard(data);
+        setLoadError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setLoadError(err instanceof ApiError ? err.messages.join(" ") : "Couldn't load dashboard.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [salesTimeframe, categoriesTimeframe, channelTimeframe, performanceTimeframe]);
+
+  const seller = dashboard?.seller;
+  const metrics = dashboard?.metrics;
+  const salesOverview = dashboard?.sales_overview;
+  const recentOrders = dashboard?.recent_orders ?? [];
+  const topCategories = dashboard?.top_categories.items ?? [];
+  const topCategoryAmount = Math.max(...topCategories.map((c) => Number(c.amount)), 0);
+  const salesChannels = dashboard?.sales_by_channel.channels ?? [];
+  const donutSegments = salesChannels.map((chan, idx) => ({
+    channel: chan.channel,
+    length: (chan.percent / 100) * DONUT_CIRCUMFERENCE,
+    offset: salesChannels.slice(0, idx).reduce((sum, c) => sum + (c.percent / 100) * DONUT_CIRCUMFERENCE, 0),
+  }));
+  const performance = dashboard?.performance;
+  const grade = PERFORMANCE_GRADES[performance?.grade ?? "NO_DATA"];
+  const periodLabel = dashboard ? `vs previous ${dashboard.range.label.replace(/^(Last|This) /, "").toLowerCase()}` : "";
+
+  const chartValues = (salesOverview?.points ?? []).map((p) => Number(p.value));
+  const chartMax = niceCeil(Math.max(...chartValues, 0));
+  const gridSteps = [0, 1, 2, 3];
 
   // Helper for SVG chart points
   const chartWidth = 520;
@@ -204,21 +202,26 @@ export default function DashboardPage() {
   const paddingX = 40;
   const paddingY = 20;
 
-  // Convert values (0 to 3) into SVG coordinates
-  const points = currentSalesData.values.map((val, idx) => {
-    const x = paddingX + (idx / (currentSalesData.values.length - 1)) * (chartWidth - 2 * paddingX);
-    // 0 is bottom (chartHeight - paddingY), 3 is top (paddingY)
-    const y = chartHeight - paddingY - (val / 3) * (chartHeight - 2 * paddingY);
-    return { x, y, val, label: currentSalesData.labels[idx], displayVal: currentSalesData.displayValues[idx] };
+  // Convert values (0 to chartMax) into SVG coordinates
+  const points = (salesOverview?.points ?? []).map((pt, idx, all) => {
+    const val = Number(pt.value);
+    const x = paddingX + (all.length > 1 ? idx / (all.length - 1) : 0.5) * (chartWidth - 2 * paddingX);
+    // 0 is bottom (chartHeight - paddingY), chartMax is top (paddingY)
+    const y = chartHeight - paddingY - (val / chartMax) * (chartHeight - 2 * paddingY);
+    return { x, y, val, label: pt.label, displayVal: formatINR(val) };
   });
+  // Thin out x-axis labels when there are many points (e.g. 14 days)
+  const labelEvery = points.length > 8 ? 2 : 1;
 
   // SVG polyline string
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
 
   // Closed path for SVG linear gradient area fill
-  const areaPath = `M ${points[0].x},${chartHeight - paddingY} ` +
-    points.map((p) => `L ${p.x},${p.y}`).join(" ") +
-    ` L ${points[points.length - 1].x},${chartHeight - paddingY} Z`;
+  const areaPath = points.length
+    ? `M ${points[0].x},${chartHeight - paddingY} ` +
+      points.map((p) => `L ${p.x},${p.y}`).join(" ") +
+      ` L ${points[points.length - 1].x},${chartHeight - paddingY} Z`
+    : "";
 
   return (
     <div
@@ -320,7 +323,7 @@ export default function DashboardPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
               Welcome back,{" "}
-              <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
+              <strong style={{ color: "#ffffff", fontWeight: 700 }}>{seller?.display_name ?? "…"}</strong>
             </span>
 
             {/* SELLER ID Badge */}
@@ -336,7 +339,7 @@ export default function DashboardPage() {
                 fontFamily: "var(--font-mono), monospace",
               }}
             >
-              SELLER12345
+              {seller?.store_slug.toUpperCase() ?? "…"}
             </span>
 
             {/* Verified Badge */}
@@ -758,8 +761,24 @@ export default function DashboardPage() {
             gap: "20px",
           }}
         >
+          {loadError && (
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                color: "#b91c1c",
+                borderRadius: "12px",
+                padding: "10px 16px",
+                fontSize: "13px",
+                fontWeight: 600,
+              }}
+            >
+              {loadError}
+            </div>
+          )}
+
           {/* 1. TOP INFORMATION BANNER: Profile Completion */}
-          {showProfileBanner && (
+          {showProfileBanner && seller && !seller.profile_completion.is_complete && (
             <div
               style={{
                 background: "linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)",
@@ -789,7 +808,7 @@ export default function DashboardPage() {
                   <Info size={16} />
                 </div>
                 <span style={{ fontSize: "13.5px", color: "#1e293b", fontWeight: 500 }}>
-                  Complete your profile to unlock all features and grow your business.
+                  Your profile is {seller.profile_completion.percent}% complete. Complete it to unlock all features and grow your business.
                 </span>
               </div>
 
@@ -859,7 +878,7 @@ export default function DashboardPage() {
                     TOTAL ORDERS
                   </span>
                   <div style={{ fontSize: "30px", fontWeight: 800, color: "#1e293b", marginTop: "4px", lineHeight: 1.1 }}>
-                    1,248
+                    {metrics ? metrics.total_orders.value.toLocaleString("en-IN") : "—"}
                   </div>
                 </div>
                 <div
@@ -879,11 +898,8 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
-                <span style={{ color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center" }}>
-                  <ArrowUpRight size={15} />
-                  18.6%
-                </span>
-                <span style={{ color: "#64748b" }}>vs last 7 days</span>
+                <ChangeIndicator change={metrics?.total_orders.change_pct} />
+                <span style={{ color: "#64748b" }}>{periodLabel}</span>
               </div>
             </div>
 
@@ -907,7 +923,7 @@ export default function DashboardPage() {
                     TOTAL SALES
                   </span>
                   <div style={{ fontSize: "30px", fontWeight: 800, color: "#1e293b", marginTop: "4px", lineHeight: 1.1 }}>
-                    ₹12,75,430
+                    {metrics ? formatINR(metrics.total_sales.value) : "—"}
                   </div>
                 </div>
                 <div
@@ -927,11 +943,8 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
-                <span style={{ color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center" }}>
-                  <ArrowUpRight size={15} />
-                  23.5%
-                </span>
-                <span style={{ color: "#64748b" }}>vs last 7 days</span>
+                <ChangeIndicator change={metrics?.total_sales.change_pct} />
+                <span style={{ color: "#64748b" }}>{periodLabel}</span>
               </div>
             </div>
 
@@ -955,7 +968,7 @@ export default function DashboardPage() {
                     ORDERS DELIVERED
                   </span>
                   <div style={{ fontSize: "30px", fontWeight: 800, color: "#1e293b", marginTop: "4px", lineHeight: 1.1 }}>
-                    1,102
+                    {metrics ? metrics.orders_delivered.value.toLocaleString("en-IN") : "—"}
                   </div>
                 </div>
                 <div
@@ -975,11 +988,8 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
-                <span style={{ color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center" }}>
-                  <ArrowUpRight size={15} />
-                  16.4%
-                </span>
-                <span style={{ color: "#64748b" }}>vs last 7 days</span>
+                <ChangeIndicator change={metrics?.orders_delivered.change_pct} />
+                <span style={{ color: "#64748b" }}>{periodLabel}</span>
               </div>
             </div>
 
@@ -1003,7 +1013,7 @@ export default function DashboardPage() {
                     PENDING ORDERS
                   </span>
                   <div style={{ fontSize: "30px", fontWeight: 800, color: "#1e293b", marginTop: "4px", lineHeight: 1.1 }}>
-                    146
+                    {metrics ? metrics.pending_orders.value.toLocaleString("en-IN") : "—"}
                   </div>
                 </div>
                 <div
@@ -1023,11 +1033,8 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
-                <span style={{ color: "#ef4444", fontWeight: 700, display: "flex", alignItems: "center" }}>
-                  <ArrowDownRight size={15} />
-                  7.8%
-                </span>
-                <span style={{ color: "#64748b" }}>vs last 7 days</span>
+                <ChangeIndicator change={metrics?.pending_orders.change_pct} invert />
+                <span style={{ color: "#64748b" }}>{periodLabel}</span>
               </div>
             </div>
           </div>
@@ -1062,7 +1069,7 @@ export default function DashboardPage() {
                 </h2>
                 <Select
                   value={salesTimeframe}
-                  onChange={(e) => setSalesTimeframe(e.target.value)}
+                  onChange={(e) => setSalesTimeframe(e.target.value as DashboardRange)}
                   style={{
                     padding: "4px 8px",
                     borderRadius: "6px",
@@ -1075,21 +1082,22 @@ export default function DashboardPage() {
                     outline: "none",
                   }}
                 >
-                  <option value="Last 7 Days">Last 7 Days</option>
-                  <option value="Last 14 Days">Last 14 Days</option>
-                  <option value="This Month">This Month</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="14d">Last 14 Days</option>
+                  <option value="month">This Month</option>
                 </Select>
               </div>
 
               {/* Value and Growth Tag */}
               <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
                 <span style={{ fontSize: "24px", fontWeight: 800, color: "#1e293b" }}>
-                  {currentSalesData.total}
+                  {salesOverview ? formatINR(salesOverview.total) : "—"}
                 </span>
+                {salesOverview?.change_pct != null && (
                 <span
                   style={{
-                    background: "#ecfdf5",
-                    color: "#10b981",
+                    background: salesOverview.change_pct >= 0 ? "#ecfdf5" : "#fef2f2",
+                    color: salesOverview.change_pct >= 0 ? "#10b981" : "#ef4444",
                     fontSize: "12px",
                     fontWeight: 700,
                     padding: "2px 8px",
@@ -1099,9 +1107,11 @@ export default function DashboardPage() {
                     gap: "2px",
                   }}
                 >
-                  <ArrowUpRight size={13} />
-                  {currentSalesData.growth}
+                  {salesOverview.change_pct >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                  {salesOverview.change_pct >= 0 ? "+" : ""}
+                  {salesOverview.change_pct}% {periodLabel}
                 </span>
+                )}
               </div>
 
               {/* Interactive SVG Sales Line Chart */}
@@ -1118,7 +1128,7 @@ export default function DashboardPage() {
                   </defs>
 
                   {/* Horizontal Grid lines */}
-                  {[0, 1, 2, 3].map((val) => {
+                  {gridSteps.map((val) => {
                     const y = chartHeight - paddingY - (val / 3) * (chartHeight - 2 * paddingY);
                     return (
                       <g key={val}>
@@ -1130,7 +1140,7 @@ export default function DashboardPage() {
                           fontWeight="500"
                           textAnchor="end"
                         >
-                          {val === 0 ? "₹0" : `₹${val}L`}
+                          {formatINRShort((chartMax * val) / 3)}
                         </text>
                         <line
                           x1={paddingX}
@@ -1184,7 +1194,7 @@ export default function DashboardPage() {
                         fontWeight="600"
                         textAnchor="middle"
                       >
-                        {pt.label}
+                        {idx % labelEvery === 0 ? pt.label : ""}
                       </text>
                     </g>
                   ))}
@@ -1255,36 +1265,39 @@ export default function DashboardPage() {
 
               {/* Orders List */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {RECENT_ORDERS.map((ord, idx) => (
+                {dashboard && recentOrders.length === 0 && (
+                  <span style={{ fontSize: "12.5px", color: "#64748b" }}>No orders yet.</span>
+                )}
+                {recentOrders.map((ord, idx) => (
                   <div
                     key={idx}
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      paddingBottom: idx === RECENT_ORDERS.length - 1 ? "0" : "10px",
-                      borderBottom: idx === RECENT_ORDERS.length - 1 ? "none" : "1px solid #f1f5f9",
+                      paddingBottom: idx === recentOrders.length - 1 ? "0" : "10px",
+                      borderBottom: idx === recentOrders.length - 1 ? "none" : "1px solid #f1f5f9",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>
-                        {ord.orderId}
+                        {ord.order_number}
                       </span>
                       <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>
-                        {ord.amount}
+                        {formatINR(ord.amount)}
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "2px" }}>
                       <span style={{ fontSize: "11px", color: "#64748b" }}>
-                        {ord.date}
+                        {formatOrderDate(ord.placed_at)}
                       </span>
                       <span
                         style={{
                           fontSize: "11px",
                           fontWeight: 700,
-                          color: ord.statusColor,
+                          color: ORDER_STATUS_COLORS[ord.status] ?? "#64748b",
                         }}
                       >
-                        {ord.status}
+                        {ord.status_display}
                       </span>
                     </div>
                   </div>
@@ -1404,7 +1417,7 @@ export default function DashboardPage() {
                 </h2>
                 <Select
                   value={categoriesTimeframe}
-                  onChange={(e) => setCategoriesTimeframe(e.target.value)}
+                  onChange={(e) => setCategoriesTimeframe(e.target.value as DashboardRange)}
                   style={{
                     padding: "4px 8px",
                     borderRadius: "6px",
@@ -1417,15 +1430,18 @@ export default function DashboardPage() {
                     outline: "none",
                   }}
                 >
-                  <option value="Last 7 Days">Last 7 Days</option>
-                  <option value="This Month">This Month</option>
-                  <option value="Last 30 Days">Last 30 Days</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="month">This Month</option>
+                  <option value="30d">Last 30 Days</option>
                 </Select>
               </div>
 
               {/* Categories Ranked List */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {TOP_CATEGORIES.map((cat) => (
+                {dashboard && topCategories.length === 0 && (
+                  <span style={{ fontSize: "12.5px", color: "#64748b" }}>No sales in this period.</span>
+                )}
+                {topCategories.map((cat) => (
                   <div
                     key={cat.rank}
                     style={{
@@ -1470,7 +1486,7 @@ export default function DashboardPage() {
                     >
                       <div
                         style={{
-                          width: `${cat.percent * 2.8}%`,
+                          width: `${topCategoryAmount ? (Number(cat.amount) / topCategoryAmount) * 100 : 0}%`,
                           maxWidth: "100%",
                           height: "100%",
                           background: "linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)",
@@ -1489,7 +1505,7 @@ export default function DashboardPage() {
                         minWidth: "105px",
                       }}
                     >
-                      {cat.amount} ({cat.percent}%)
+                      {formatINR(cat.amount)} ({cat.percent}%)
                     </div>
                   </div>
                 ))}
@@ -1516,7 +1532,7 @@ export default function DashboardPage() {
                 </h2>
                 <Select
                   value={channelTimeframe}
-                  onChange={(e) => setChannelTimeframe(e.target.value)}
+                  onChange={(e) => setChannelTimeframe(e.target.value as DashboardRange)}
                   style={{
                     padding: "4px 8px",
                     borderRadius: "6px",
@@ -1529,9 +1545,9 @@ export default function DashboardPage() {
                     outline: "none",
                   }}
                 >
-                  <option value="Last 7 Days">Last 7 Days</option>
-                  <option value="This Month">This Month</option>
-                  <option value="Last 30 Days">Last 30 Days</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="month">This Month</option>
+                  <option value="30d">Last 30 Days</option>
                 </Select>
               </div>
 
@@ -1549,40 +1565,19 @@ export default function DashboardPage() {
                       stroke="#f1f5f9"
                       strokeWidth="14"
                     />
-                    {/* App: 65% (circumference = 2 * PI * 38 = ~238.76) */}
-                    {/* 65% of 238.76 = 155.19 */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="transparent"
-                      stroke="#f59e0b"
-                      strokeWidth="14"
-                      strokeDasharray="155.19 238.76"
-                      strokeDashoffset="0"
-                    />
-                    {/* Website: 25% = 59.69 */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="transparent"
-                      stroke="#3b82f6"
-                      strokeWidth="14"
-                      strokeDasharray="59.69 238.76"
-                      strokeDashoffset="-155.19"
-                    />
-                    {/* API/Integrations: 10% = 23.88 */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="transparent"
-                      stroke="#0B1220"
-                      strokeWidth="14"
-                      strokeDasharray="23.88 238.76"
-                      strokeDashoffset="-214.88"
-                    />
+                    {donutSegments.map((seg) => (
+                      <circle
+                        key={seg.channel}
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke={CHANNEL_COLORS[seg.channel] ?? "#94a3b8"}
+                        strokeWidth="14"
+                        strokeDasharray={`${seg.length} ${DONUT_CIRCUMFERENCE}`}
+                        strokeDashoffset={-seg.offset}
+                      />
+                    ))}
                   </svg>
                   <div
                     style={{
@@ -1595,30 +1590,32 @@ export default function DashboardPage() {
                     }}
                   >
                     <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 700 }}>Total</span>
-                    <span style={{ fontSize: "13px", fontWeight: 800, color: "#1e293b" }}>100%</span>
+                    <span style={{ fontSize: "12px", fontWeight: 800, color: "#1e293b" }}>
+                      {dashboard ? formatINRShort(Number(dashboard.sales_by_channel.total)) : "—"}
+                    </span>
                   </div>
                 </div>
 
                 {/* Legend & Stats */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
-                  {SALES_CHANNELS.map((chan, idx) => (
-                    <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                  {salesChannels.map((chan) => (
+                    <div key={chan.channel} style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                       <span
                         style={{
                           width: "10px",
                           height: "10px",
                           borderRadius: "50%",
-                          background: chan.color,
+                          background: CHANNEL_COLORS[chan.channel] ?? "#94a3b8",
                           marginTop: "4px",
                           flexShrink: 0,
                         }}
                       />
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "12.5px", fontWeight: 600, color: "#1e293b" }}>
-                          {chan.name}
+                          {chan.label}
                         </span>
                         <span style={{ fontSize: "11px", color: "#64748b" }}>
-                          {chan.percentage} ({chan.amount})
+                          {chan.percent}% ({formatINR(chan.amount)})
                         </span>
                       </div>
                     </div>
@@ -1647,7 +1644,7 @@ export default function DashboardPage() {
                 </h2>
                 <Select
                   value={performanceTimeframe}
-                  onChange={(e) => setPerformanceTimeframe(e.target.value)}
+                  onChange={(e) => setPerformanceTimeframe(e.target.value as DashboardRange)}
                   style={{
                     padding: "4px 8px",
                     borderRadius: "6px",
@@ -1660,9 +1657,9 @@ export default function DashboardPage() {
                     outline: "none",
                   }}
                 >
-                  <option value="This Week">This Week</option>
-                  <option value="This Month">This Month</option>
-                  <option value="Last 30 Days">Last 30 Days</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="30d">Last 30 Days</option>
                 </Select>
               </div>
 
@@ -1679,15 +1676,15 @@ export default function DashboardPage() {
                       stroke="#f1f5f9"
                       strokeWidth="10"
                     />
-                    {/* 84% score: circumference = 2 * PI * 40 = ~251.32. 84% is 211.1 */}
+                    {/* circumference = 2 * PI * 40 ≈ 251.32 */}
                     <circle
                       cx="50"
                       cy="50"
                       r="40"
                       fill="transparent"
-                      stroke="#10b981"
+                      stroke={grade.color}
                       strokeWidth="10"
-                      strokeDasharray="211.1 251.32"
+                      strokeDasharray={`${((performance?.score ?? 0) / 100) * 251.32} 251.32`}
                       strokeDashoffset="0"
                       strokeLinecap="round"
                     />
@@ -1703,10 +1700,10 @@ export default function DashboardPage() {
                     }}
                   >
                     <span style={{ fontSize: "24px", fontWeight: 800, color: "#1e293b", lineHeight: 1 }}>
-                      84
+                      {performance?.score ?? "—"}
                     </span>
-                    <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#10b981", marginTop: "2px" }}>
-                      Great
+                    <span style={{ fontSize: "10.5px", fontWeight: 700, color: grade.color, marginTop: "2px" }}>
+                      {grade.label}
                     </span>
                   </div>
                 </div>
@@ -1715,19 +1712,19 @@ export default function DashboardPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
                   <div>
                     <div style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>
-                      You're doing great!
+                      {grade.title}
                     </div>
                     <div style={{ fontSize: "11px", color: "#64748b" }}>
-                      Keep up the good work.
+                      {grade.subtitle}
                     </div>
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
                     {[
-                      { label: "Order Fulfillment", score: "90/100" },
-                      { label: "Customer Feedback", score: "80/100" },
-                      { label: "Return Rate", score: "70/100" },
-                      { label: "On-time Delivery", score: "95/100" },
+                      { label: "Order Fulfillment", score: performance?.breakdown.order_fulfillment },
+                      { label: "Customer Feedback", score: performance?.breakdown.customer_feedback },
+                      { label: "Return Rate", score: performance?.breakdown.return_rate },
+                      { label: "On-time Delivery", score: performance?.breakdown.on_time_delivery },
                     ].map((item, idx) => (
                       <div
                         key={idx}
@@ -1739,10 +1736,15 @@ export default function DashboardPage() {
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <CheckCircle2 size={13} color="#10b981" />
+                          <CheckCircle2
+                            size={13}
+                            color={item.score == null ? "#cbd5e1" : item.score >= 80 ? "#10b981" : item.score >= 60 ? "#f59e0b" : "#ef4444"}
+                          />
                           <span style={{ color: "#334155", fontWeight: 500 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontWeight: 700, color: "#1e293b" }}>{item.score}</span>
+                        <span style={{ fontWeight: 700, color: "#1e293b" }}>
+                          {item.score == null ? "—" : `${item.score}/100`}
+                        </span>
                       </div>
                     ))}
                   </div>

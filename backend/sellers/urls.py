@@ -6,7 +6,8 @@ from sellers.views import (
     SellerProductViewSet,
     ProductImageUploadView,
     SellerReturnRequestViewSet,
-    SellerAtoZClaimViewSet
+    SellerAtoZClaimViewSet,
+    SellerDashboardView,
 )
 from catalog.seller_views import SellerCatalogViewSet
 
@@ -20,6 +21,7 @@ router.register(r'returns/claims', SellerAtoZClaimViewSet, basename='portal-clai
 router.register(r'returns', SellerReturnRequestViewSet, basename='portal-return')
 
 urlpatterns = [
+    path('dashboard/', SellerDashboardView.as_view(), name='portal-dashboard'),
     path('uploads/product-images/', ProductImageUploadView.as_view(), name='portal-product-image-upload'),
     path('', include(router.urls)),
 ]
