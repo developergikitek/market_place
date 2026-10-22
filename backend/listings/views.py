@@ -17,26 +17,18 @@ class SellerListingViewSet(viewsets.ModelViewSet):
     """
     serializer_class = SellerListingSerializer
     pagination_class = StandardResultsSetPagination
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'summary', 'update_stock', 'create', 'update', 'partial_update', 'toggle_status']:
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsSellerUser()]
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
 
     def get_queryset(self):
         user = self.request.user
+        seller = getattr(user, 'seller_account', None)
         
-        if user and user.is_authenticated:
-            seller = getattr(user, 'seller_account', None)
-            if getattr(user, 'role', None) == 'ADMIN' and not seller:
-                qs = Listing.objects.all()
-            elif seller:
-                qs = Listing.objects.filter(seller=seller)
-            else:
-                qs = Listing.objects.all()
-        else:
-            # When unauthenticated / demo frontend browsing, display all active inventory listings
+        if getattr(user, 'role', None) == 'ADMIN' and not seller:
             qs = Listing.objects.all()
+        elif seller:
+            qs = Listing.objects.filter(seller=seller)
+        else:
+            qs = Listing.objects.none()
 
         qs = qs.select_related(
             'seller', 'product', 'product__brand', 'product__category'

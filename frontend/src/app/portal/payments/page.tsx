@@ -365,7 +365,7 @@ export default function PaymentsPage() {
         {/* Left: Brand Logo + Toggle + Seller Greeting */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             style={{
               display: "flex",
               alignItems: "center",
@@ -612,7 +612,7 @@ export default function PaymentsPage() {
         >
           {/* 1. Dashboard Link */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -635,7 +635,7 @@ export default function PaymentsPage() {
 
           {/* 2. Orders Link */}
           <Link
-            href="/orders"
+            href="/portal/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -672,7 +672,7 @@ export default function PaymentsPage() {
 
           {/* 3. Bulk orders */}
           <Link
-            href="/bulk-orders"
+            href="/portal/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -695,7 +695,7 @@ export default function PaymentsPage() {
 
           {/* 4. Catalog Link */}
           <Link
-            href="/catalog"
+            href="/portal/catalog"
             title="Catalog"
             style={{
               display: "flex",
@@ -721,7 +721,7 @@ export default function PaymentsPage() {
 
           {/* 5. Inventory Link */}
           <Link
-            href="/inventory"
+            href="/portal/inventory"
             title="Inventory"
             style={{
               display: "flex",
@@ -879,7 +879,7 @@ export default function PaymentsPage() {
 
           {/* Returns & Payouts */}
           <Link
-            href="/returns"
+            href="/portal/returns"
             title="Returns"
             style={{
               display: "flex",
@@ -1525,7 +1525,7 @@ export default function PaymentsPage() {
                           {/* Order ID */}
                           <td style={{ padding: "14px 14px", fontSize: "13.5px", fontWeight: 600 }}>
                             <Link
-                              href="/orders"
+                              href="/portal/orders"
                               style={{ color: "#2563eb", textDecoration: "none" }}
                             >
                               {item.orderId}

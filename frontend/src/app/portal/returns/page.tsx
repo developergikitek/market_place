@@ -270,8 +270,8 @@ export default function ReturnsPage() {
               </Select>
               <Select value={fulfillment} onChange={(e) => changeFilter(() => setFulfillment(e.target.value))} className={styles.filterSelect}>
                 <option value="">All fulfilment</option>
-                <option value="FBA">Makaano fulfilled (FBA)</option>
-                <option value="FBM">Self ship (FBM)</option>
+                <option value="MAKAANO_FULFILLED">⚡ Makaano Fulfilled</option>
+                <option value="SELLER_FULFILLED">📦 Seller Fulfilled (Self ship)</option>
               </Select>
               <Select value={ordering} onChange={(e) => changeFilter(() => setOrdering(e.target.value))} className={styles.filterSelect}>
                 <option value="newest">Newest first</option>

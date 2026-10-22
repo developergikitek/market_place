@@ -6,7 +6,7 @@ const COLUMNS = [
   {
     title: "Sell on Makaano",
     links: [
-      { href: "/register-seller", label: "Register as seller" },
+      { href: "/signup/seller", label: "Register as seller" },
       { href: "#fees", label: "Fees & commission" },
       { href: "#how", label: "How it works" },
       { href: "/login", label: "Seller login" },
@@ -15,10 +15,10 @@ const COLUMNS = [
   {
     title: "Grow",
     links: [
-      { href: "/bulk-orders", label: "Bulk orders & RFQs" },
-      { href: "/catalog", label: "Catalog tools" },
-      { href: "/inventory", label: "Inventory" },
-      { href: "/payments", label: "Payments" },
+      { href: "/portal/bulk-orders", label: "Bulk orders & RFQs" },
+      { href: "/portal/catalog", label: "Catalog tools" },
+      { href: "/portal/inventory", label: "Inventory" },
+      { href: "/portal/payments", label: "Payments" },
     ],
   },
   {
@@ -26,7 +26,7 @@ const COLUMNS = [
     links: [
       { href: "#faq", label: "FAQs" },
       { href: "#categories", label: "Categories" },
-      { href: "/register-seller/terms", label: "Seller terms" },
+      { href: "/signup/seller/terms", label: "Seller terms" },
     ],
   },
 ];

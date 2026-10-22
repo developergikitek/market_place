@@ -13,7 +13,7 @@ export default function DetailsPage() {
       <BusinessDetailsForm
         showHeaderFooter={true}
         onSuccess={() => {
-          router.push("/register-seller/contact-person");
+          router.push("/signup/seller/contact-person");
         }}
       />
     </AuthPageWrapper>

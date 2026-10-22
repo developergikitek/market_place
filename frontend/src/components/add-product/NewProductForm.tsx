@@ -80,7 +80,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const [units, setUnits] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<Record<string, VariantRow>>({});
   const [single, setSingle] = useState<VariantRow>(EMPTY_ROW);
-  const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
+  const [fulfillment, setFulfillment] = useState<"SELLER_FULFILLED" | "MAKAANO_FULFILLED">("SELLER_FULFILLED");
   const [commerceChannel, setCommerceChannel] = useState<CommerceChannel | null>(null);
   const [handlingDays, setHandlingDays] = useState("2");
   const [maxOrderQty, setMaxOrderQty] = useState("");
@@ -516,16 +516,16 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
               <div className={styles.radioCards}>
                 <button
                   type="button"
-                  className={`${styles.radioCard} ${fulfillment === "FBM" ? styles.radioCardOn : ""}`}
-                  onClick={() => setFulfillment("FBM")}
+                  className={`${styles.radioCard} ${fulfillment === "SELLER_FULFILLED" ? styles.radioCardOn : ""}`}
+                  onClick={() => setFulfillment("SELLER_FULFILLED")}
                 >
-                  <strong>Self ship</strong>
+                  <strong>Self ship (Seller Fulfilled)</strong>
                   <span>You deliver with your own vehicles or courier.</span>
                 </button>
                 <button
                   type="button"
-                  className={`${styles.radioCard} ${fulfillment === "FBA" ? styles.radioCardOn : ""}`}
-                  onClick={() => setFulfillment("FBA")}
+                  className={`${styles.radioCard} ${fulfillment === "MAKAANO_FULFILLED" ? styles.radioCardOn : ""}`}
+                  onClick={() => setFulfillment("MAKAANO_FULFILLED")}
                 >
                   <strong>Makaano fulfilled</strong>
                   <span>Makaano picks up and delivers to the buyer.</span>

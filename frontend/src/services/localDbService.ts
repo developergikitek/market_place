@@ -176,7 +176,7 @@ export function addProductToLocalDb(payload: {
   price: number;
   stock: number;
   condition?: string;
-  fulfillmentChannel?: "FBA" | "FBM";
+  fulfillmentChannel?: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
   b2bTier?: string;
   modelNumber?: string;
 }): {
@@ -217,7 +217,7 @@ export function addProductToLocalDb(payload: {
     status: "Active",
     lastUpdated: "Just now",
     condition: payload.condition || "NEW",
-    fulfillmentChannel: payload.fulfillmentChannel || "FBA",
+    fulfillmentChannel: payload.fulfillmentChannel || "MAKAANO_FULFILLED",
     isBuyBoxWinner: true,
     b2bTierPrice: payload.b2bTier,
     modelNumber: payload.modelNumber,

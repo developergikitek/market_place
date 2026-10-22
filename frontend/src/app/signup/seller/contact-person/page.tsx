@@ -13,7 +13,7 @@ export default function ContactPersonPage() {
       <ContactPersonForm
         showHeaderFooter={true}
         onSuccess={() => {
-          router.push("/register-seller/address");
+          router.push("/signup/seller/address");
         }}
       />
     </AuthPageWrapper>

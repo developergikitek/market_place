@@ -86,10 +86,10 @@ enum ProductCondition {
   COLLECTIBLE
 }
 
-/// Fulfillment channel defining whether Amazon or the third-party merchant ships the item.
+/// Fulfillment channel defining whether Makaano or the third-party seller ships the item.
 enum FulfillmentChannel {
-  FBA // Fulfillment by Amazon (stored & dispatched from marketplace FC)
-  FBM // Fulfillment by Merchant (stored & shipped directly by third-party seller)
+  MAKAANO_FULFILLED // Fulfilled by Makaano (stored & dispatched from Makaano fulfillment hub)
+  SELLER_FULFILLED  // Fulfilled by Seller (stored & shipped directly by merchant)
 }
 
 /// Delivery scope for seller listings: Pan-India, Hyperlocal, or Both.
@@ -431,7 +431,7 @@ model Seller {
   supportEmail         String
   supportPhone         String
   taxIdentificationNum String?             // EIN / SSN / VAT / GSTIN
-  defaultFulfillment   FulfillmentChannel  @default(FBA)
+  defaultFulfillment   FulfillmentChannel  @default(MAKAANO_FULFILLED)
   holidayModeEnabled   Boolean             @default(false)
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
@@ -767,7 +767,7 @@ model Listing {
   sellerSku            String             // Unique stock SKU defined by merchant (e.g., "SONY-WH1000-NEW-01")
   condition            ProductCondition   @default(NEW)
   conditionNote        String?            @db.Text // Required if used/refurbished to state scratches or wear
-  fulfillmentChannel   FulfillmentChannel @default(FBA)
+  fulfillmentChannel   FulfillmentChannel @default(MAKAANO_FULFILLED)
   commerceChannel      CommerceChannel    @default(BAZAAR)
   status               ListingStatus      @default(ACTIVE)
 

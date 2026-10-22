@@ -17,6 +17,7 @@ import {
   UserPlus,
   ShieldCheck,
 } from "lucide-react";
+import { loginWithBackend } from "@/services/authService";
 
 export interface SellerLoginFormProps {
   initialMethod?: "email" | "phone";
@@ -40,7 +41,7 @@ export default function SellerLoginForm({
     if (onGoToRegister) {
       onGoToRegister();
     } else {
-      router.push("/dashboard");
+      router.push("/portal/dashboard");
     }
   };
 
@@ -62,50 +63,63 @@ export default function SellerLoginForm({
     setErrorMsg("");
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !email.includes("@")) {
-      setErrorMsg("Please enter a valid business email address");
+    const identifier = email.trim();
+    if (!identifier) {
+      setErrorMsg("Please enter your registered email address or mobile number");
       return;
     }
-    if (!password.trim() || password.length < 6) {
-      setErrorMsg("Please enter a valid password (min 6 characters)");
+    if (!password.trim()) {
+      setErrorMsg("Please enter your account password");
       return;
     }
 
     setIsLoading(true);
     setErrorMsg("");
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await loginWithBackend(identifier, password);
       setIsSuccess(true);
       if (onLoginSuccess) {
-        onLoginSuccess(email);
+        onLoginSuccess(identifier);
       } else {
-        router.push("/dashboard");
+        router.push("/portal/dashboard");
       }
-    }, 700);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mobileNumber.length < 10) {
       setErrorMsg("Please enter a valid 10-digit mobile number");
       return;
     }
+    if (!password.trim()) {
+      setErrorMsg("Please enter your account password");
+      return;
+    }
 
     setIsLoading(true);
     setErrorMsg("");
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await loginWithBackend(mobileNumber, password);
       setIsSuccess(true);
       if (onLoginSuccess) {
         onLoginSuccess(mobileNumber);
       } else {
-        router.push("/dashboard");
+        router.push("/portal/dashboard");
       }
-    }, 700);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formBody = (
@@ -246,16 +260,16 @@ export default function SellerLoginForm({
                     zIndex: 1,
                   }}
                 >
-                  Email Address
+                  Email or Mobile Number
                 </span>
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     setErrorMsg("");
                   }}
-                  placeholder="seller@domain.com"
+                  placeholder="seller@gikitek.com or 7408108617"
                   style={{
                     width: "100%",
                     height: "52px",
@@ -637,16 +651,94 @@ export default function SellerLoginForm({
             </div>
           </div>
 
-          <p
-            style={{
-              fontSize: "12px",
-              color: "#64748b",
-              lineHeight: 1.4,
-              margin: "0 4px",
-            }}
-          >
-            We will send an OTP via SMS to verify your registered seller mobile number.
-          </p>
+          {/* Field: Password for Mobile Login */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                background: "rgba(245, 158, 11, 0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#d97706",
+                flexShrink: 0,
+              }}
+            >
+              <Lock size={20} />
+            </div>
+
+            <div style={{ flex: 1, position: "relative" }}>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-9px",
+                    left: "16px",
+                    background: "#ffffff",
+                    padding: "0 6px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    letterSpacing: "0.2px",
+                    zIndex: 1,
+                  }}
+                >
+                  Password
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMsg("");
+                  }}
+                  placeholder="Enter your account password"
+                  style={{
+                    width: "100%",
+                    height: "52px",
+                    borderRadius: "9999px",
+                    border: "1.5px solid #e2e8f0",
+                    padding: "0 48px 0 18px",
+                    fontSize: "14.5px",
+                    fontWeight: 600,
+                    color: "#0B1220",
+                    outline: "none",
+                    background: "#ffffff",
+                    transition: "all 0.15s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#C2410C";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#e2e8f0";
+                    e.target.style.boxShadow = "none";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "#94a3b8",
+                    cursor: "pointer",
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Error Banner */}
           {errorMsg && (
@@ -669,7 +761,7 @@ export default function SellerLoginForm({
             </div>
           )}
 
-          {/* Get OTP Button */}
+          {/* Sign In Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -705,16 +797,16 @@ export default function SellerLoginForm({
             {isLoading ? (
               <>
                 <RefreshCw size={18} className="animate-spin" />
-                <span>Sending OTP...</span>
+                <span>Signing In...</span>
               </>
             ) : isSuccess ? (
               <>
                 <CheckCircle2 size={18} />
-                <span>OTP Sent!</span>
+                <span>Logged In Successfully!</span>
               </>
             ) : (
               <>
-                <span>Get OTP to Login</span>
+                <span>Sign In to Seller Portal</span>
                 <ArrowRight size={18} />
               </>
             )}

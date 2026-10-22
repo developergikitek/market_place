@@ -150,7 +150,7 @@ export default function SellerLandingPage() {
               homeowners in your city — and pay only when you sell.
             </p>
             <div className={styles.heroActions}>
-              <Link href="/register-seller" className={styles.primaryBtn}>
+              <Link href="/signup/seller" className={styles.primaryBtn}>
                 Start selling <ArrowRight size={18} />
               </Link>
               <a href="#how" className={styles.secondaryBtn}>
@@ -401,7 +401,7 @@ export default function SellerLandingPage() {
             <h2>Ready to sell on Makaano?</h2>
             <p>Register in 15 minutes. No fees until your first order is delivered.</p>
           </div>
-          <Link href="/register-seller" className={styles.primaryBtn}>
+          <Link href="/signup/seller" className={styles.primaryBtn}>
             Start selling <ArrowRight size={18} />
           </Link>
         </section>

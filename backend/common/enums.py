@@ -47,8 +47,9 @@ class ProductCondition(models.TextChoices):
     COLLECTIBLE = "COLLECTIBLE", "Collectible"
 
 class FulfillmentChannel(models.TextChoices):
-    FBA = "FBA", "Fulfillment by Buildmart"
-    FBM = "FBM", "Fulfillment by Merchant"
+    MAKAANO_FULFILLED = "MAKAANO_FULFILLED", "Fulfilled by Makaano"
+    SELLER_FULFILLED = "SELLER_FULFILLED", "Fulfilled by Seller"
+
 
 class CommerceChannel(models.TextChoices):
     BAZAAR = "BAZAAR", "Bazaar (Pan-India)"

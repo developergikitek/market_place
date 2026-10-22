@@ -40,7 +40,7 @@ export interface ReturnRequest {
   unit_price: string;
   item_total: string;
   seller_sku: string;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
   product: { asin: string; title: string; brand: string | null; image: string | null };
   customer: { name: string; phone: string | null; city: string | null; state: string | null };
   return_carrier: string | null;
@@ -134,11 +134,11 @@ export async function fetchReturns(filters: ReturnFilters): Promise<Paginated<Re
   if (filters.reason) params.set("reason", filters.reason);
   if (filters.fulfillment) params.set("fulfillment", filters.fulfillment);
   if (filters.ordering) params.set("ordering", filters.ordering);
-  return request(`/api/returns/?${params}`);
+  return request(`/api/portal/returns/?${params}`);
 }
 
 export async function fetchReturnsSummary(): Promise<ReturnsSummary> {
-  return request("/api/returns/summary/");
+  return request("/api/portal/returns/summary/");
 }
 
 /** Run a lifecycle action; `body` carries the action's inputs (fee rate, carrier, condition…). */
@@ -147,7 +147,7 @@ export async function runReturnAction(
   action: ReturnAction,
   body: Record<string, unknown> = {}
 ): Promise<ReturnRequest> {
-  return request(`/api/returns/${id}/${action}/`, {
+  return request(`/api/portal/returns/${id}/${action}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -155,15 +155,15 @@ export async function runReturnAction(
 }
 
 export async function fetchClaims(): Promise<Paginated<AtoZClaim>> {
-  return request("/api/returns/claims/?page_size=50");
+  return request("/api/portal/returns/claims/?page_size=50");
 }
 
 export async function fetchClaimsSummary(): Promise<ClaimsSummary> {
-  return request("/api/returns/claims/summary/");
+  return request("/api/portal/returns/claims/summary/");
 }
 
 export async function respondToClaim(id: string, response: string): Promise<AtoZClaim> {
-  return request(`/api/returns/claims/${id}/respond/`, {
+  return request(`/api/portal/returns/claims/${id}/respond/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ response }),

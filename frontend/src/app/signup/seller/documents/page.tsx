@@ -13,7 +13,7 @@ export default function DocumentsPage() {
       <DocumentUploadForm
         showHeaderFooter={true}
         onSuccess={() => {
-          router.push("/register-seller/terms");
+          router.push("/signup/seller/terms");
         }}
       />
     </AuthPageWrapper>

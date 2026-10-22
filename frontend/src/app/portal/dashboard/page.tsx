@@ -251,7 +251,7 @@ export default function DashboardPage() {
         {/* Left: Brand Logo + Toggle + Seller Badge + Verified Status */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             style={{
               display: "flex",
               alignItems: "center",
@@ -580,7 +580,7 @@ export default function DashboardPage() {
         >
           {/* 1. ACTIVE DASHBOARD BUTTON */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -610,7 +610,7 @@ export default function DashboardPage() {
 
           {/* 2. Orders Link */}
           <Link
-            href="/orders"
+            href="/portal/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -648,7 +648,7 @@ export default function DashboardPage() {
 
           {/* 3. Bulk orders */}
           <Link
-            href="/bulk-orders"
+            href="/portal/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -671,7 +671,7 @@ export default function DashboardPage() {
 
           {/* 4. Catalog Link */}
           <Link
-            href="/catalog"
+            href="/portal/catalog"
             title="Catalog"
             style={{
               display: "flex",
@@ -697,7 +697,7 @@ export default function DashboardPage() {
 
           {/* 5. Inventory Link */}
           <Link
-            href="/inventory"
+            href="/portal/inventory"
             title="Inventory"
             style={{
               display: "flex",
@@ -724,8 +724,8 @@ export default function DashboardPage() {
           {/* Other Navigation Links */}
           {[
             { label: "Pricing", icon: Tag, hasChevron: false },
-            { label: "Payments", icon: CreditCard, hasChevron: true, href: "/payments" },
-            { label: "Returns", icon: RotateCcw, href: "/returns" },
+            { label: "Payments", icon: CreditCard, hasChevron: true, href: "/portal/payments" },
+            { label: "Returns", icon: RotateCcw, href: "/portal/returns" },
             { label: "Payouts", icon: Wallet, hasChevron: true },
             { label: "Reports", icon: BarChart3, hasChevron: true },
             { label: "Growth", icon: TrendingUp },
@@ -1337,7 +1337,7 @@ export default function DashboardPage() {
                   Recent Orders
                 </h2>
                 <Link
-                  href="/orders"
+                  href="/portal/orders"
                   style={{
                     fontSize: "12.5px",
                     fontWeight: 600,

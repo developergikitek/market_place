@@ -252,7 +252,7 @@
   "seller_sku": "MYSTORE-CEMENT-01",
   "standard_price": "382.00",
   "sale_price": "375.00",
-  "fulfillment_channel": "FBA",
+  "fulfillment_channel": "MAKAANO_FULFILLED",
   "initial_stock": 500,
   "b2b_tier_prices": [
     { "min_quantity": 50, "discounted_price": "368.00" },
@@ -327,7 +327,7 @@
     "seller_sku": "GIK-WEATHER-PRO-50",
     "standard_price": "410.00",
     "sale_price": "395.00",
-    "fulfillment_channel": "FBA",
+    "fulfillment_channel": "MAKAANO_FULFILLED",
     "initial_stock": 1200,
     "b2b_tier_prices": [
       { "min_quantity": 50, "discounted_price": "385.00" },

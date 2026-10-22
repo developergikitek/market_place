@@ -14,8 +14,8 @@ export default function MobileLoginPage() {
         initialMethod="phone"
         showHeaderFooter={true}
         onSwitchMethod={() => router.push("/login")}
-        onGoToRegister={() => router.push("/dashboard")}
-        onLoginSuccess={() => router.push("/dashboard")}
+        onGoToRegister={() => router.push("/portal/dashboard")}
+        onLoginSuccess={() => router.push("/portal/dashboard")}
       />
     </AuthPageWrapper>
   );

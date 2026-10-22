@@ -20,10 +20,10 @@ class Command(BaseCommand):
         if not seller:
             from identity.models import User
             from common.enums import UserRole, SellerTier, SellerAccountStatus, VerificationStatus
-            user, _ = User.objects.get_or_create(
-                phone="9936628446",
+            user, created = User.objects.get_or_create(
+                phone="7408108617",
                 defaults={
-                    "username": "9936628446",
+                    "username": "ZopperAdmin",
                     "email": "seller@gikitek.com",
                     "first_name": "Gikitek",
                     "last_name": "Seller",
@@ -31,6 +31,10 @@ class Command(BaseCommand):
                     "is_active": True,
                 }
             )
+            if created or not user.has_usable_password():
+                user.username = "ZopperAdmin"
+                user.set_password("Zopperad@7408")
+                user.save()
             seller, _ = Seller.objects.get_or_create(
                 store_slug="gikitek",
                 defaults={
@@ -41,7 +45,7 @@ class Command(BaseCommand):
                     "account_status": SellerAccountStatus.ACTIVE,
                     "verification_status": VerificationStatus.APPROVED,
                     "support_email": "seller@gikitek.com",
-                    "support_phone": "9936628446",
+                    "support_phone": "7408108617",
                 }
             )
 
@@ -107,7 +111,7 @@ class Command(BaseCommand):
                     "seller_sku": "GIK-ULTRA-PPC-50",
                     "condition": ProductCondition.NEW,
                     "condition_note": "Direct factory supply with verified test certificates.",
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("385.00"),
                     "handling_time_days": 1,
@@ -166,7 +170,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "GIK-TATA-TMT-12MM",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("785.00"),
                     "handling_time_days": 1,
@@ -223,7 +227,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "GIK-AP-APEX-20L",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("4290.00"),
                     "sale_price": Decimal("3999.00"),
@@ -259,7 +263,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "BOSCH-GSB-550W",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("2099.00"),
                     "handling_time_days": 1,
@@ -295,7 +299,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "STAN-16IN",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("649.00"),
                     "handling_time_days": 1,
@@ -330,7 +334,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "FIN-1INCH-6M",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("340.00"),
                     "handling_time_days": 1,
@@ -365,7 +369,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "PHIL-12W-CDL",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("165.00"),
                     "handling_time_days": 1,
@@ -400,7 +404,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "SINTEX-1000L-TL",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.FBA,
+                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("6850.00"),
                     "handling_time_days": 2,

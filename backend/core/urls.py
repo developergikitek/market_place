@@ -38,7 +38,8 @@ urlpatterns = [
     # 📦 Public Catalog (Products, Categories & Brands)
     path('api/catalog/', include('catalog.urls')),
     
-    # 🏪 Seller Portal APIs (Listings, Products, Profile & Stock)
+    # 🏪 Seller Portal APIs (Unified under /api/portal/ namespace)
+    path('api/portal/', include('sellers.urls')),
     path('api/seller/', include('sellers.urls')),
     path('api/listings/', include('listings.urls')),
     path('api/returns/', include('returns.urls')),

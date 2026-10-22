@@ -91,12 +91,12 @@ export default function AddProductPage() {
   return (
     <div className={styles.page}>
       <header className={styles.topbar}>
-        <Link href="/dashboard" aria-label="Makaano Seller Central">
+        <Link href="/portal/dashboard" aria-label="Makaano Seller Central">
           <BrandMark tone="light" size={26} />
         </Link>
         <span className={styles.topbarDivider} />
         <span className={styles.topbarTitle}>Add a product</span>
-        <Link href="/catalog" className={styles.topbarBack}>
+        <Link href="/portal/catalog" className={styles.topbarBack}>
           <ArrowLeft size={15} /> Back to catalog
         </Link>
       </header>
@@ -315,7 +315,7 @@ export default function AddProductPage() {
               <button type="button" className={styles.btnPrimary} onClick={startOver}>
                 Add another product
               </button>
-              <Link href="/catalog" className={styles.btnSecondary}>
+              <Link href="/portal/catalog" className={styles.btnSecondary}>
                 Go to catalog
               </Link>
             </div>

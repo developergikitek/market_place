@@ -13,7 +13,7 @@ export default function AddressPage() {
       <BusinessAddressForm
         showHeaderFooter={true}
         onSuccess={() => {
-          router.push("/register-seller/documents");
+          router.push("/signup/seller/documents");
         }}
       />
     </AuthPageWrapper>

@@ -25,7 +25,7 @@ class Seller(models.Model):
     support_email = models.EmailField()
     support_phone = models.CharField(max_length=30)
     tax_identification_num = models.CharField(max_length=100, null=True, blank=True)
-    default_fulfillment = models.CharField(max_length=10, choices=FulfillmentChannel.choices, default=FulfillmentChannel.FBA)
+    default_fulfillment = models.CharField(max_length=30, choices=FulfillmentChannel.choices, default=FulfillmentChannel.MAKAANO_FULFILLED)
     holiday_mode_enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

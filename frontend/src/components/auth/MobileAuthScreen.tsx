@@ -17,17 +17,17 @@ import {
 } from "lucide-react";
 import BusinessDetailsForm, {
   BusinessDetailsData,
-} from "@/app/register-seller/details/BusinessDetailsForm";
+} from "@/app/signup/seller/details/BusinessDetailsForm";
 import ContactPersonForm, {
   ContactPersonData,
-} from "@/app/register-seller/contact-person/ContactPersonForm";
+} from "@/app/signup/seller/contact-person/ContactPersonForm";
 import BusinessAddressForm, {
   BusinessAddressData,
-} from "@/app/register-seller/address/BusinessAddressForm";
+} from "@/app/signup/seller/address/BusinessAddressForm";
 import DocumentUploadForm, {
   DocumentUploadData,
-} from "@/app/register-seller/documents/DocumentUploadForm";
-import TermsConditionsForm from "@/app/register-seller/terms/TermsConditionsForm";
+} from "@/app/signup/seller/documents/DocumentUploadForm";
+import TermsConditionsForm from "@/app/signup/seller/terms/TermsConditionsForm";
 import SellerLoginForm from "@/app/login/SellerLoginForm";
 
 interface CountryCode {

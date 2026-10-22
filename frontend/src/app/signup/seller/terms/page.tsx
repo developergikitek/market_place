@@ -13,7 +13,7 @@ export default function TermsPage() {
       <TermsConditionsForm
         showHeaderFooter={true}
         onSuccess={() => {
-          router.push("/register-seller/success");
+          router.push("/signup/seller/success");
         }}
       />
     </AuthPageWrapper>

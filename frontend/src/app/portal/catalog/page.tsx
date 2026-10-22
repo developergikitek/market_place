@@ -82,7 +82,7 @@ export default function CatalogPage() {
   const [newPrice, setNewPrice] = useState("");
   const [newStock, setNewStock] = useState("");
   const [newCondition, setNewCondition] = useState("NEW");
-  const [newFulfillment, setNewFulfillment] = useState<"FBA" | "FBM">("FBA");
+  const [newFulfillment, setNewFulfillment] = useState<"MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM">("MAKAANO_FULFILLED");
   const [newB2bTier, setNewB2bTier] = useState("");
   const [newModelNumber, setNewModelNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -167,7 +167,9 @@ export default function CatalogPage() {
 
       const matchesFulfillment =
         selectedFulfillment === "All Channels" ||
-        item.fulfillmentChannel === selectedFulfillment;
+        item.fulfillmentChannel === selectedFulfillment ||
+        (selectedFulfillment === "MAKAANO_FULFILLED" && item.fulfillmentChannel === "FBA") ||
+        (selectedFulfillment === "SELLER_FULFILLED" && item.fulfillmentChannel === "FBM");
 
       return matchesSearch && matchesCategory && matchesStatus && matchesFulfillment;
     });
@@ -523,7 +525,7 @@ export default function CatalogPage() {
         >
           {/* Menu Items */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -545,7 +547,7 @@ export default function CatalogPage() {
           </Link>
 
           <Link
-            href="/orders"
+            href="/portal/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -582,7 +584,7 @@ export default function CatalogPage() {
 
           {/* Bulk orders */}
           <Link
-            href="/bulk-orders"
+            href="/portal/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -630,9 +632,9 @@ export default function CatalogPage() {
 
           {/* Other Navigation Links */}
           {[
-            { label: "Inventory", icon: Boxes, href: "/inventory" },
+            { label: "Inventory", icon: Boxes, href: "/portal/inventory" },
             { label: "Pricing", icon: Tag, hasChevron: true },
-            { label: "Returns", icon: RotateCcw, href: "/returns" },
+            { label: "Returns", icon: RotateCcw, href: "/portal/returns" },
             { label: "Payments", icon: CreditCard, hasChevron: true },
             { label: "Payouts", icon: Wallet, hasChevron: true },
             { label: "Reports", icon: BarChart3, hasChevron: true },
@@ -764,7 +766,7 @@ export default function CatalogPage() {
 
               {/* Add Product Button (Makaano Signature CTA) */}
               <Link
-                href="/catalog/add-product"
+                href="/portal/catalog/add-product"
                 style={{
                   height: "40px",
                   display: "inline-flex",
@@ -1143,8 +1145,8 @@ export default function CatalogPage() {
               }}
             >
               <option value="All Channels">All Channels</option>
-              <option value="FBA">FBA (Makaano Express)</option>
-              <option value="FBM">FBM (Merchant Delivery)</option>
+              <option value="MAKAANO_FULFILLED">⚡ Makaano Fulfilled</option>
+              <option value="SELLER_FULFILLED">📦 Seller Fulfilled</option>
             </Select>
 
             {/* Filters Button */}
@@ -1429,13 +1431,13 @@ export default function CatalogPage() {
                                 borderRadius: "4px",
                                 fontSize: "10px",
                                 fontWeight: 700,
-                                background: item.fulfillmentChannel === "FBA" ? "rgba(245, 158, 11, 0.12)" : "#f8fafc",
-                                color: item.fulfillmentChannel === "FBA" ? "#b45309" : "#64748b",
-                                border: item.fulfillmentChannel === "FBA" ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid #e2e8f0",
+                                background: (item.fulfillmentChannel === "MAKAANO_FULFILLED" || item.fulfillmentChannel === "FBA") ? "rgba(245, 158, 11, 0.12)" : "#f8fafc",
+                                color: (item.fulfillmentChannel === "MAKAANO_FULFILLED" || item.fulfillmentChannel === "FBA") ? "#b45309" : "#64748b",
+                                border: (item.fulfillmentChannel === "MAKAANO_FULFILLED" || item.fulfillmentChannel === "FBA") ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid #e2e8f0",
                                 width: "fit-content",
                               }}
                             >
-                              {item.fulfillmentChannel === "FBA" ? "⚡ Makaano (FBA)" : "📦 Merchant (FBM)"}
+                              {(item.fulfillmentChannel === "MAKAANO_FULFILLED" || item.fulfillmentChannel === "FBA") ? "⚡ Makaano Fulfilled" : "📦 Seller Fulfilled"}
                             </span>
                           </div>
                         </td>
@@ -1883,7 +1885,7 @@ export default function CatalogPage() {
                   </label>
                   <Select
                     value={newFulfillment}
-                    onChange={(e) => setNewFulfillment(e.target.value as "FBA" | "FBM")}
+                    onChange={(e) => setNewFulfillment(e.target.value as any)}
                     style={{
                       width: "100%",
                       height: "42px",
@@ -1894,8 +1896,8 @@ export default function CatalogPage() {
                       outline: "none",
                     }}
                   >
-                    <option value="FBA">FBA (Fulfillment by Makaano)</option>
-                    <option value="FBM">FBM (Fulfillment by Merchant)</option>
+                    <option value="MAKAANO_FULFILLED">⚡ Makaano Fulfilled (Warehousing & Shipping)</option>
+                    <option value="SELLER_FULFILLED">📦 Seller Fulfilled (Self Ship / Merchant Delivery)</option>
                   </Select>
                 </div>
 

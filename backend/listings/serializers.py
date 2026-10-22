@@ -96,7 +96,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
                 seller=seller,
                 product=product,
                 condition=attrs.get('condition', ProductCondition.NEW),
-                fulfillment_channel=attrs.get('fulfillment_channel', FulfillmentChannel.FBA),
+                fulfillment_channel=attrs.get('fulfillment_channel', FulfillmentChannel.MAKAANO_FULFILLED),
             ).exists():
                 raise serializers.ValidationError(
                     "You already sell this product in this condition and fulfilment mode. "

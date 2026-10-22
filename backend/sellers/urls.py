@@ -1,15 +1,23 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from sellers.views import SellerProfileViewSet
-from listings.views import SellerListingViewSet
-from catalog.seller_views import SellerProductViewSet, ProductImageUploadView
+from sellers.views import (
+    SellerProfileViewSet,
+    SellerListingViewSet,
+    SellerProductViewSet,
+    ProductImageUploadView,
+    SellerReturnRequestViewSet,
+    SellerAtoZClaimViewSet
+)
 
 router = DefaultRouter()
-router.register(r'profile', SellerProfileViewSet, basename='seller-profile')
-router.register(r'listings', SellerListingViewSet, basename='seller-listing')
-router.register(r'products', SellerProductViewSet, basename='seller-product')
+router.register(r'profile', SellerProfileViewSet, basename='portal-profile')
+router.register(r'listings', SellerListingViewSet, basename='portal-listing')
+router.register(r'inventory', SellerListingViewSet, basename='portal-inventory')
+router.register(r'products', SellerProductViewSet, basename='portal-product')
+router.register(r'returns/claims', SellerAtoZClaimViewSet, basename='portal-claim')
+router.register(r'returns', SellerReturnRequestViewSet, basename='portal-return')
 
 urlpatterns = [
-    path('uploads/product-images/', ProductImageUploadView.as_view(), name='seller-product-image-upload'),
+    path('uploads/product-images/', ProductImageUploadView.as_view(), name='portal-product-image-upload'),
     path('', include(router.urls)),
 ]

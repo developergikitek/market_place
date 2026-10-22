@@ -20,18 +20,15 @@ class SellerProductViewSet(viewsets.ModelViewSet):
     Enables authorized merchants to create brand new products in the master catalog.
     """
     pagination_class = StandardResultsSetPagination
-
-    def get_permissions(self):
-        # Create stays open (like listing create) until the seller frontend sends JWTs.
-        if self.action == 'create':
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsSellerUser()]
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
 
     def get_queryset(self):
         user = self.request.user
         seller = getattr(user, 'seller_account', None)
-        if user.role == 'ADMIN' and not seller:
+        if getattr(user, 'role', None) == 'ADMIN' and not seller:
             return Product.objects.all().order_by('-created_at')
+        if not seller:
+            return Product.objects.none()
         return Product.objects.filter(listings__seller=seller).distinct().order_by('-created_at')
 
     def get_serializer_class(self):
@@ -57,7 +54,7 @@ class ProductImageUploadView(APIView):
     """
     Upload a product photo (multipart field `file`) and get back its public URL.
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
     parser_classes = [MultiPartParser]
 
     ALLOWED_TYPES = {'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp'}

@@ -113,7 +113,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
         {/* Left: Brand Logo + Toggle + Seller Greeting */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             style={{
               display: "flex",
               alignItems: "center",
@@ -360,7 +360,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
         >
           {/* 1. Dashboard Link */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -382,7 +382,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           </Link>
 
           {/* 2. Orders */}
-          <Link href="/orders" title="Orders" style={navLinkStyle(active === "Orders")}>
+          <Link href="/portal/orders" title="Orders" style={navLinkStyle(active === "Orders")}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <Package size={18} color={active === "Orders" ? "#fbbf24" : undefined} />
               <span>Orders</span>
@@ -391,7 +391,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
 
           {/* 3. Bulk orders */}
           <Link
-            href="/bulk-orders"
+            href="/portal/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -414,7 +414,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
 
           {/* 4. Catalog Link */}
           <Link
-            href="/catalog"
+            href="/portal/catalog"
             title="Catalog"
             style={{
               display: "flex",
@@ -440,7 +440,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
 
           {/* 5. Inventory Link */}
           <Link
-            href="/inventory"
+            href="/portal/inventory"
             title="Inventory"
             style={{
               display: "flex",
@@ -467,8 +467,8 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           {/* Other Navigation Links */}
           {[
             { label: "Pricing", icon: Tag, hasChevron: true },
-            { label: "Payments", icon: CreditCard, hasChevron: true, href: "/payments" },
-            { label: "Returns", icon: RotateCcw, href: "/returns", badge: returnsBadge },
+            { label: "Payments", icon: CreditCard, hasChevron: true, href: "/portal/payments" },
+            { label: "Returns", icon: RotateCcw, href: "/portal/returns", badge: returnsBadge },
             { label: "Payouts", icon: Wallet, hasChevron: true },
             { label: "Reports", icon: BarChart3, hasChevron: true },
             { label: "Growth", icon: TrendingUp },

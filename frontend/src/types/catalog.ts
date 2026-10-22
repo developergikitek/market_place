@@ -16,7 +16,7 @@ export interface CatalogProductListing {
   status: ListingStatusType;
   lastUpdated: string;
   condition: string;
-  fulfillmentChannel: 'FBA' | 'FBM';
+  fulfillmentChannel: 'MAKAANO_FULFILLED' | 'SELLER_FULFILLED' | 'FBA' | 'FBM';
   isBuyBoxWinner?: boolean;
   b2bTierPrice?: string;
   modelNumber?: string;

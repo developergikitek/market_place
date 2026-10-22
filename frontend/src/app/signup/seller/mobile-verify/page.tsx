@@ -28,7 +28,7 @@ export default function MobileVerifyPage() {
           countryCode={countryCode}
           onEditPhone={() => setStep(1)}
           onSuccess={() => {
-            router.push("/register-seller/details");
+            router.push("/signup/seller/details");
           }}
         />
       )}

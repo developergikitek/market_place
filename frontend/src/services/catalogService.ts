@@ -16,7 +16,7 @@ export interface CreateProductPayload {
   price: number;
   stock: number;
   condition?: string;
-  fulfillmentChannel?: "FBA" | "FBM";
+  fulfillmentChannel?: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
   b2bTier?: string;
   modelNumber?: string;
 }
@@ -66,7 +66,7 @@ function mapBackendProductToCatalogItem(item: any, index: number): CatalogProduc
       ? new Date(item.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
       : "Recently",
     condition: item.condition || "NEW",
-    fulfillmentChannel: item.buy_box_listing?.fulfillment_channel || "FBA",
+    fulfillmentChannel: item.buy_box_listing?.fulfillment_channel || "MAKAANO_FULFILLED",
     isBuyBoxWinner: item.buy_box_listing?.is_buy_box_winner ?? true,
     modelNumber: item.model_number || "",
     iconType: icon,
@@ -95,9 +95,8 @@ export async function getCatalogProducts(
   // Only products this seller lists; the master catalog also holds other brands' products.
   const params = new URLSearchParams({ mine: "true" });
   if (search && search.trim()) params.append("search", search.trim());
-  if (category && category !== "All Categories") params.append("category", category);
-
-  const url = `${API_BASE_URL}/api/catalog/products/?${params.toString()}`;
+  const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+  const url = `${baseUrl}/products/?${params.toString()}`;
 
   if (inFlightCatalogRequests.has(url)) {
     return inFlightCatalogRequests.get(url)!;
@@ -155,7 +154,8 @@ export async function createCatalogProduct(payload: CreateProductPayload): Promi
 
   // POST to Django Backend API
   try {
-    const res = await fetch(`${API_BASE_URL}/api/catalog/products/`, {
+    const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+    const res = await fetch(`${baseUrl}/products/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -168,7 +168,7 @@ export async function createCatalogProduct(payload: CreateProductPayload): Promi
         sku: payload.sku,
         price: payload.price,
         stock: payload.stock,
-        fulfillment_channel: payload.fulfillmentChannel || "FBA",
+        fulfillment_channel: payload.fulfillmentChannel || "MAKAANO_FULFILLED",
         condition: payload.condition || "NEW",
         model_number: payload.modelNumber || "",
       }),
@@ -188,7 +188,7 @@ export async function createCatalogProduct(payload: CreateProductPayload): Promi
       };
     }
   } catch (err) {
-    console.warn("POST /api/catalog/products/ failed, stored in local database:", err);
+    console.warn("POST /api/portal/products/ failed, stored in local database:", err);
   }
 
   return {
@@ -198,7 +198,7 @@ export async function createCatalogProduct(payload: CreateProductPayload): Promi
 }
 
 /**
- * Update an existing product (PUT /api/catalog/products/<id>/)
+ * Update an existing product (PUT /api/portal/products/<id>/)
  */
 export async function updateCatalogProduct(
   id: string,
@@ -211,7 +211,8 @@ export async function updateCatalogProduct(
   updateProductInLocalDb(id, updates);
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/catalog/products/${id}/`, {
+    const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+    const res = await fetch(`${baseUrl}/products/${id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

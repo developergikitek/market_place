@@ -37,7 +37,7 @@ export default function Navbar() {
           <Link href="/login" className={styles.loginLink}>
             Log in
           </Link>
-          <Link href="/register-seller" className={styles.headerCta}>
+          <Link href="/signup/seller" className={styles.headerCta}>
             Start selling
           </Link>
           <button

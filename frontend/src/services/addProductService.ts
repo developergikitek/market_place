@@ -59,7 +59,7 @@ export type CommerceChannel = "BAZAAR" | "QUICK_COMMERCE" | "BOTH";
 export interface OfferInput {
   seller_sku?: string;
   condition?: string;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
   commerce_channel?: CommerceChannel;
   handling_time_days: number;
   max_order_quantity?: number | null;
@@ -132,11 +132,13 @@ function flattenErrors(body: unknown, prefix = ""): string[] {
   return [String(body)];
 }
 
-/** JSON request against the Makaano API; non-2xx responses throw ApiError with readable messages. */
+/** JSON request against the Makaano API via Next.js BFF proxy (/api/backend/); non-2xx responses throw ApiError with readable messages. */
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
+  const baseUrl = typeof window !== "undefined" ? "/api/backend" : `${API_BASE_URL}/api`;
+  const normalizedPath = path.startsWith("/api/") ? path.replace("/api/", "/") : path.startsWith("/") ? path : `/${path}`;
   try {
-    res = await fetch(`${API_BASE_URL}${path}`, {
+    res = await fetch(`${baseUrl}${normalizedPath}`, {
       ...init,
       headers: { Accept: "application/json", ...(init?.headers || {}) },
     });
@@ -201,7 +203,7 @@ export async function searchCatalog(filters: {
 export async function uploadProductImage(file: File): Promise<string> {
   const form = new FormData();
   form.append("file", file);
-  const data = await request<{ image_url: string }>("/api/seller/uploads/product-images/", {
+  const data = await request<{ image_url: string }>("/api/portal/uploads/product-images/", {
     method: "POST",
     body: form,
   });
@@ -209,7 +211,7 @@ export async function uploadProductImage(file: File): Promise<string> {
 }
 
 export async function createProduct(payload: CreateProductRequest): Promise<CreateProductResponse> {
-  return request<CreateProductResponse>("/api/seller/products/", {
+  return request<CreateProductResponse>("/api/portal/products/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -217,7 +219,7 @@ export async function createProduct(payload: CreateProductRequest): Promise<Crea
 }
 
 export async function createOffer(asin: string, offer: OfferInput): Promise<{ id: string; seller_sku: string }> {
-  return request("/api/listings/", {
+  return request("/api/portal/listings/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ product_asin: asin, ...offer }),

@@ -8,6 +8,11 @@ from sellers.serializers import (
 )
 from sellers.permissions import IsSellerUser
 
+# Import centralized seller portal viewsets
+from listings.views import SellerListingViewSet
+from catalog.seller_views import SellerProductViewSet, ProductImageUploadView
+from returns.views import ReturnRequestViewSet as SellerReturnRequestViewSet, AtoZClaimViewSet as SellerAtoZClaimViewSet
+
 
 class SellerProfileViewSet(viewsets.ViewSet):
     """

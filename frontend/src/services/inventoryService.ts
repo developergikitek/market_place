@@ -93,7 +93,8 @@ export async function getInventoryListings(
   }
 
   const queryString = params.toString() ? `?${params.toString()}` : "";
-  const url = `${API_BASE_URL}/api/listings/${queryString}`;
+  const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+  const url = `${baseUrl}/listings/${queryString}`;
 
   if (inFlightInventoryRequests.has(url)) {
     return inFlightInventoryRequests.get(url)!;
@@ -185,7 +186,8 @@ export async function postUpdateInventoryStock(
 
   // 1. Try real Backend API call
   try {
-    const url = `${API_BASE_URL}/api/listings/${listingId}/update_stock/`;
+    const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+    const url = `${baseUrl}/listings/${listingId}/update_stock/`;
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -245,7 +247,8 @@ export async function updateInventoryListing(
   updateListingInLocalDb(listingId, updates);
 
   try {
-    const url = `${API_BASE_URL}/api/listings/${listingId}/`;
+    const baseUrl = typeof window !== "undefined" ? "/api/backend/portal" : `${API_BASE_URL}/api/portal`;
+    const url = `${baseUrl}/listings/${listingId}/`;
     const res = await fetch(url, {
       method: "PUT",
       headers: {

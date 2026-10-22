@@ -23,6 +23,7 @@ from returns.workflow import (
     BUYER_REMORSE_REASONS, MAX_DAMAGED_FEE_RATE, MAX_RESTOCKING_FEE_RATE, STATUS_GROUPS, TRANSITIONS,
 )
 from sellers.utils import resolve_request_seller
+from sellers.permissions import IsSellerUser
 
 OPEN_STATUSES = STATUS_GROUPS['action_required'] + STATUS_GROUPS['in_progress']
 
@@ -59,11 +60,10 @@ class ReturnRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mix
     pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
-        # Opening / cancelling a return is the buyer's; seller views stay open like listings
-        # until the seller frontend sends JWTs.
+        # Opening / cancelling a return is the buyer's (customer); all other actions are for the seller
         if self.action in ('create', 'cancel'):
             return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsSellerUser()]
 
     def get_queryset(self):
         qs = ReturnRequest.objects.select_related(
@@ -129,8 +129,8 @@ class ReturnRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mix
         if item.return_requests.filter(status__in=OPEN_STATUSES + [ReturnStatus.REFUND_ISSUED]).exists():
             raise ValidationError({'order_item_id': 'A return is already open for this item.'})
 
-        # Makaano-fulfilled (FBA) returns are authorised automatically; merchant-fulfilled wait for the seller.
-        start = ReturnStatus.AUTO_AUTHORIZED if item.listing.fulfillment_channel == FulfillmentChannel.FBA \
+        # Makaano-fulfilled returns are authorised automatically; seller-fulfilled wait for the seller.
+        start = ReturnStatus.AUTO_AUTHORIZED if item.listing.fulfillment_channel == FulfillmentChannel.MAKAANO_FULFILLED \
             else ReturnStatus.REQUESTED
         rr = ReturnRequest.objects.create(
             rma_number=_new_number('RMA', ReturnRequest, 'rma_number'),
@@ -333,7 +333,7 @@ class AtoZClaimViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
     """
     serializer_class = AtoZClaimSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
 
     def get_queryset(self):
         seller = resolve_request_seller(self.request)

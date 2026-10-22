@@ -583,7 +583,7 @@ export default function InventoryPage() {
         >
           {/* Menu Items */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -605,7 +605,7 @@ export default function InventoryPage() {
           </Link>
 
           <Link
-            href="/orders"
+            href="/portal/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -642,7 +642,7 @@ export default function InventoryPage() {
 
           {/* Bulk orders */}
           <Link
-            href="/bulk-orders"
+            href="/portal/bulk-orders"
             title="Bulk orders"
             style={{
               display: "flex",
@@ -665,7 +665,7 @@ export default function InventoryPage() {
 
           {/* Catalog Link (Non-active on this page) */}
           <Link
-            href="/catalog"
+            href="/portal/catalog"
             title="Catalog"
             style={{
               display: "flex",
@@ -714,7 +714,7 @@ export default function InventoryPage() {
           {/* Other Navigation Links */}
           {[
             { label: "Pricing", icon: Tag, hasChevron: true },
-            { label: "Returns", icon: RotateCcw, href: "/returns" },
+            { label: "Returns", icon: RotateCcw, href: "/portal/returns" },
             { label: "Payments", icon: CreditCard, hasChevron: true },
             { label: "Payouts", icon: Wallet, hasChevron: true },
             { label: "Reports", icon: BarChart3, hasChevron: true },

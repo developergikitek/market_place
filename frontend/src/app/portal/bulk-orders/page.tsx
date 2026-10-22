@@ -376,7 +376,7 @@ export default function BulkOrdersPage() {
         {/* Left: Brand Logo + Toggle + Greeting */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             style={{
               display: "flex",
               alignItems: "center",
@@ -576,7 +576,7 @@ export default function BulkOrdersPage() {
         >
           {/* Dashboard */}
           <Link
-            href="/dashboard"
+            href="/portal/dashboard"
             title="Dashboard"
             style={{
               display: "flex",
@@ -599,7 +599,7 @@ export default function BulkOrdersPage() {
 
           {/* Orders Link */}
           <Link
-            href="/orders"
+            href="/portal/orders"
             title="Orders"
             style={{
               display: "flex",
@@ -723,7 +723,7 @@ export default function BulkOrdersPage() {
 
           {/* Catalog & Inventory */}
           <Link
-            href="/catalog"
+            href="/portal/catalog"
             title="Catalog"
             style={{
               display: "flex",
@@ -748,7 +748,7 @@ export default function BulkOrdersPage() {
           </Link>
 
           <Link
-            href="/inventory"
+            href="/portal/inventory"
             title="Inventory"
             style={{
               display: "flex",
@@ -797,7 +797,7 @@ export default function BulkOrdersPage() {
 
           {/* Payments Link */}
           <Link
-            href="/payments"
+            href="/portal/payments"
             title="Payments"
             style={{
               display: "flex",
@@ -823,7 +823,7 @@ export default function BulkOrdersPage() {
 
           {/* Returns & Payouts */}
           <Link
-            href="/returns"
+            href="/portal/returns"
             title="Returns"
             style={{
               display: "flex",
