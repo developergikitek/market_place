@@ -212,7 +212,30 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                         {spin("pack")} Mark packed
                       </button>
                     )}
+                    {can("cancel") && !confirmCancel && (
+                      <button
+                        type="button"
+                        className={`${styles.btnDanger} ${styles.drawerBtn}`}
+                        disabled={!!busy}
+                        onClick={() => setConfirmCancel(true)}
+                      >
+                        Cancel order
+                      </button>
+                    )}
                   </div>
+                  {confirmCancel && (
+                    <div className={styles.confirm} style={{ marginTop: 12 }}>
+                      Cancel this order? Reserved stock is released and the buyer refunded.
+                      <div className={styles.actions}>
+                        <button type="button" className={`${styles.btn} ${styles.drawerBtn}`} onClick={() => setConfirmCancel(false)}>
+                          Keep order
+                        </button>
+                        <button type="button" className={`${styles.btnDanger} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => run("cancel")}>
+                          {spin("cancel")} Yes, cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -305,7 +328,7 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                 </div>
               )}
 
-              {can("cancel") &&
+              {!can("confirm") && !can("pack") && can("cancel") &&
                 (confirmCancel ? (
                   <div className={styles.confirm}>
                     Cancel this order? Reserved stock is released and the buyer refunded.
