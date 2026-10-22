@@ -118,3 +118,46 @@ class SellerDashboardView(APIView):
         if not seller:
             return Response({"error": "Seller account not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(build_dashboard(seller, request.query_params))
+
+
+class SellerBadgesView(APIView):
+    """
+    Real-time badge counters for Seller Portal navigation sidebar.
+    Returns lightweight count of items requiring seller action:
+    - orders: Unshipped orders awaiting confirmation/dispatch
+    - returns: Returns in action_required state
+    - bulk_orders: Pending RFQs
+    """
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
+
+    def get(self, request):
+        from orders.models import Order
+        from returns.models import ReturnRequest
+        from common.enums import OrderStatus
+        from returns.workflow import STATUS_GROUPS
+        from sellers.utils import resolve_request_seller
+
+        seller = getattr(request.user, 'seller_account', None) or resolve_request_seller(request)
+        if not seller:
+            return Response({"orders": 0, "returns": 0, "bulk_orders": 0})
+
+        # Unshipped orders count (orders with seller items that need fulfillment)
+        unshipped_statuses = [OrderStatus.PAYMENT_CONFIRMED, OrderStatus.PROCESSING]
+        orders_count = Order.objects.filter(
+            items__seller=seller,
+            status__in=unshipped_statuses
+        ).distinct().count()
+
+        # Action-required returns count
+        action_statuses = STATUS_GROUPS.get('action_required', [])
+        returns_count = ReturnRequest.objects.filter(
+            seller=seller,
+            status__in=action_statuses
+        ).count()
+
+        return Response({
+            "orders": orders_count,
+            "returns": returns_count,
+            "bulk_orders": 0,
+        })
+

@@ -1,4 +1,8 @@
+import uuid
+import hashlib
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from common.enums import UserRole
 from common.utils import generate_id
@@ -138,3 +142,85 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.city}, {self.postal_code}"
+
+
+class OTPPurpose(models.TextChoices):
+    SELLER_LOGIN = "SELLER_LOGIN", "Seller Login"
+    SELLER_SIGNUP = "SELLER_SIGNUP", "Seller Registration"
+    CUSTOMER_LOGIN = "CUSTOMER_LOGIN", "Customer Login"
+    PASSWORD_RESET = "PASSWORD_RESET", "Password Reset"
+    BANK_UPDATE = "BANK_UPDATE", "Bank Account Update"
+    ORDER_DELIVERY = "ORDER_DELIVERY", "Order Delivery Confirmation"
+
+
+class OTPChannel(models.TextChoices):
+    SMS = "SMS", "SMS"
+    WHATSAPP = "WHATSAPP", "WhatsApp"
+    EMAIL = "EMAIL", "Email"
+
+
+class OTPRequest(models.Model):
+    """
+    Enterprise-grade OTP tracking model supporting multi-channel delivery,
+    rate-limiting, attempt-capping, and cryptographic verification.
+    """
+    id = models.CharField(max_length=64, primary_key=True, default=generate_id, editable=False)
+    session_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    phone = models.CharField(max_length=30, db_index=True)
+    purpose = models.CharField(
+        max_length=30,
+        choices=OTPPurpose.choices,
+        default=OTPPurpose.SELLER_LOGIN,
+        db_index=True,
+    )
+    otp_hash = models.CharField(max_length=128)
+    channel = models.CharField(max_length=15, choices=OTPChannel.choices, default=OTPChannel.SMS)
+    provider = models.CharField(max_length=30, default="MOCK")
+    provider_msg_id = models.CharField(max_length=100, blank=True, null=True)
+
+    attempts = models.PositiveSmallIntegerField(default=0)
+    max_attempts = models.PositiveSmallIntegerField(default=3)
+    expires_at = models.DateTimeField()
+    resend_available_at = models.DateTimeField()
+
+    is_verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(blank=True, null=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "auth_otp_requests"
+        verbose_name = "OTP Request"
+        verbose_name_plural = "OTP Requests"
+        indexes = [
+            models.Index(fields=["phone", "purpose", "is_verified", "expires_at"]),
+            models.Index(fields=["session_id"]),
+        ]
+
+    def __str__(self):
+        return f"OTP for {self.phone} [{self.purpose}] ({'Verified' if self.is_verified else 'Pending'})"
+
+    @classmethod
+    def hash_otp(cls, raw_otp: str) -> str:
+        salt = getattr(settings, "OTP_SECRET_SALT", None) or getattr(settings, "SECRET_KEY", None)
+        if not salt:
+            raise ValueError("No OTP salt or SECRET_KEY configured in environment (.env).")
+        return hashlib.sha256(f"{raw_otp}:{salt}".encode()).hexdigest()
+
+
+    def set_otp(self, raw_otp: str):
+        self.otp_hash = self.hash_otp(raw_otp)
+
+    def check_otp(self, raw_otp: str) -> bool:
+        return self.otp_hash == self.hash_otp(raw_otp)
+
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expires_at
+
+    def can_attempt(self) -> bool:
+        return not self.is_verified and not self.is_expired() and self.attempts < self.max_attempts
+

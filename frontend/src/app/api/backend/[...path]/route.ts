@@ -132,8 +132,7 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to proxy request to backend service. Please ensure backend is running.",
-        error: error?.message,
+        message: "Unable to connect to service. Please try again shortly.",
       },
       { status: 502 }
     );

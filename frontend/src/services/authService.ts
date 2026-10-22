@@ -94,3 +94,82 @@ export async function logoutUser(): Promise<void> {
     }
   }
 }
+
+export interface SendOtpResponse {
+  success: boolean;
+  message?: string;
+  session_id?: string;
+  phone?: string;
+  resend_cooldown_seconds?: number;
+  expires_in_seconds?: number;
+  debug_otp?: string;
+}
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  message?: string;
+  user?: UserProfile;
+  tokens?: {
+    access: string;
+    refresh: string;
+  };
+  remaining_attempts?: number;
+}
+
+/**
+ * Send OTP via Next.js BFF proxy
+ */
+export async function sendOtp(phone: string, purpose: string = "SELLER_LOGIN"): Promise<SendOtpResponse> {
+  const res = await fetch("/api/auth/send-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, purpose }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    const error: any = new Error(data.message || "Failed to send OTP");
+    error.resend_cooldown_seconds = data.resend_cooldown_seconds;
+    error.session_id = data.session_id;
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Verify OTP and establish seller session via Next.js BFF proxy
+ */
+export async function verifyOtp(params: {
+  session_id?: string;
+  phone?: string;
+  otp: string;
+  purpose?: string;
+}): Promise<VerifyOtpResponse> {
+  const res = await fetch("/api/auth/verify-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    const error: any = new Error(data.message || "Invalid OTP. Please check and try again.");
+    error.remaining_attempts = data.remaining_attempts;
+    throw error;
+  }
+
+  if (typeof window !== "undefined") {
+    if (data.user) {
+      localStorage.setItem("seller_user", JSON.stringify(data.user));
+    }
+    if (data.tokens?.access) {
+      localStorage.setItem("access_token", data.tokens.access);
+    }
+  }
+
+  return data;
+}
+

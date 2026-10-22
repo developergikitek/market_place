@@ -7,6 +7,7 @@ import Select from "@/components/ui/Select";
 import styles from "@/components/ui/sellerPage.module.css";
 import { ApiError } from "@/services/addProductService";
 import { OrderAction, OrderDetail, fetchOrder, runOrderAction } from "@/services/ordersService";
+import { triggerPortalBadgesRefresh } from "@/context/BadgesContext";
 import { ORDER_TONE } from "./orderMeta";
 
 interface OrderDrawerProps {
@@ -100,6 +101,7 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
       setTrackPlace("");
       setShipLines(null);
       onUpdated(updated, SUCCESS[action]);
+      triggerPortalBadgesRefresh();
     } catch (err) {
       setErrors(err instanceof ApiError ? err.messages : ["Something went wrong. Please try again."]);
     } finally {

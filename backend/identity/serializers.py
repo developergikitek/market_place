@@ -136,3 +136,71 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Current password is incorrect.")
         return value
+
+
+class SendOTPSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=True)
+    purpose = serializers.ChoiceField(
+        choices=[
+            ("SELLER_LOGIN", "Seller Login"),
+            ("SELLER_SIGNUP", "Seller Registration"),
+            ("CUSTOMER_LOGIN", "Customer Login"),
+            ("PASSWORD_RESET", "Password Reset"),
+            ("BANK_UPDATE", "Bank Account Update"),
+            ("ORDER_DELIVERY", "Order Delivery Confirmation"),
+        ],
+        default="SELLER_LOGIN",
+    )
+    channel = serializers.ChoiceField(
+        choices=[("SMS", "SMS"), ("WHATSAPP", "WhatsApp"), ("EMAIL", "Email")],
+        default="SMS",
+    )
+
+    def validate_phone(self, value):
+        cleaned = value.strip().replace(" ", "").replace("-", "")
+        # Remove +91 or 91 if present for 10-digit standard Indian phone numbers
+        if cleaned.startswith("+91"):
+            cleaned = cleaned[3:]
+        elif cleaned.startswith("91") and len(cleaned) == 12:
+            cleaned = cleaned[2:]
+
+        if not cleaned.isdigit() or len(cleaned) < 10:
+            raise serializers.ValidationError("Please provide a valid 10-digit mobile number.")
+        return cleaned
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    session_id = serializers.UUIDField(required=False)
+    phone = serializers.CharField(required=False)
+    otp = serializers.CharField(required=True, min_length=4, max_length=8)
+    purpose = serializers.ChoiceField(
+        choices=[
+            ("SELLER_LOGIN", "Seller Login"),
+            ("SELLER_SIGNUP", "Seller Registration"),
+            ("CUSTOMER_LOGIN", "Customer Login"),
+            ("PASSWORD_RESET", "Password Reset"),
+            ("BANK_UPDATE", "Bank Account Update"),
+            ("ORDER_DELIVERY", "Order Delivery Confirmation"),
+        ],
+        default="SELLER_LOGIN",
+        required=False,
+    )
+
+    def validate_otp(self, value):
+        cleaned = value.strip()
+        if not cleaned.isdigit():
+            raise serializers.ValidationError("OTP must be numeric digits only.")
+        return cleaned
+
+    def validate(self, attrs):
+        if not attrs.get('session_id') and not attrs.get('phone'):
+            raise serializers.ValidationError("Either 'session_id' or 'phone' must be provided.")
+        if attrs.get('phone'):
+            cleaned = attrs['phone'].strip().replace(" ", "").replace("-", "")
+            if cleaned.startswith("+91"):
+                cleaned = cleaned[3:]
+            elif cleaned.startswith("91") and len(cleaned) == 12:
+                cleaned = cleaned[2:]
+            attrs['phone'] = cleaned
+        return attrs
+

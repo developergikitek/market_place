@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to connect to authentication server. Please ensure backend is running.",
+        message: "Unable to connect to server. Please try again shortly.",
       },
       { status: 500 }
     );

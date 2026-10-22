@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, CustomerProfile, Address
+from .models import User, CustomerProfile, Address, OTPRequest
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -22,5 +22,14 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
 
+@admin.register(OTPRequest)
+class OTPRequestAdmin(admin.ModelAdmin):
+    list_display = ('phone', 'purpose', 'channel', 'provider', 'attempts', 'is_verified', 'expires_at', 'created_at')
+    list_filter = ('purpose', 'channel', 'provider', 'is_verified')
+    search_fields = ('phone', 'session_id')
+    readonly_fields = ('id', 'session_id', 'created_at', 'updated_at', 'verified_at')
+    ordering = ('-created_at',)
+
 admin.site.register(CustomerProfile)
 admin.site.register(Address)
+

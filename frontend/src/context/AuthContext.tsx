@@ -8,6 +8,7 @@ interface AuthContextType {
   user: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  setUser: (user: UserProfile | null) => void;
   refreshUser: () => Promise<UserProfile | null>;
   logout: () => Promise<void>;
 }
@@ -34,6 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem("seller_user");
+      if (cached) {
+        setUser(JSON.parse(cached));
+      }
+    } catch {}
     refreshUser();
   }, [refreshUser]);
 
@@ -55,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        setUser,
         refreshUser,
         logout,
       }}
@@ -63,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);

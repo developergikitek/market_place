@@ -139,7 +139,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { Accept: "application/json", ...(init?.headers || {}) },
     });
   } catch {
-    throw new ApiError(["Can't reach the Makaano server. Check that the backend is running."]);
+    throw new ApiError(["Unable to reach the server. Please check your connection and try again."]);
   }
   const body = await res.json().catch(() => null);
   if (!res.ok) {

@@ -22,6 +22,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useBadges } from "@/context/BadgesContext";
 
 const badgeStyle = {
   background: "rgba(194, 65, 12, 0.3)",
@@ -81,6 +82,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { badges } = useBadges();
 
   const sellerName =
     user?.seller_info?.display_name ||
@@ -468,13 +470,30 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           {/* Navigation Links */}
           {[
             { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-            { label: "Orders", href: "/orders", icon: Package, badge: "128" },
-            { label: "Bulk orders", href: "/bulk-orders", icon: Layers },
+            {
+              label: "Orders",
+              href: "/orders",
+              icon: Package,
+              badge: badges.orders > 0 ? String(badges.orders) : undefined,
+            },
+            {
+              label: "Bulk orders",
+              href: "/bulk-orders",
+              icon: Layers,
+              badge: badges.bulk_orders > 0 ? String(badges.bulk_orders) : undefined,
+            },
             { label: "Catalog", href: "/catalog", icon: BookOpen },
             { label: "Inventory", href: "/inventory", icon: Boxes },
             { label: "Pricing", href: "/pricing", icon: Tag },
             { label: "Payments", href: "/payments", icon: CreditCard },
-            { label: "Returns", href: "/returns", icon: RotateCcw, badge: returnsBadge || "8" },
+            {
+              label: "Returns",
+              href: "/returns",
+              icon: RotateCcw,
+              badge: returnsBadge !== undefined
+                ? (returnsBadge ? String(returnsBadge) : undefined)
+                : (badges.returns > 0 ? String(badges.returns) : undefined),
+            },
             { label: "Payouts", icon: Wallet },
           ].map((item, idx) => {
             const Icon = item.icon;
