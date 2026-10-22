@@ -41,8 +41,15 @@ export default function SellerLoginForm({
     if (onGoToRegister) {
       onGoToRegister();
     } else {
-      router.push("/portal/dashboard");
+      router.push("/signup/seller");
     }
+  };
+
+  // Full page load, not router.push: the client router may still hold the logged-out redirect from
+  // /portal/* to /login, and a fresh load also lets AuthProvider pick up the new session.
+  const goToPortal = () => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/portal/dashboard");
   };
 
   useEffect(() => {
@@ -84,7 +91,7 @@ export default function SellerLoginForm({
       if (onLoginSuccess) {
         onLoginSuccess(identifier);
       } else {
-        router.push("/portal/dashboard");
+        goToPortal();
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
@@ -113,7 +120,7 @@ export default function SellerLoginForm({
       if (onLoginSuccess) {
         onLoginSuccess(mobileNumber);
       } else {
-        router.push("/portal/dashboard");
+        goToPortal();
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
