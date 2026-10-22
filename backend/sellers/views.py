@@ -1,12 +1,14 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from sellers.models import Seller, SellerKycDocument, SellerBankAccount
 from sellers.serializers import (
     SellerProfileSerializer, SellerKycDocumentSerializer,
     SellerBankAccountSerializer, SellerPerformanceMetricsSerializer
 )
 from sellers.permissions import IsSellerUser
+from sellers.dashboard import build_dashboard
 
 # Import centralized seller portal viewsets
 from listings.views import SellerListingViewSet
@@ -100,3 +102,19 @@ class SellerProfileViewSet(viewsets.ViewSet):
             'holiday_mode_enabled': seller.holiday_mode_enabled,
             'message': f"Holiday mode is now {'ENABLED' if seller.holiday_mode_enabled else 'DISABLED'}."
         })
+
+
+class SellerDashboardView(APIView):
+    """
+    Seller Central home dashboard in one call.
+
+    GET /api/portal/dashboard/?range=7d|14d|30d|week|month
+        optional: categories_range, channel_range, performance_range (default to `range`)
+    """
+    permission_classes = [permissions.IsAuthenticated, IsSellerUser]
+
+    def get(self, request):
+        seller = getattr(request.user, 'seller_account', None)
+        if not seller:
+            return Response({"error": "Seller account not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(build_dashboard(seller, request.query_params))
