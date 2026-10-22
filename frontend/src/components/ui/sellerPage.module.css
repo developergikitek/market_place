@@ -1050,3 +1050,13 @@ button.kpi:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.thHint {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #94a3b8;
+}

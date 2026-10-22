@@ -238,16 +238,16 @@ export default function InventoryPage() {
             </div>
           ) : (
             <div className={styles.tableWrap} style={{ opacity: loading ? 0.55 : 1, transition: "opacity 0.15s" }}>
-              <table className={`${styles.table} ${styles.tableFixed}`} style={{ minWidth: 880 }}>
+              <table className={`${styles.table} ${styles.tableFixed}`} style={{ minWidth: 980 }}>
                 <thead>
                   <tr>
                     <th>Product</th>
                     <th style={{ width: 130 }}>SKU</th>
                     <th style={{ width: 88 }}>Available</th>
-                    <th style={{ width: 56, textAlign: "center" }}>Reserved</th>
-                    <th style={{ width: 56, textAlign: "center" }}>Inbound</th>
-                    <th style={{ width: 56, textAlign: "center" }}>Damaged</th>
-                    <th style={{ width: 56, textAlign: "center" }}>Safety</th>
+                    <th style={{ width: 88, textAlign: "center" }} title="Held for orders that are placed but not shipped yet">Reserved<span className={styles.thHint}>In orders</span></th>
+                    <th style={{ width: 84, textAlign: "center" }} title="On its way to the warehouse, not sellable yet">Inbound<span className={styles.thHint}>On the way</span></th>
+                    <th style={{ width: 88, textAlign: "center" }} title="Damaged units that cannot be sold">Damaged<span className={styles.thHint}>Can&apos;t sell</span></th>
+                    <th style={{ width: 76, textAlign: "center" }} title="Minimum stock to keep. At or below this the listing shows as low stock">Safety<span className={styles.thHint}>Min. stock</span></th>
                     <th style={{ width: 130 }}>Status</th>
                     <th style={{ width: 80, textAlign: "right" }} aria-label="Action" />
                   </tr>
