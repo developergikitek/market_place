@@ -14,14 +14,9 @@ import {
   RotateCcw,
   CreditCard,
   Wallet,
-  BarChart3,
-  TrendingUp,
-  Headphones,
-  Settings,
-  LifeBuoy,
-  Bell,
-  Search,
-  Check,
+  // Bell,
+  // Search,
+  // Check,
   HelpCircle,
   LogOut,
   User as UserIcon,
@@ -132,8 +127,34 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           zIndex: 50,
         }}
       >
-        {/* Left: Brand Logo + Toggle + Seller Greeting */}
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+        {/* Left: Toggle + Brand Logo + Seller Greeting */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* Hamburger Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRadius: "50%",
+              cursor: "pointer",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              marginLeft: "-8px",
+              transition: "background 0.2s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <Menu size={22} />
+          </button>
+
           <Link
             href="/dashboard"
             style={{
@@ -173,29 +194,6 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
           {/* Divider */}
           <div style={{ width: "1px", height: "24px", background: "rgba(255, 255, 255, 0.15)" }} />
 
-          {/* Hamburger Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            style={{
-              background: isSidebarOpen ? "rgba(255, 255, 255, 0.12)" : "rgba(249, 115, 22, 0.25)",
-              border: isSidebarOpen ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #F97316",
-              borderRadius: "8px",
-              cursor: "pointer",
-              color: isSidebarOpen ? "#ffffff" : "#F97316",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "36px",
-              height: "36px",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <Menu size={19} />
-          </button>
-
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
@@ -220,7 +218,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             </span>
 
             {/* Verified Badge */}
-            <span
+            {/* <span
               style={{
                 background: "rgba(16, 185, 129, 0.18)",
                 color: "#34d399",
@@ -236,13 +234,13 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             >
               <Check size={12} strokeWidth={3} />
               <span>Verified</span>
-            </span>
+            </span> */}
           </div>
         </div>
 
         {/* Right Header Controls: Search, Bell, Help, Profile */}
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          <button
+          {/* <button
             type="button"
             title="Search"
             style={{
@@ -258,7 +256,6 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             <Search size={19} />
           </button>
 
-          {/* Notification Bell */}
           <div style={{ position: "relative" }}>
             <button
               type="button"
@@ -311,7 +308,7 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             }}
           >
             <HelpCircle size={19} />
-          </button>
+          </button> */}
 
           {/* Profile Dropdown Container */}
           <div style={{ position: "relative" }}>
@@ -477,12 +474,6 @@ export default function SellerShell({ active, returnsBadge, children }: SellerSh
             { label: "Payments", href: "/payments", icon: CreditCard },
             { label: "Returns", href: "/returns", icon: RotateCcw, badge: returnsBadge || "8" },
             { label: "Payouts", icon: Wallet },
-            { label: "Reports", icon: BarChart3 },
-            { label: "Growth", icon: TrendingUp },
-            { label: "Support", icon: Headphones },
-            { label: "Notifications", icon: Bell },
-            { label: "Account Settings", icon: Settings },
-            { label: "Help Center", icon: LifeBuoy },
           ].map((item, idx) => {
             const Icon = item.icon;
             const isActive = active?.toLowerCase().trim() === item.label.toLowerCase().trim();

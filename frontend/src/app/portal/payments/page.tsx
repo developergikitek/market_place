@@ -384,7 +384,33 @@ export default function PaymentsPage() {
         }}
       >
         {/* Left: Brand Logo + Toggle + Seller Greeting */}
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* Hamburger Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRadius: "50%",
+              cursor: "pointer",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              marginLeft: "-8px",
+              transition: "background 0.2s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <Menu size={22} />
+          </button>
+
           <Link
             href="/dashboard"
             style={{
@@ -424,28 +450,6 @@ export default function PaymentsPage() {
           {/* Divider */}
           <div style={{ width: "1px", height: "24px", background: "rgba(255, 255, 255, 0.15)" }} />
 
-          {/* Hamburger Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            style={{
-              background: isSidebarOpen ? "rgba(255, 255, 255, 0.12)" : "rgba(249, 115, 22, 0.25)",
-              border: isSidebarOpen ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #F97316",
-              borderRadius: "8px",
-              cursor: "pointer",
-              color: isSidebarOpen ? "#ffffff" : "#F97316",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "36px",
-              height: "36px",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <Menu size={19} />
-          </button>
 
           {/* Seller Greeting + Badges */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -471,7 +475,7 @@ export default function PaymentsPage() {
             </span>
 
             {/* Verified Badge */}
-            <span
+            {/* <span
               style={{
                 background: "rgba(16, 185, 129, 0.18)",
                 color: "#34d399",
@@ -487,12 +491,13 @@ export default function PaymentsPage() {
             >
               <Check size={12} strokeWidth={3} />
               <span>Verified</span>
-            </span>
+            </span> */}
           </div>
         </div>
 
         {/* Right Header Controls: Search, Bell, Help, Profile */}
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          {/*
           <button
             type="button"
             title="Search"
@@ -509,7 +514,7 @@ export default function PaymentsPage() {
             <Search size={19} />
           </button>
 
-          {/* Notification Bell */}
+          // Notification Bell
           <div style={{ position: "relative" }}>
             <button
               type="button"
@@ -563,6 +568,7 @@ export default function PaymentsPage() {
           >
             <HelpCircle size={19} />
           </button>
+          */}
 
           {/* Profile Dropdown Container */}
           <div style={{ position: "relative" }}>
@@ -728,12 +734,6 @@ export default function PaymentsPage() {
             { label: "Payments", href: "/payments", icon: CreditCard },
             { label: "Returns", href: "/returns", icon: RotateCcw, badge: "8" },
             { label: "Payouts", icon: Wallet },
-            { label: "Reports", icon: BarChart3 },
-            { label: "Growth", icon: TrendingUp },
-            { label: "Support", icon: Headphones },
-            { label: "Notifications", icon: Bell },
-            { label: "Account Settings", icon: Settings },
-            { label: "Help Center", icon: LifeBuoy },
           ].map((item, idx) => {
             const Icon = item.icon;
             const isActive = item.label === "Payments";

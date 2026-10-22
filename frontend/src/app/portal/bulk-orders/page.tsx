@@ -395,7 +395,33 @@ export default function BulkOrdersPage() {
         }}
       >
         {/* Left: Brand Logo + Toggle + Greeting */}
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* Hamburger Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRadius: "50%",
+              cursor: "pointer",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              marginLeft: "-8px",
+              transition: "background 0.2s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <Menu size={22} />
+          </button>
+
           <Link
             href="/dashboard"
             style={{
@@ -433,27 +459,6 @@ export default function BulkOrdersPage() {
 
           <div style={{ width: "1px", height: "24px", background: "rgba(255, 255, 255, 0.15)" }} />
 
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            style={{
-              background: isSidebarOpen ? "rgba(255, 255, 255, 0.12)" : "rgba(249, 115, 22, 0.25)",
-              border: isSidebarOpen ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #F97316",
-              borderRadius: "8px",
-              cursor: "pointer",
-              color: isSidebarOpen ? "#ffffff" : "#F97316",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "36px",
-              height: "36px",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <Menu size={19} />
-          </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
@@ -474,7 +479,7 @@ export default function BulkOrdersPage() {
             >
               {sellerCode}
             </span>
-            <span
+            {/* <span
               style={{
                 background: "rgba(16, 185, 129, 0.18)",
                 color: "#34d399",
@@ -490,12 +495,13 @@ export default function BulkOrdersPage() {
             >
               <Check size={12} strokeWidth={3} />
               <span>Verified</span>
-            </span>
+            </span> */}
           </div>
         </div>
 
         {/* Right Header Controls */}
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          {/*
           <button
             type="button"
             title="Search"
@@ -701,12 +707,6 @@ export default function BulkOrdersPage() {
             { label: "Payments", href: "/payments", icon: CreditCard },
             { label: "Returns", href: "/returns", icon: RotateCcw, badge: "8" },
             { label: "Payouts", icon: Wallet },
-            { label: "Reports", icon: BarChart3 },
-            { label: "Growth", icon: TrendingUp },
-            { label: "Support", icon: Headphones },
-            { label: "Notifications", icon: Bell },
-            { label: "Account Settings", icon: Settings },
-            { label: "Help Center", icon: LifeBuoy },
           ].map((item, idx) => {
             const Icon = item.icon;
             const isActive = item.label === "Bulk orders";
