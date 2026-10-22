@@ -194,10 +194,12 @@ export default function DashboardPage() {
   const userName =
     user?.first_name
       ? `${user.first_name} ${user.last_name || ""}`.trim()
-      : user?.username || user?.phone || "Seller Admin";
+      : user?.username || user?.phone || (user?.email ? user.email.split("@")[0] : "Seller Account");
 
   const userInitial = (userName || "S").charAt(0).toUpperCase();
-  const userRole = user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "Seller Admin";
+  const userRole = user?.role
+    ? (user.role === "ADMIN" ? "Administrator" : user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase())
+    : "Merchant";
 
   const metrics = dashboard?.metrics;
   const salesOverview = dashboard?.sales_overview;

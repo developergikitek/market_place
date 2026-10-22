@@ -269,7 +269,7 @@ export default function SellerLoginForm({
                     setEmail(e.target.value);
                     setErrorMsg("");
                   }}
-                  placeholder="seller@gikitek.com or 7408108617"
+                  placeholder="Enter registered email or mobile number"
                   style={{
                     width: "100%",
                     height: "52px",

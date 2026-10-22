@@ -91,22 +91,35 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    phone = serializers.CharField(required=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.CharField(required=False, allow_blank=True)
+    username = serializers.CharField(required=False, allow_blank=True)
+    identifier = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
 
     def validate(self, attrs):
-        phone = attrs.get('phone', '').strip()
+        # Resolve identifier from any provided field (phone, email, username, or generic identifier)
+        raw_identifier = (
+            attrs.get('phone') or
+            attrs.get('email') or
+            attrs.get('username') or
+            attrs.get('identifier') or
+            ''
+        ).strip()
         password = attrs.get('password')
 
-        # Allow login by phone, email, or username
-        user = User.objects.filter(phone=phone).first()
-        if not user and '@' in phone:
-            user = User.objects.filter(email=phone.lower()).first()
-        if not user:
-            user = User.objects.filter(username=phone).first()
+        if not raw_identifier:
+            raise serializers.ValidationError("Please provide your phone, email, or username.")
+
+        # Allow login by matching against actual database columns: phone, email, or username
+        user = (
+            User.objects.filter(phone=raw_identifier).first() or
+            User.objects.filter(email__iexact=raw_identifier).first() or
+            User.objects.filter(username__iexact=raw_identifier).first()
+        )
 
         if not user or not user.check_password(password):
-            raise serializers.ValidationError("Invalid mobile number, username, or password.")
+            raise serializers.ValidationError("Invalid credentials. Please check your phone/email/username and password.")
 
         if not user.is_active:
             raise serializers.ValidationError("User account is inactive or disabled.")

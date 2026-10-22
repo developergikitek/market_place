@@ -34,7 +34,7 @@ export interface LoginResponse {
 
 /**
  * Login seller via Next.js BFF proxy (/api/auth/login -> Django /api/v1/auth/login/)
- * Works with either phone (e.g. 7408108617) or email (e.g. seller@gikitek.com)
+ * Works with either phone (e.g. 7408108617) or email (e.g. developer.gikitek@gmail.com)
  */
 export async function loginWithBackend(identifier: string, password: string): Promise<LoginResponse> {
   const res = await fetch("/api/auth/login", {

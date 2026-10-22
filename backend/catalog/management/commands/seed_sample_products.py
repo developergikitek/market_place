@@ -23,16 +23,16 @@ class Command(BaseCommand):
             user, created = User.objects.get_or_create(
                 phone="7408108617",
                 defaults={
-                    "username": "ZopperAdmin",
-                    "email": "seller@gikitek.com",
+                    "username": None,
+                    "email": "developer.gikitek@gmail.com",
                     "first_name": "Gikitek",
                     "last_name": "Seller",
-                    "role": UserRole.SELLER,
+                    "role": UserRole.ADMIN,
                     "is_active": True,
                 }
             )
             if created or not user.has_usable_password():
-                user.username = "ZopperAdmin"
+                user.username = None
                 user.set_password("Zopperad@7408")
                 user.save()
             seller, _ = Seller.objects.get_or_create(
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                     "tier": SellerTier.ENTERPRISE,
                     "account_status": SellerAccountStatus.ACTIVE,
                     "verification_status": VerificationStatus.APPROVED,
-                    "support_email": "seller@gikitek.com",
+                    "support_email": "developer.gikitek@gmail.com",
                     "support_phone": "7408108617",
                 }
             )
