@@ -1,7 +1,7 @@
 import { request } from "./addProductService";
 
 export type OrderTab = "pending_payment" | "unshipped" | "shipped" | "delivered" | "cancelled" | "refunded";
-export type OrderAction = "confirm" | "pack" | "ship" | "add_tracking" | "mark_delivered" | "cancel";
+export type OrderAction = "confirm" | "pack" | "ship" | "add_tracking" | "mark_delivered" | "mark_rto" | "cancel";
 
 export interface OrderLine {
   id: string;
@@ -25,6 +25,15 @@ export interface OrderLine {
   shipment_number: string | null;
 }
 
+export interface PaymentInfo {
+  method: string;
+  status: string;
+  status_display: string;
+  is_cod: boolean;
+  /** Cash the courier still has to collect (COD orders not yet delivered), else null. */
+  cod_to_collect: string | null;
+}
+
 export interface OrderRow {
   id: string;
   order_number: string;
@@ -39,7 +48,7 @@ export interface OrderRow {
   is_gift: boolean;
   customer: { name: string; phone: string; city: string; state: string };
   items: OrderLine[];
-  payment: { method: string; status: string; status_display: string } | null;
+  payment: PaymentInfo | null;
   ship_by: string;
   is_late: boolean;
   allowed_actions: OrderAction[];
@@ -79,7 +88,7 @@ export interface OrderDetail extends OrderRow {
   gift_message: string | null;
   shipping_address: Address;
   billing_address: Address;
-  payments: { method: string; provider: string; reference: string; amount: string; status: string; status_display: string; captured_at: string | null }[];
+  payments: (PaymentInfo & { provider: string; reference: string; amount: string; captured_at: string | null })[];
   shipments: Shipment[];
   other_sellers_items: number;
   updated_at: string;
@@ -93,6 +102,8 @@ export interface OrderSummary {
   units_30d: number;
   avg_order_value_30d: string;
   late_shipments: number;
+  cod_open_orders: number;
+  cod_to_collect: string;
 }
 
 export interface OrderFilters {
@@ -101,6 +112,7 @@ export interface OrderFilters {
   date_from?: string;
   date_to?: string;
   fulfillment?: string;
+  payment?: "" | "COD" | "PREPAID";
   late?: boolean;
   ordering?: string;
   page?: number;
@@ -108,7 +120,7 @@ export interface OrderFilters {
 
 function query(filters: OrderFilters) {
   const params = new URLSearchParams({ page_size: "20", page: String(filters.page ?? 1) });
-  (["tab", "search", "date_from", "date_to", "fulfillment", "ordering"] as const).forEach((k) => {
+  (["tab", "search", "date_from", "date_to", "fulfillment", "payment", "ordering"] as const).forEach((k) => {
     const v = filters[k];
     if (v && String(v).trim()) params.set(k, String(v).trim());
   });

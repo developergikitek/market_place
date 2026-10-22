@@ -13,11 +13,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from common.enums import (
-    InventoryMovementReason, OrderItemStatus, OrderStatus, PaymentStatus, ShipmentStatus,
+    FulfillmentChannel, InventoryMovementReason, OrderItemStatus, OrderStatus, PaymentMethodType, PaymentStatus,
+    ShipmentStatus,
 )
 from common.pagination import StandardResultsSetPagination
 from orders.models import Order, OrderItem, Shipment, ShipmentCheckpoint
-from orders.workflow import TABS, UNSHIPPED_ITEM, allowed_actions, recompute_order_status
+from payments.models import Payment
+from orders.workflow import (
+    TABS, UNSHIPPED_ITEM, allowed_actions, capture_cod_if_delivered, cod_payment, recompute_order_status,
+    settle_payment_for_cancelled,
+)
 from sellers.utils import resolve_request_seller
 from warehouses.models import InventoryItem, InventoryMovement
 
@@ -64,6 +69,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return _money(obj.total_price + obj.item_shipping_fee - obj.item_discount_amount - fees)
 
 
+def _payment_info(p):
+    """Method and status of a payment; for COD also how much the courier still has to collect."""
+    is_cod = p.payment_method == PaymentMethodType.CASH_ON_DELIVERY
+    return {
+        'method': p.get_payment_method_display(), 'status': p.status, 'status_display': p.get_status_display(),
+        'is_cod': is_cod,
+        'cod_to_collect': _money(p.amount) if is_cod and p.status == PaymentStatus.INITIATED else None,
+    }
+
+
 def _seller_items(order):
     return getattr(order, 'seller_items', None) or list(order.items.all())
 
@@ -97,9 +112,8 @@ class OrderListSerializer(serializers.ModelSerializer):
         return _money(sum((i.total_price for i in _seller_items(obj)), Decimal('0')))
 
     def get_payment(self, obj):
-        payments = list(obj.payments.all())
-        p = payments[0] if payments else None
-        return {'method': p.get_payment_method_display(), 'status': p.status, 'status_display': p.get_status_display()} if p else None
+        p = cod_payment(obj) or next(iter(obj.payments.all()), None)
+        return _payment_info(p) if p else None
 
     def get_ship_by(self, obj):
         return _ship_by(obj, _seller_items(obj))
@@ -162,9 +176,8 @@ class OrderDetailSerializer(OrderListSerializer):
 
     def get_payments(self, obj):
         return [{
-            'method': p.get_payment_method_display(), 'provider': p.gateway_provider, 'reference': p.gateway_transaction_id,
-            'amount': _money(p.amount), 'status': p.status, 'status_display': p.get_status_display(),
-            'captured_at': p.captured_at,
+            **_payment_info(p), 'provider': p.gateway_provider, 'reference': p.gateway_transaction_id,
+            'amount': _money(p.amount), 'captured_at': p.captured_at,
         } for p in obj.payments.all()]
 
     def get_shipments(self, obj):
@@ -181,11 +194,12 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
     Seller Central orders: orders that contain the seller's lines, with only those lines shown.
 
     GET  /api/orders/              tab=pending_payment|unshipped|shipped|delivered|cancelled|refunded,
-                                   search, date_from, date_to, fulfillment=FBA|FBM, late=true, ordering
+                                   search, date_from, date_to, fulfillment=FBA|FBM, payment=COD|PREPAID,
+                                   late=true, ordering
     GET  /api/orders/summary/      tab counts, 30-day sales and late shipments
     GET  /api/orders/export/       same filters, as CSV
     GET  /api/orders/<order_number>/
-    POST /api/orders/<n>/confirm|pack|ship|mark_delivered|add_tracking|cancel/
+    POST /api/orders/<n>/confirm|pack|ship|mark_delivered|mark_rto|add_tracking|cancel/
     """
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]  # open like the other seller APIs until JWT login lands
@@ -223,8 +237,13 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
             qs = qs.filter(placed_at__date__gte=parse_date(p['date_from']))
         if parse_date(p.get('date_to') or ''):
             qs = qs.filter(placed_at__date__lte=parse_date(p['date_to']))
-        if p.get('fulfillment') in ('FBA', 'FBM'):
-            qs = qs.filter(items__seller=self._seller(), items__listing__fulfillment_channel=p['fulfillment']).distinct()
+        channel = {'FBA': FulfillmentChannel.MAKAANO_FULFILLED, 'FBM': FulfillmentChannel.SELLER_FULFILLED}.get(p.get('fulfillment'))
+        if channel:
+            qs = qs.filter(items__seller=self._seller(), items__listing__fulfillment_channel=channel).distinct()
+        if p.get('payment') == 'COD':
+            qs = qs.filter(payments__payment_method=PaymentMethodType.CASH_ON_DELIVERY).distinct()
+        elif p.get('payment') == 'PREPAID':
+            qs = qs.exclude(payments__payment_method=PaymentMethodType.CASH_ON_DELIVERY)
         ordering = {'oldest': 'placed_at', 'total_desc': '-grand_total', 'total_asc': 'grand_total'}.get(p.get('ordering'), '-placed_at')
         qs = qs.order_by(ordering)
         if p.get('late') in ('true', '1'):
@@ -256,6 +275,10 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
         agg = recent.aggregate(sales=Sum('total_price'), orders=Count('order', distinct=True), units=Sum('quantity'))
         # Orders that still have lines to dispatch, including partly shipped ones.
         open_orders = [o for o in qs.filter(status__in=TABS['unshipped'] + [OrderStatus.PARTIALLY_SHIPPED])]
+        # Cash the couriers still have to collect on open COD orders.
+        cod_open = Payment.objects.filter(
+            order__in=qs.values('id'), payment_method=PaymentMethodType.CASH_ON_DELIVERY, status=PaymentStatus.INITIATED,
+        ).aggregate(n=Count('id'), amount=Sum('amount'))
         return Response({
             'tabs': {tab: sum(by_status.get(s, 0) for s in statuses) for tab, statuses in TABS.items()},
             'total': sum(by_status.values()),
@@ -264,6 +287,8 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
             'units_30d': agg['units'] or 0,
             'avg_order_value_30d': _money((agg['sales'] or 0) / agg['orders']) if agg['orders'] else '0.00',
             'late_shipments': sum(1 for o in open_orders if OrderListSerializer().get_is_late(o)),
+            'cod_open_orders': cod_open['n'],
+            'cod_to_collect': _money(cod_open['amount']),
         })
 
     @action(detail=False, methods=['get'])
@@ -412,7 +437,43 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
             for line in lines:
                 line.status = OrderItemStatus.DELIVERED
                 line.save(update_fields=['status', 'updated_at'])
+            capture_cod_if_delivered(order)
         return self._act(order_number, 'mark_delivered', apply)
+
+    @action(detail=True, methods=['post'])
+    def mark_rto(self, request, order_number=None):
+        """
+        Return to origin ({shipment_id, reason?}; defaults to every shipped line): the buyer refused the
+        parcel or couldn't be reached. Units go back on the shelf, the lines are cancelled and the payment
+        is voided (COD) or refunded (prepaid).
+        """
+        def apply(order, items, data):
+            lines = [l for l in items if l.status == OrderItemStatus.SHIPPED and (not data.get('shipment_id') or l.shipment_id == data.get('shipment_id'))]
+            if not lines:
+                return {'shipment_id': 'Nothing in that shipment is out with the courier.'}
+            reason = str(data.get('reason') or '').strip()[:200] or "Buyer refused / not reachable"
+            now = timezone.now()
+            for shipment in {l.shipment for l in lines if l.shipment}:
+                shipment.status = ShipmentStatus.EXCEPTION_RETURNED
+                shipment.save(update_fields=['status', 'updated_at'])
+                ShipmentCheckpoint.objects.create(
+                    shipment=shipment, event_time=now, status_text=f"Returned to seller (RTO): {reason}"[:255],
+                    location=shipment.warehouse.city if shipment.warehouse else order.shipping_address.city,
+                )
+            for line in lines:
+                inv = self._stock_item(line)
+                if inv:
+                    inv.available_stock += line.quantity
+                    inv.save(update_fields=['available_stock', 'updated_at'])
+                    InventoryMovement.objects.create(
+                        inventory_item=inv, quantity_change=line.quantity, balance_after=inv.available_stock,
+                        reason=InventoryMovementReason.CUSTOMER_RETURN_RESTOCKED, reference_note=f"RTO · order {order.order_number}",
+                    )
+                line.status = OrderItemStatus.CANCELLED
+                line.save(update_fields=['status', 'updated_at'])
+            settle_payment_for_cancelled(order, lines)
+            capture_cod_if_delivered(order)
+        return self._act(order_number, 'mark_rto', apply)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, order_number=None):
@@ -426,9 +487,5 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
                         inv.save(update_fields=['reserved_stock', 'updated_at'])
                 line.status = OrderItemStatus.CANCELLED
                 line.save(update_fields=['status', 'updated_at'])
-            if not order.items.exclude(status=OrderItemStatus.CANCELLED).exists():
-                order.payments.filter(status=PaymentStatus.AUTHORIZED).update(status=PaymentStatus.VOIDED)
-                order.payments.filter(status=PaymentStatus.CAPTURED).update(status=PaymentStatus.REFUNDED)
-            else:
-                order.payments.filter(status=PaymentStatus.CAPTURED).update(status=PaymentStatus.PARTIALLY_REFUNDED)
+            settle_payment_for_cancelled(order, items)
         return self._act(order_number, 'cancel', apply)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, Ban, Check, Clock, Gift, Loader2, MapPin, Package, Printer, Truck, X } from "lucide-react";
+import { AlertCircle, Ban, Check, Clock, Gift, Loader2, MapPin, Package, Printer, Truck, Undo2, Wallet, X } from "lucide-react";
 import { CARRIERS, formatDate, formatINR } from "@/components/returns/returnMeta";
 import Select from "@/components/ui/Select";
 import styles from "@/components/ui/sellerPage.module.css";
@@ -16,6 +16,9 @@ interface OrderDrawerProps {
 }
 
 const STEPS = ["Placed", "Paid", "Confirmed", "Shipped", "Delivered"];
+// COD orders are accepted without payment; the cash is collected at the door.
+const COD_STEPS = ["Placed", "COD accepted", "Confirmed", "Shipped", "Delivered & paid"];
+const RTO_REASONS = ["Buyer refused the parcel", "Buyer not reachable", "Wrong / incomplete address", "Buyer asked to cancel at the door"];
 const STEP_OF: Record<string, number> = {
   PENDING_PAYMENT: 0,
   PAYMENT_CONFIRMED: 1,
@@ -30,14 +33,16 @@ const SUCCESS: Record<OrderAction, string> = {
   ship: "Shipment created and stock dispatched",
   add_tracking: "Tracking updated",
   mark_delivered: "Marked as delivered",
+  mark_rto: "Marked as returned to origin — stock is back on the shelf",
   cancel: "Order cancelled",
 };
 
 const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-/** Opens a printable packing slip (ship-to, lines and quantities; no prices) in a new window. */
+/** Opens a printable packing slip (ship-to, lines and quantities; no prices except the COD amount) in a new window. */
 function printPackingSlip(order: OrderDetail) {
   const a = order.shipping_address;
+  const collect = order.payments.find((p) => p.cod_to_collect)?.cod_to_collect;
   const rows = order.items
     .filter((i) => i.status !== "CANCELLED")
     .map((i) => `<tr><td>${esc(i.seller_sku)}</td><td>${esc(i.product.title)}<br><small>${esc(i.product.asin)}</small></td><td class="q">${i.quantity}</td></tr>`)
@@ -47,8 +52,9 @@ function printPackingSlip(order: OrderDetail) {
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Packing slip ${esc(order.order_number)}</title>
 <style>body{font:14px/1.5 system-ui,sans-serif;color:#0b1220;margin:32px}h1{font-size:20px;margin:0 0 4px}small{color:#64748b}
 table{width:100%;border-collapse:collapse;margin-top:20px}th,td{text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top}
-th{font-size:12px;text-transform:uppercase;color:#64748b}.q{text-align:right;font-weight:700}.box{border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-top:16px}</style>
+th{font-size:12px;text-transform:uppercase;color:#64748b}.q{text-align:right;font-weight:700}.box{border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-top:16px}.cod{border:2px solid #0b1220;font-size:16px}</style>
 </head><body><h1>Packing slip</h1><small>Order ${esc(order.order_number)} · placed ${esc(new Date(order.placed_at).toLocaleDateString("en-IN"))}</small>
+${collect ? `<div class="box cod"><strong>CASH ON DELIVERY</strong><br>Collect ${esc(formatINR(collect))} from the buyer</div>` : ""}
 <div class="box"><strong>Ship to</strong><br>${esc(a.full_name)}${a.company ? `, ${esc(a.company)}` : ""}<br>${[...a.lines, `${a.city}, ${a.state} ${a.postal_code}`].map(esc).join("<br>")}<br>Phone: ${esc(a.phone)}</div>
 <table><thead><tr><th>SKU</th><th>Item</th><th class="q">Qty</th></tr></thead><tbody>${rows}</tbody></table>
 ${order.gift_message ? `<div class="box"><strong>Gift message</strong><br>${esc(order.gift_message)}</div>` : ""}
@@ -70,6 +76,8 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
   const [trackText, setTrackText] = useState("");
   const [trackPlace, setTrackPlace] = useState("");
   const [trackStatus, setTrackStatus] = useState("IN_TRANSIT");
+  const [confirmRto, setConfirmRto] = useState(false);
+  const [rtoReason, setRtoReason] = useState(RTO_REASONS[0]);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +103,7 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
       const updated = await runOrderAction(order.order_number, action, body);
       setOrder(updated);
       setConfirmCancel(false);
+      setConfirmRto(false);
       setTracking("");
       setTrackText("");
       setTrackPlace("");
@@ -111,7 +120,10 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
   const spin = (a: OrderAction) => busy === a && <Loader2 size={15} className={styles.spin} />;
   const shippable = order?.items.filter((i) => i.status === "ALLOCATED" || i.status === "PACKED") ?? [];
   const selectedShip = shipLines ?? shippable.map((i) => i.id);
-  const openShipment = order?.shipments.find((s) => s.status !== "DELIVERED");
+  const openShipment = order?.shipments.find((s) => s.status !== "DELIVERED" && s.status !== "EXCEPTION_RETURNED");
+  const cod = order?.payments.find((p) => p.is_cod);
+  const wasRto = order?.shipments.some((s) => s.status === "EXCEPTION_RETURNED") ?? false;
+  const cancelNote = cod ? "Nothing was collected from the buyer, so there's nothing to refund." : "The buyer is refunded.";
   const tone = order ? ORDER_TONE[order.status] ?? ORDER_TONE.PENDING_PAYMENT : ORDER_TONE.PENDING_PAYMENT;
   const step = order ? STEP_OF[order.status] : undefined;
   const earnings = order?.items.reduce((s, i) => s + Number(i.net_earning), 0) ?? 0;
@@ -162,11 +174,15 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
               {step === undefined ? (
                 <div className={styles.stopped}>
                   <Ban size={18} />
-                  {order.status === "CANCELLED" ? "This order was cancelled. Reserved stock was released and the buyer refunded." : "This order was refunded."}
+                  {order.status === "REFUNDED"
+                    ? "This order was refunded."
+                    : wasRto
+                      ? `Returned to you (RTO) — the parcel couldn't be delivered and the units are back in stock. ${cancelNote}`
+                      : `This order was cancelled. Reserved stock was released. ${cancelNote}`}
                 </div>
               ) : (
                 <div className={styles.stepper}>
-                  {STEPS.map((label, i) => {
+                  {(cod ? COD_STEPS : STEPS).map((label, i) => {
                     const done = i < step || order.status === "DELIVERED";
                     return (
                       <div key={label} className={`${styles.step} ${done ? styles.stepDone : ""} ${i === step && !done ? styles.stepNow : ""}`}>
@@ -225,7 +241,7 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                   </div>
                   {confirmCancel && (
                     <div className={styles.confirm} style={{ marginTop: 12 }}>
-                      Cancel this order? Reserved stock is released and the buyer refunded.
+                      Cancel this order? Reserved stock is released. {cancelNote}
                       <div className={styles.actions}>
                         <button type="button" className={`${styles.btn} ${styles.drawerBtn}`} onClick={() => setConfirmCancel(false)}>
                           Keep order
@@ -236,6 +252,19 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {cod?.cod_to_collect && (
+                <div className={styles.actionPanel} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <Wallet size={20} style={{ flexShrink: 0, color: "#0369a1", marginTop: 2 }} />
+                  <div>
+                    <h3>Cash on delivery · collect {formatINR(cod.cod_to_collect)}</h3>
+                    <p>
+                      Book the AWB as a COD shipment so the courier collects this amount at the door. The payment is marked
+                      collected when the order is delivered; if the buyer refuses it, mark the shipment RTO.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -322,16 +351,48 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                       {spin("add_tracking")} Add update
                     </button>
                     <button type="button" className={`${styles.btnPrimary} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => run("mark_delivered", { shipment_id: openShipment.id })}>
-                      {spin("mark_delivered")} Mark delivered
+                      {spin("mark_delivered")} {cod?.cod_to_collect ? "Delivered · cash collected" : "Mark delivered"}
                     </button>
+                    {can("mark_rto") && !confirmRto && (
+                      <button type="button" className={`${styles.btnDanger} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => setConfirmRto(true)}>
+                        <Undo2 size={15} /> Not delivered (RTO)
+                      </button>
+                    )}
                   </div>
+                  {confirmRto && (
+                    <div className={styles.confirm} style={{ marginTop: 12 }}>
+                      Parcel coming back to you? The lines are cancelled, the units go back into stock
+                      {cod ? " and the COD payment is voided." : " and the buyer is refunded."}
+                      <div className={styles.field} style={{ marginTop: 8 }}>
+                        <label className={styles.label}>Reason</label>
+                        <Select value={rtoReason} onChange={(e) => setRtoReason(e.target.value)} className={styles.input}>
+                          {RTO_REASONS.map((r) => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div className={styles.actions}>
+                        <button type="button" className={`${styles.btn} ${styles.drawerBtn}`} onClick={() => setConfirmRto(false)}>
+                          Keep in transit
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.btnDanger} ${styles.drawerBtn}`}
+                          disabled={!!busy}
+                          onClick={() => run("mark_rto", { shipment_id: openShipment.id, reason: rtoReason })}
+                        >
+                          {spin("mark_rto")} Yes, mark RTO
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {!can("confirm") && !can("pack") && can("cancel") &&
                 (confirmCancel ? (
                   <div className={styles.confirm}>
-                    Cancel this order? Reserved stock is released and the buyer refunded.
+                    Cancel this order? Reserved stock is released. {cancelNote}
                     <div className={styles.actions}>
                       <button type="button" className={`${styles.btn} ${styles.drawerBtn}`} onClick={() => setConfirmCancel(false)}>
                         Keep order
@@ -382,7 +443,10 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                   {Number(order.promotion_discount) > 0 && (
                     <div><span>Promotion</span><span>− {formatINR(order.promotion_discount)}</span></div>
                   )}
-                  <div><span>Buyer paid</span><span>{formatINR(order.grand_total)}</span></div>
+                  <div>
+                    <span>{cod?.cod_to_collect ? "Buyer pays on delivery" : "Buyer paid"}</span>
+                    <span>{formatINR(order.grand_total)}</span>
+                  </div>
                 </div>
                 <div className={styles.ledger} style={{ marginTop: 10 }}>
                   <div><span>Marketplace fees (referral, closing, fulfilment)</span><span>− {formatINR(fees)}</span></div>
@@ -425,7 +489,10 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                 {order.payments.map((p) => (
                   <dl key={p.reference} className={styles.facts}>
                     <div><dt>Method</dt><dd>{p.method} · {p.provider}</dd></div>
-                    <div><dt>Status</dt><dd>{p.status_display}</dd></div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>{p.is_cod ? (p.cod_to_collect ? "To collect on delivery" : p.status === "CAPTURED" ? "Cash collected" : "Not collected (voided)") : p.status_display}</dd>
+                    </div>
                     <div><dt>Amount</dt><dd>{formatINR(p.amount)}</dd></div>
                     <div><dt>Reference</dt><dd className={styles.rma} style={{ fontSize: 12 }}>{p.reference}</dd></div>
                   </dl>
@@ -448,7 +515,16 @@ export default function OrderDrawer({ orderNumber, onClose, onUpdated }: OrderDr
                             </div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <span className={styles.pill} style={s.status === "DELIVERED" ? { background: "#dcfce7", color: "#166534" } : { background: "#ede9fe", color: "#5b21b6" }}>
+                            <span
+                              className={styles.pill}
+                              style={
+                                s.status === "DELIVERED"
+                                  ? { background: "#dcfce7", color: "#166534" }
+                                  : s.status === "EXCEPTION_RETURNED"
+                                    ? { background: "#fee2e2", color: "#991b1b" }
+                                    : { background: "#ede9fe", color: "#5b21b6" }
+                              }
+                            >
                               {s.status_display}
                             </span>
                             <div className={styles.sub} style={{ marginTop: 4 }}>

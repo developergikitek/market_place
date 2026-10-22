@@ -160,6 +160,11 @@
   gap: 14px;
 }
 
+/* Six-tile KPI row; the breakpoints below still collapse it to 3 and 2 columns. */
+.kpis6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .kpi {
   background: #ffffff;
   border: 1px solid var(--line);
