@@ -7,7 +7,6 @@ import {
   AttributeValueInput,
   CategoryAttribute,
   CategoryNode,
-  CommerceChannel,
   CreateProductRequest,
   CreateProductResponse,
   createProduct,
@@ -19,19 +18,18 @@ import ImageUploader, { UploadedImage } from "./ImageUploader";
 import SearchSelect, { SearchSelectOption } from "./SearchSelect";
 import VariationBuilder, { EMPTY_ROW, VariantRow, buildCombos } from "./VariationBuilder";
 import styles from "./addProduct.module.css";
-import Select from "@/components/ui/Select";
 
 // Rates after the Sept 2025 GST rationalisation; cement, tiles, sanitaryware etc. sit at 18%.
 const GST_RATES = ["0", "5", "18", "40"];
 const BULLET_COUNT = 5;
 const OTHERS = "others";
 
-type SectionId = "identity" | "specs" | "pricing" | "images" | "description" | "tax" | "shipping";
+type SectionId = "identity" | "specs" | "variations" | "images" | "description" | "tax" | "shipping";
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: "identity", label: "Product name & brand" },
   { id: "specs", label: "Specifications" },
-  { id: "pricing", label: "Variations, price & stock" },
+  { id: "variations", label: "Variations" },
   { id: "images", label: "Photos" },
   { id: "description", label: "Description" },
   { id: "tax", label: "GST & compliance" },
@@ -41,7 +39,7 @@ const SECTIONS: { id: SectionId; label: string }[] = [
 function sectionOf(errorKey: string): SectionId {
   if (["title", "brand", "brandName"].includes(errorKey)) return "identity";
   if (errorKey.startsWith("attr:")) return "specs";
-  if (errorKey.startsWith("var") || errorKey.startsWith("single:") || errorKey === "channel") return "pricing";
+  if (errorKey.startsWith("var")) return "variations";
   if (errorKey === "images") return "images";
   if (errorKey === "description") return "description";
   if (errorKey.startsWith("ship:")) return "shipping";
@@ -49,15 +47,6 @@ function sectionOf(errorKey: string): SectionId {
 }
 
 const toFixed2 = (n: number) => (Number.isFinite(n) && n > 0 ? n.toFixed(2) : null);
-
-function validatePrice(mrp: string, price: string, stock: string, prefix: string, errors: Record<string, string>) {
-  const mrpNum = Number(mrp);
-  const priceNum = Number(price);
-  if (!mrp || mrpNum <= 0) errors[`${prefix}mrp`] = "Enter MRP";
-  if (!price || priceNum <= 0) errors[`${prefix}price`] = "Enter selling price";
-  else if (mrpNum > 0 && priceNum > mrpNum) errors[`${prefix}price`] = "Can't exceed MRP";
-  if (stock === "" || !Number.isInteger(Number(stock)) || Number(stock) < 0) errors[`${prefix}stock`] = "Enter stock";
-}
 
 interface NewProductFormProps {
   leaf: CategoryNode;
@@ -79,11 +68,6 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
   const [selection, setSelection] = useState<Record<string, string[]>>({});
   const [units, setUnits] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<Record<string, VariantRow>>({});
-  const [single, setSingle] = useState<VariantRow>(EMPTY_ROW);
-  const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
-  const [commerceChannel, setCommerceChannel] = useState<CommerceChannel | null>(null);
-  const [handlingDays, setHandlingDays] = useState("2");
-  const [maxOrderQty, setMaxOrderQty] = useState("");
 
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [description, setDescription] = useState("");
@@ -150,23 +134,9 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
       if (attr.is_required && !(selection[attr.id] ?? []).length) e[`variationAttr:${attr.id}`] = `Pick at least one ${attr.label.toLowerCase()}`;
     }
 
-    if (combos.length) {
-      const skus = new Map<string, number>();
-      for (const combo of combos) {
-        const row = { ...EMPTY_ROW, ...rows[combo.key] };
-        validatePrice(row.mrp, row.price, row.stock, `var:${combo.key}:`, e);
-        if (row.sku.trim()) skus.set(row.sku.trim(), (skus.get(row.sku.trim()) ?? 0) + 1);
-        if (row.imageStatus === "uploading") e[`var:${combo.key}:sku`] = "Photo still uploading";
-      }
-      for (const combo of combos) {
-        const sku = rows[combo.key]?.sku?.trim();
-        if (sku && (skus.get(sku) ?? 0) > 1) e[`var:${combo.key}:sku`] = "Duplicate SKU";
-      }
-    } else {
-      validatePrice(single.mrp, single.price, single.stock, "single:", e);
+    for (const combo of combos) {
+      if (rows[combo.key]?.imageStatus === "uploading") e[`var:${combo.key}:image`] = "Photo still uploading";
     }
-
-    if (!commerceChannel) e.channel = "Choose a selling channel";
 
     if (!images.some((img) => img.status === "done")) e.images = "Add at least one product photo";
     else if (images.some((img) => img.status === "uploading")) e.images = "Wait for photos to finish uploading";
@@ -176,7 +146,7 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
     if (!gst) e.gst = "Select GST rate";
     if (ean && !/^\d{8,14}$/.test(ean)) e.ean = "Barcode must be 8–14 digits";
     return e;
-  }, [title, brand, brandName, specAttrs, variationAttrs, attrValues, selection, combos, rows, single, commerceChannel, images, description, hsn, gst, ean]);
+  }, [title, brand, brandName, specAttrs, variationAttrs, attrValues, selection, combos, rows, images, description, hsn, gst, ean]);
 
   const visibleErrors = showErrors ? errors : {};
   const sectionHasError = (id: SectionId) => Object.keys(errors).some((key) => sectionOf(key) === id);
@@ -201,17 +171,9 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
     const comboAttributes = (index: number): AttributeValueInput[] =>
       combos[index].values.map((v) => ({ attribute_id: v.attribute.id, value: v.value, unit_of_measure: v.unit }));
 
-    const listingBase = {
-      fulfillment_channel: fulfillment,
-      commerce_channel: commerceChannel ?? undefined,
-      handling_time_days: Number(handlingDays) || 1,
-      max_order_quantity: maxOrderQty ? Number(maxOrderQty) : null,
-      condition: "NEW",
-    };
-
-    const onlyRow = combos.length === 1 ? { ...EMPTY_ROW, ...rows[combos[0].key] } : single;
+    const onlyRow = combos.length === 1 ? { ...EMPTY_ROW, ...rows[combos[0].key] } : EMPTY_ROW;
     const mainImages = images.filter((img) => img.status === "done" && img.url).map((img) => ({ image_url: img.url! }));
-    if (combos.length === 1 && onlyRow.imageUrl) mainImages.unshift({ image_url: onlyRow.imageUrl });
+    if (onlyRow.imageUrl) mainImages.unshift({ image_url: onlyRow.imageUrl });
 
     return {
       category_id: leaf.id,
@@ -234,22 +196,11 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
       is_hazmat: isHazmat,
       images: mainImages,
       attributes: combos.length === 1 ? [...sharedAttributes, ...comboAttributes(0)] : sharedAttributes,
-      initial_listing: {
-        ...listingBase,
-        seller_sku: onlyRow.sku.trim() || undefined,
-        standard_price: onlyRow.mrp,
-        sale_price: onlyRow.price,
-        initial_stock: Number(onlyRow.stock) || 0,
-      },
       variations: isMulti
         ? combos.map((combo, i) => {
-            const row = { ...EMPTY_ROW, ...rows[combo.key] };
+            const row = rows[combo.key] ?? EMPTY_ROW;
             return {
               attributes: comboAttributes(i),
-              seller_sku: row.sku.trim() || undefined,
-              standard_price: row.mrp,
-              sale_price: row.price,
-              initial_stock: Number(row.stock) || 0,
               images: row.imageUrl ? [{ image_url: row.imageUrl }, ...mainImages] : undefined,
             };
           })
@@ -394,20 +345,18 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
             )}
           </section>
 
-          {/* Variations & pricing */}
-          <section id="sec-pricing" className={styles.card}>
-            <div className={styles.cardHead}>
-              <div>
-                <h2>{variationAttrs.length ? "Variations, price & stock" : "Price & stock"}</h2>
-                <p>
-                  {variationAttrs.length
-                    ? `Select every ${variationAttrs.map((a) => a.label.toLowerCase()).join(" and ")} you sell. Each combination becomes its own variant with price and stock.`
-                    : "Set what buyers pay and how many units you have ready to ship."}
-                </p>
+          {/* Variations */}
+          {variationAttrs.length > 0 && (
+            <section id="sec-variations" className={styles.card}>
+              <div className={styles.cardHead}>
+                <div>
+                  <h2>Variations</h2>
+                  <p>
+                    Select every {variationAttrs.map((a) => a.label.toLowerCase()).join(" and ")} this product comes in.
+                    Each combination becomes its own variant with its own ASIN.
+                  </p>
+                </div>
               </div>
-            </div>
-
-            {variationAttrs.length > 0 && (
               <VariationBuilder
                 attributes={variationAttrs}
                 selection={selection}
@@ -419,143 +368,8 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
                 onRowsChange={setRows}
                 errors={visibleErrors}
               />
-            )}
-
-            {combos.length === 0 && (
-              <div className={styles.grid4} style={variationAttrs.length ? { marginTop: 16 } : undefined}>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    MRP (₹) <span className={styles.req}>*</span>
-                  </label>
-                  <input
-                    className={`${styles.input} ${visibleErrors["single:mrp"] ? styles.invalid : ""}`}
-                    type="number"
-                    min={0}
-                    value={single.mrp}
-                    onChange={(e) => setSingle({ ...single, mrp: e.target.value })}
-                  />
-                  {visibleErrors["single:mrp"] && <span className={styles.error}>{visibleErrors["single:mrp"]}</span>}
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Selling price (₹) <span className={styles.req}>*</span>
-                  </label>
-                  <input
-                    className={`${styles.input} ${visibleErrors["single:price"] ? styles.invalid : ""}`}
-                    type="number"
-                    min={0}
-                    value={single.price}
-                    onChange={(e) => setSingle({ ...single, price: e.target.value })}
-                  />
-                  {visibleErrors["single:price"] && <span className={styles.error}>{visibleErrors["single:price"]}</span>}
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Stock <span className={styles.req}>*</span>
-                  </label>
-                  <input
-                    className={`${styles.input} ${visibleErrors["single:stock"] ? styles.invalid : ""}`}
-                    type="number"
-                    min={0}
-                    value={single.stock}
-                    onChange={(e) => setSingle({ ...single, stock: e.target.value })}
-                  />
-                  {visibleErrors["single:stock"] && <span className={styles.error}>{visibleErrors["single:stock"]}</span>}
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>Seller SKU</label>
-                  <input
-                    className={styles.input}
-                    placeholder="Auto-generated"
-                    value={single.sku}
-                    onChange={(e) => setSingle({ ...single, sku: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div style={{ borderTop: "1px solid #f1f5f9", marginTop: 20, paddingTop: 18 }}>
-              <span className={styles.label} style={{ marginBottom: 10 }}>
-                Selling channel <span className={styles.req}>*</span>
-              </span>
-              <div className={styles.channelCards} style={{ marginBottom: visibleErrors.channel ? 16 : 18 }}>
-                <button
-                  type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "BAZAAR" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
-                  onClick={() => setCommerceChannel("BAZAAR")}
-                >
-                  <strong>Bazaar (Pan-India)</strong>
-                  <span>Standard delivery across India via courier / transport.</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "QUICK_COMMERCE" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
-                  onClick={() => setCommerceChannel("QUICK_COMMERCE")}
-                >
-                  <strong>Quick Commerce</strong>
-                  <span>Hyperlocal express delivery within 8–10 km radius.</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.radioCard} ${commerceChannel === "BOTH" ? styles.radioCardOn : ""} ${visibleErrors.channel ? styles.invalid : ""}`}
-                  onClick={() => setCommerceChannel("BOTH")}
-                >
-                  <strong>Both (Hybrid)</strong>
-                  <span>Local buyers get quick delivery + Pan-India gets courier.</span>
-                </button>
-              </div>
-              {visibleErrors.channel && (
-                <span className={styles.error} style={{ display: "block", marginTop: -10, marginBottom: 18 }}>
-                  {visibleErrors.channel}
-                </span>
-              )}
-
-              <span className={styles.label} style={{ marginBottom: 10 }}>
-                Fulfilment
-              </span>
-              <div className={styles.radioCards}>
-                <button
-                  type="button"
-                  className={`${styles.radioCard} ${fulfillment === "FBM" ? styles.radioCardOn : ""}`}
-                  onClick={() => setFulfillment("FBM")}
-                >
-                  <strong>Self ship</strong>
-                  <span>You deliver with your own vehicles or courier.</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.radioCard} ${fulfillment === "FBA" ? styles.radioCardOn : ""}`}
-                  onClick={() => setFulfillment("FBA")}
-                >
-                  <strong>Makaano fulfilled</strong>
-                  <span>Makaano picks up and delivers to the buyer.</span>
-                </button>
-              </div>
-              <div className={styles.grid2} style={{ marginTop: 16 }}>
-                <div className={styles.field}>
-                  <label className={styles.label}>Dispatch within</label>
-                  <Select className={styles.select} value={handlingDays} onChange={(e) => setHandlingDays(e.target.value)}>
-                    {[1, 2, 3, 5, 7].map((d) => (
-                      <option key={d} value={d}>
-                        {d} {d === 1 ? "day" : "days"}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>Max quantity per order</label>
-                  <input
-                    className={styles.input}
-                    type="number"
-                    min={1}
-                    placeholder="No limit"
-                    value={maxOrderQty}
-                    onChange={(e) => setMaxOrderQty(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Images */}
           <section id="sec-images" className={styles.card}>
@@ -767,9 +581,12 @@ export default function NewProductForm({ leaf, path, onChangeCategory, onCreated
             </ul>
             {isMulti && (
               <p className={styles.sidebarNote} style={{ marginTop: 12 }}>
-                {combos.length} variants will be created under one parent listing, each with its own ASIN.
+                {combos.length} variants will be created under one parent product, each with its own ASIN.
               </p>
             )}
+            <p className={styles.sidebarNote} style={{ marginTop: 12 }}>
+              Price and delivery are set later as a listing from Pricing; stock from Inventory.
+            </p>
           </div>
         </aside>
       </div>

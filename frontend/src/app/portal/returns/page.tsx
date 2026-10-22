@@ -19,7 +19,7 @@ import SellerShell from "@/components/layout/SellerShell";
 import ClaimsPanel from "@/components/returns/ClaimsPanel";
 import ReturnDrawer from "@/components/returns/ReturnDrawer";
 import { ACTION_CTA, STATUS_TONE, formatDate, formatINR } from "@/components/returns/returnMeta";
-import styles from "@/components/returns/returns.module.css";
+import styles from "@/components/ui/sellerPage.module.css";
 import Select from "@/components/ui/Select";
 import { ApiError } from "@/services/addProductService";
 import {
@@ -143,7 +143,7 @@ export default function ReturnsPage() {
             <h1>Returns</h1>
             <p>Review return requests, track parcels coming back and refund buyers.</p>
           </div>
-          <button type="button" className={styles.btn} onClick={refresh}>
+          <button type="button" className={`${styles.btn} ${styles.headBtn}`} onClick={refresh}>
             <RefreshCw size={15} className={loading ? styles.spin : undefined} /> Refresh
           </button>
         </div>
@@ -324,7 +324,7 @@ export default function ReturnsPage() {
                       <th>Reason</th>
                       <th>Refund</th>
                       <th>Status</th>
-                      <th aria-label="Action" />
+                      <th style={{ width: 140, textAlign: "right" }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -378,11 +378,11 @@ export default function ReturnsPage() {
                               {r.status_display}
                             </span>
                           </td>
-                          <td style={{ textAlign: "right" }}>
+                          <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                             {next ? (
                               <button
                                 type="button"
-                                className={`${styles.btnPrimary} ${styles.sm}`}
+                                className={`${styles.btnPrimary} ${styles.sm} ${styles.tableActionBtn}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelected(r);
@@ -391,7 +391,14 @@ export default function ReturnsPage() {
                                 {ACTION_CTA[next]}
                               </button>
                             ) : (
-                              <button type="button" className={`${styles.btnGhost} ${styles.sm}`}>
+                              <button
+                                type="button"
+                                className={`${styles.btn} ${styles.sm} ${styles.tableActionBtn}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelected(r);
+                                }}
+                              >
                                 View
                               </button>
                             )}
@@ -412,7 +419,7 @@ export default function ReturnsPage() {
                 <div className={styles.pagerButtons}>
                   <button
                     type="button"
-                    className={`${styles.btn} ${styles.sm}`}
+                    className={`${styles.btn} ${styles.sm} ${styles.pagerBtn}`}
                     disabled={page <= 1}
                     onClick={() => {
                       setLoading(true);
@@ -423,7 +430,7 @@ export default function ReturnsPage() {
                   </button>
                   <button
                     type="button"
-                    className={`${styles.btn} ${styles.sm}`}
+                    className={`${styles.btn} ${styles.sm} ${styles.pagerBtn}`}
                     disabled={page >= data.total_pages}
                     onClick={() => {
                       setLoading(true);

@@ -65,12 +65,13 @@ def brand_count_rows(brands):
     ]
 
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Complete Marketplace Product Catalog API.
     Supports filtering by search query, category, brand, price range, and in-stock status.
     Lookup supports both Product UUID and ASIN (e.g. /products/BM01CEMENT01/).
-    Supports POST (Create Product), PUT/PATCH (Update Product and Listing data).
+    Read-only: sellers create products via /api/seller/products/, edit them via /api/seller/catalog/,
+    and manage offers via /api/listings/.
     """
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
@@ -195,187 +196,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         self.check_object_permissions(self.request, obj)
         return obj
-
-    def create(self, request, *args, **kwargs):
-        from decimal import Decimal
-        from django.utils.text import slugify
-        from common.utils import generate_asin
-        from listings.models import Listing
-        from sellers.models import Seller
-        from warehouses.models import Warehouse, InventoryItem
-
-        data = request.data
-        title = data.get('title')
-        if not title:
-            return Response({'error': 'Title is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Brand lookup or creation
-        brand_val = data.get('brand') or data.get('brand_name') or 'BuildMart Certified'
-        if isinstance(brand_val, dict):
-            brand_val = brand_val.get('name') or 'BuildMart Certified'
-        brand = Brand.objects.filter(Q(id=brand_val) | Q(name__iexact=str(brand_val))).first()
-        if not brand:
-            slug = slugify(str(brand_val)) or 'brand'
-            brand = Brand.objects.create(name=str(brand_val), slug=slug)
-
-        # Category lookup or creation
-        cat_val = data.get('category') or data.get('category_name') or 'Building Materials'
-        if isinstance(cat_val, dict):
-            cat_val = cat_val.get('name') or 'Building Materials'
-        category = Category.objects.filter(Q(id=cat_val) | Q(name__iexact=str(cat_val)) | Q(browse_node_id=str(cat_val))).first()
-        if not category:
-            category = Category.objects.filter(is_leaf=True).first() or Category.objects.first()
-
-        asin = data.get('asin') or generate_asin()
-        while Product.objects.filter(asin=asin).exists():
-            asin = generate_asin()
-
-        product = Product.objects.create(
-            asin=asin,
-            title=title,
-            brand=brand,
-            category=category,
-            model_number=data.get('model_number') or data.get('modelNumber') or '',
-            status=(data.get('status') or CatalogStatus.ACTIVE).upper(),
-            description=data.get('description', '')
-        )
-
-        # Default seller
-        user = request.user if request.user and request.user.is_authenticated else None
-        seller = getattr(user, 'seller_account', None) if user else None
-        if not seller:
-            seller = Seller.objects.filter(store_slug='gikitek').first() or Seller.objects.first()
-
-        price_val = data.get('price') or data.get('standard_price') or 450
-        try:
-            price_val = Decimal(str(price_val))
-        except Exception:
-            price_val = Decimal('450')
-
-        stock_val = data.get('stock') or data.get('available_stock') or 50
-        try:
-            stock_val = int(stock_val)
-        except Exception:
-            stock_val = 50
-
-        sku = data.get('sku') or data.get('seller_sku') or f"SKU-{asin}"
-        channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel') or 'FBA').upper()
-        commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or CommerceChannel.BAZAAR).upper()
-        if commerce not in CommerceChannel.values:
-            return Response({'commerce_channel': 'Choose BAZAAR, QUICK_COMMERCE or BOTH.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if seller:
-            listing = Listing.objects.create(
-                seller=seller,
-                product=product,
-                seller_sku=sku,
-                standard_price=price_val,
-                fulfillment_channel=channel,
-                commerce_channel=commerce,
-                is_buy_box_winner=True,
-                status=product.status
-            )
-
-            wh = Warehouse.objects.first()
-            if wh and stock_val >= 0:
-                InventoryItem.objects.create(
-                    listing=listing,
-                    seller=seller,
-                    warehouse=wh,
-                    available_stock=stock_val
-                )
-
-        serializer = ProductListSerializer(product)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, *args, **kwargs):
-        return self._handle_product_update(request, partial=False)
-
-    def partial_update(self, request, *args, **kwargs):
-        return self._handle_product_update(request, partial=True)
-
-    def _handle_product_update(self, request, partial=False):
-        from decimal import Decimal
-        from django.utils.text import slugify
-        from warehouses.models import Warehouse, InventoryItem
-
-        product = self.get_object()
-        data = request.data
-
-        commerce = None
-        if 'commerce_channel' in data or 'commerceChannel' in data:
-            commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or '').upper()
-            if commerce not in CommerceChannel.values:
-                return Response({'commerce_channel': 'Choose BAZAAR, QUICK_COMMERCE or BOTH.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if 'title' in data:
-            product.title = data['title']
-        if 'status' in data:
-            status_val = data['status'].upper()
-            if status_val in ['ACTIVE', 'INACTIVE', 'DRAFT', 'ARCHIVED']:
-                product.status = status_val
-        if 'model_number' in data or 'modelNumber' in data:
-            product.model_number = data.get('model_number') or data.get('modelNumber')
-        if 'description' in data:
-            product.description = data['description']
-
-        if 'brand' in data:
-            b_val = data['brand']
-            brand = Brand.objects.filter(Q(id=b_val) | Q(name__iexact=str(b_val))).first()
-            if not brand:
-                slug = slugify(str(b_val)) or 'brand'
-                brand = Brand.objects.create(name=str(b_val), slug=slug)
-            product.brand = brand
-
-        if 'category' in data:
-            c_val = data['category']
-            cat = Category.objects.filter(Q(id=c_val) | Q(name__iexact=str(c_val))).first()
-            if cat:
-                product.category = cat
-
-        product.save()
-
-        # Update associated listing if price, stock, sku, or status changed
-        listing = product.listings.first()
-        if listing:
-            if 'price' in data or 'standard_price' in data:
-                p_val = data.get('price') or data.get('standard_price')
-                try:
-                    listing.standard_price = Decimal(str(p_val))
-                except Exception:
-                    pass
-            if 'sku' in data or 'seller_sku' in data:
-                listing.seller_sku = data.get('sku') or data.get('seller_sku')
-            if 'status' in data:
-                listing.status = product.status
-            if 'fulfillment_channel' in data or 'fulfillmentChannel' in data:
-                listing.fulfillment_channel = (data.get('fulfillment_channel') or data.get('fulfillmentChannel')).upper()
-            if commerce:
-                listing.commerce_channel = commerce
-            listing.save()
-
-            if 'stock' in data or 'available_stock' in data:
-                s_val = data.get('stock') if 'stock' in data else data.get('available_stock')
-                try:
-                    s_int = int(s_val)
-                    inv = listing.inventory_items.first()
-                    if inv:
-                        inv.available_stock = s_int
-                        inv.save()
-                    else:
-                        wh = Warehouse.objects.first()
-                        if wh:
-                            InventoryItem.objects.create(
-                                listing=listing,
-                                seller=listing.seller,
-                                warehouse=wh,
-                                available_stock=s_int
-                            )
-                except Exception:
-                    pass
-
-        serializer = ProductListSerializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def offers(self, request, pk=None):

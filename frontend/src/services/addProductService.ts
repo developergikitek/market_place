@@ -68,12 +68,9 @@ export interface OfferInput {
   initial_stock?: number;
 }
 
+/** One child variant of a catalog product: its variation values and optional photos (no price/stock). */
 export interface VariationInput {
   attributes: AttributeValueInput[];
-  seller_sku?: string;
-  standard_price: string;
-  sale_price?: string | null;
-  initial_stock: number;
   images?: ImageInput[];
 }
 
@@ -99,7 +96,6 @@ export interface CreateProductRequest {
   is_hazmat: boolean;
   images: ImageInput[];
   attributes: AttributeValueInput[];
-  initial_listing: OfferInput;
   variations?: VariationInput[];
 }
 
@@ -196,6 +192,30 @@ export async function searchCatalog(filters: {
   if (filters.brandId) params.set("brand", filters.brandId);
   const data = await request<{ results: CatalogSearchResult[]; count: number }>(`/api/catalog/products/?${params}`);
   return { results: data.results, count: data.count };
+}
+
+export interface ProductDetail {
+  id: string;
+  asin: string;
+  title: string;
+  description: string;
+  bullet_points: string[];
+  brand: BrandOption | null;
+  model_number: string | null;
+  part_number: string | null;
+  hsn_code: string | null;
+  gst_rate_percent: string | null;
+  country_of_origin: string | null;
+  manufacturer_details: string | null;
+  is_parent: boolean;
+  images: { id: string; image_url: string; variant_tag: string; sort_order: number }[];
+  attributes: { id: string; attribute_code: string; attribute_label: string; value: string; unit_of_measure: string | null }[];
+  breadcrumbs: { id: string; name: string }[];
+  offers_count: number;
+}
+
+export async function fetchProductDetail(asin: string): Promise<ProductDetail> {
+  return request<ProductDetail>(`/api/catalog/products/${encodeURIComponent(asin)}/`);
 }
 
 export async function uploadProductImage(file: File): Promise<string> {

@@ -1,4 +1,4 @@
-/* Tokens live on every root this module renders: the page plus the drawer/toast that sit outside it. */
+/* Shared Seller Central page styles (returns, pricing, catalog). Tokens live on every root this module renders: the page plus the drawer/toast that sit outside it. */
 .page,
 .drawer,
 .toast {
@@ -60,6 +60,7 @@
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
@@ -115,6 +116,40 @@
   height: 32px;
   padding: 0 12px;
   font-size: 12.5px;
+}
+
+.tableActionBtn {
+  width: 126px;
+  min-width: 126px;
+  max-width: 126px;
+  height: 32px;
+  padding: 0 6px;
+  justify-content: center;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.headBtn {
+  height: 38px;
+  min-width: 104px;
+  padding: 0 16px;
+  justify-content: center;
+}
+
+.drawerBtn {
+  height: 38px;
+  min-width: 120px;
+  padding: 0 16px;
+  font-size: 13px;
+  justify-content: center;
+}
+
+.pagerBtn {
+  min-width: 98px;
+  height: 32px;
+  justify-content: center;
 }
 
 /* ---------- KPI cards ---------- */
@@ -338,10 +373,36 @@ button.kpi:hover {
   overflow-x: auto;
 }
 
+.tableWrapNoScroll {
+  overflow-x: hidden;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
+}
+
+.tableFixed {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tableFixed th {
+  padding: 10px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableFixed td {
+  padding: 12px 8px;
+  overflow: hidden;
+}
+
+.tableFixed .sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .table th {
@@ -397,7 +458,7 @@ button.kpi:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 260px;
+  min-width: 0;
   max-width: 380px;
 }
 
@@ -420,6 +481,7 @@ button.kpi:hover {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: break-word;
 }
 
 .money {
@@ -469,6 +531,12 @@ button.kpi:hover {
 .pagerButtons {
   display: flex;
   gap: 8px;
+}
+
+.pagerButtons button {
+  min-width: 98px;
+  height: 32px;
+  justify-content: center;
 }
 
 /* ---------- States ---------- */
@@ -889,6 +957,17 @@ button.kpi:hover {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.actions button {
+  min-width: 110px;
+  height: 38px;
+  justify-content: center;
+}
+
+.confirm .actions button {
+  min-width: 96px;
+  height: 34px;
 }
 
 .confirm {

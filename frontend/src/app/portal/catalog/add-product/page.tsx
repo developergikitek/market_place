@@ -7,7 +7,7 @@ import BrandMark from "@/components/layout/BrandMark";
 import CategoryPicker from "@/components/add-product/CategoryPicker";
 import ExistingProductFinder from "@/components/add-product/ExistingProductFinder";
 import NewProductForm from "@/components/add-product/NewProductForm";
-import OfferForm from "@/components/add-product/OfferForm";
+import ProductDetailPanel from "@/components/add-product/ProductDetailPanel";
 import { buildCategoryIndex, categoryPath } from "@/components/add-product/categoryTree";
 import {
   ApiError,
@@ -18,17 +18,14 @@ import {
 } from "@/services/addProductService";
 import styles from "@/components/add-product/addProduct.module.css";
 
-type Stage = "choose" | "find" | "offer" | "category" | "details" | "done";
+type Stage = "choose" | "find" | "detail" | "category" | "details" | "done";
 
-type DoneState =
-  | { kind: "offer"; product: CatalogSearchResult; sku: string }
-  | { kind: "product"; result: CreateProductResponse };
+type DoneState = { kind: "product"; result: CreateProductResponse };
 
 const EXISTING_STEPS: { label: string; stages: Stage[] }[] = [
   { label: "Listing type", stages: ["choose"] },
   { label: "Find product", stages: ["find"] },
-  { label: "Your offer", stages: ["offer"] },
-  { label: "Done", stages: ["done"] },
+  { label: "Product details", stages: ["detail"] },
 ];
 
 const NEW_STEPS: { label: string; stages: Stage[] }[] = [
@@ -79,8 +76,8 @@ export default function AddProductPage() {
 
   const heading: Record<Stage, { title: string; sub: string }> = {
     choose: { title: "Add a product", sub: "Sell something already on Makaano, or list a product that's new to the catalog." },
-    find: { title: "Find the product in our catalog", sub: "If it already exists, you only add your price and stock." },
-    offer: { title: "Create your offer", sub: "Set your price, stock and delivery for this product." },
+    find: { title: "Find the product in our catalog", sub: "Check whether the product already exists before creating a new one." },
+    detail: { title: "Catalog product", sub: "Everything buyers see for this ASIN. Create your listing from Pricing to sell it." },
     category: { title: "Select a category", sub: "Pick the most specific category — it decides which details buyers see." },
     details: { title: "Product details", sub: "Fill in the details, variations, photos and tax information." },
     done: { title: "", sub: "" },
@@ -149,12 +146,12 @@ export default function AddProductPage() {
               <span className={styles.modeIcon}>
                 <Search size={22} />
               </span>
-              <h3>Sell an existing product</h3>
-              <p>The product is already listed on Makaano by its brand or another seller.</p>
+              <h3>Find an existing product</h3>
+              <p>The product is already in the Makaano catalog, added by its brand or another seller.</p>
               <ul>
                 <li><Check size={14} /> Search by ASIN, name, category or brand</li>
-                <li><Check size={14} /> Add only your price, stock and delivery</li>
-                <li><Check size={14} /> Live in minutes</li>
+                <li><Check size={14} /> See its photos, specifications and details</li>
+                <li><Check size={14} /> Sell it by creating a listing from Pricing</li>
               </ul>
               <span className={styles.modeCta}>
                 Find product <ArrowRight size={16} />
@@ -190,7 +187,7 @@ export default function AddProductPage() {
             index={index}
             onPick={(product) => {
               setPickedProduct(product);
-              setStage("offer");
+              setStage("detail");
             }}
             onCreateNew={() => {
               setMode("new");
@@ -199,15 +196,8 @@ export default function AddProductPage() {
           />
         )}
 
-        {stage === "offer" && pickedProduct && (
-          <OfferForm
-            product={pickedProduct}
-            onBack={() => setStage("find")}
-            onCreated={(sku) => {
-              setDone({ kind: "offer", product: pickedProduct, sku });
-              setStage("done");
-            }}
-          />
+        {stage === "detail" && pickedProduct && (
+          <ProductDetailPanel asin={pickedProduct.asin} onBack={() => setStage("find")} />
         )}
 
         {stage === "category" && index && (
@@ -280,39 +270,36 @@ export default function AddProductPage() {
             <span className={styles.successIcon}>
               <Check size={28} strokeWidth={2.5} />
             </span>
-            {done.kind === "offer" ? (
-              <>
-                <h1>Your offer is live</h1>
-                <p>
-                  You&apos;re now selling <strong>{done.product.title}</strong> as SKU{" "}
-                  <span className={styles.mono}>{done.sku}</span>.
-                </p>
-              </>
-            ) : (
-              <>
-                <h1>Product submitted</h1>
-                <p>
-                  {done.result.variations.length > 0
-                    ? `${done.result.variations.length} variants were created under one parent product.`
-                    : "Your product has been added to the Makaano catalog."}{" "}
-                  It will appear to buyers after a quick quality check.
-                </p>
-                <div className={styles.asinList}>
-                  <div>
-                    <span>{done.result.is_parent ? "Parent ASIN" : "ASIN"}</span>
-                    <span className={styles.mono}>{done.result.asin}</span>
-                  </div>
-                  {done.result.variations.map((v) => (
-                    <div key={v.asin}>
-                      <span>{v.title}</span>
-                      <span className={styles.mono}>{v.asin}</span>
-                    </div>
-                  ))}
+            <h1>Product submitted</h1>
+            <p>
+              {done.result.variations.length > 0
+                ? `${done.result.variations.length} variants were created under one parent product.`
+                : "Your product has been added to the Makaano catalog."}{" "}
+              It will appear to buyers after a quick quality check.
+            </p>
+            <div className={styles.asinList}>
+              <div>
+                <span>{done.result.is_parent ? "Parent ASIN" : "ASIN"}</span>
+                <span className={styles.mono}>{done.result.asin}</span>
+              </div>
+              {done.result.variations.map((v) => (
+                <div key={v.asin}>
+                  <span>{v.title}</span>
+                  <span className={styles.mono}>{v.asin}</span>
                 </div>
-              </>
-            )}
+              ))}
+            </div>
+            <p className={styles.hint} style={{ marginTop: 12 }}>
+              To start selling it, create a listing with your price from Pricing.
+            </p>
             <div className={styles.successActions}>
-              <button type="button" className={styles.btnPrimary} onClick={startOver}>
+              <Link
+                href={`/pricing?create_listing=${encodeURIComponent(done.result.variations[0]?.asin ?? done.result.asin)}`}
+                className={styles.btnPrimary}
+              >
+                Create listing in Pricing
+              </Link>
+              <button type="button" className={styles.btnSecondary} onClick={startOver}>
                 Add another product
               </button>
               <Link href="/catalog" className={styles.btnSecondary}>

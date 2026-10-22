@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
 import { ApiError } from "@/services/addProductService";
 import { AtoZClaim, respondToClaim } from "@/services/returnsService";
 import { CLAIM_TONE, formatDate, formatINR } from "./returnMeta";
-import styles from "./returns.module.css";
+import styles from "@/components/ui/sellerPage.module.css";
 
 interface ClaimsPanelProps {
   claims: AtoZClaim[] | null;
@@ -74,7 +74,7 @@ function ClaimCard({ claim, onResponded }: { claim: AtoZClaim; onResponded: (c: 
             </span>
             <button
               type="button"
-              className={styles.btnPrimary}
+              className={`${styles.btnPrimary} ${styles.drawerBtn}`}
               disabled={busy || text.trim().length < MIN_RESPONSE}
               onClick={submit}
             >

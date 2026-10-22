@@ -6,7 +6,7 @@ import Select from "@/components/ui/Select";
 import { ApiError } from "@/services/addProductService";
 import { ReturnAction, ReturnRequest, runReturnAction } from "@/services/returnsService";
 import { CARRIERS, STATUS_TONE, STEP_OF, STEPS, formatDate, formatINR } from "./returnMeta";
-import styles from "./returns.module.css";
+import styles from "@/components/ui/sellerPage.module.css";
 
 interface ReturnDrawerProps {
   item: ReturnRequest;
@@ -150,12 +150,12 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
                 <div className={styles.confirm}>
                   Reject this return? The buyer will be notified.
                   <div className={styles.actions}>
-                    <button type="button" className={`${styles.btn} ${styles.sm}`} onClick={() => setConfirmReject(false)}>
+                    <button type="button" className={`${styles.btn} ${styles.drawerBtn}`} onClick={() => setConfirmReject(false)}>
                       Keep it
                     </button>
                     <button
                       type="button"
-                      className={`${styles.btnDanger} ${styles.sm}`}
+                      className={`${styles.btnDanger} ${styles.drawerBtn}`}
                       disabled={!!busy}
                       onClick={() => run("reject")}
                     >
@@ -167,13 +167,13 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
                 <div className={styles.actions}>
                   <button
                     type="button"
-                    className={styles.btnPrimary}
+                    className={`${styles.btnPrimary} ${styles.drawerBtn}`}
                     disabled={!!busy}
                     onClick={() => run("approve", item.restocking_fee_allowed && fee ? { restocking_fee_rate: fee } : {})}
                   >
                     {spinner("approve")} Approve return
                   </button>
-                  <button type="button" className={styles.btnDanger} disabled={!!busy} onClick={() => setConfirmReject(true)}>
+                  <button type="button" className={`${styles.btnDanger} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => setConfirmReject(true)}>
                     Reject
                   </button>
                 </div>
@@ -216,7 +216,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
               <div className={styles.actions}>
                 <button
                   type="button"
-                  className={styles.btnPrimary}
+                  className={`${styles.btnPrimary} ${styles.drawerBtn}`}
                   disabled={!!busy || !tracking.trim()}
                   onClick={() => run("generate_label", { carrier, tracking_number: tracking, label_url: labelUrl })}
                 >
@@ -233,7 +233,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
                 Mark it shipped once {item.return_carrier} has picked it up ({item.return_tracking_number}).
               </p>
               <div className={styles.actions}>
-                <button type="button" className={styles.btnPrimary} disabled={!!busy} onClick={() => run("mark_in_transit")}>
+                <button type="button" className={`${styles.btnPrimary} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => run("mark_in_transit")}>
                   {spinner("mark_in_transit")} Mark as shipped
                 </button>
               </div>
@@ -245,7 +245,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
               <h3>Waiting for the parcel</h3>
               <p>Confirm when the returned item reaches your warehouse so it can be inspected.</p>
               <div className={styles.actions}>
-                <button type="button" className={styles.btnPrimary} disabled={!!busy} onClick={() => run("mark_received")}>
+                <button type="button" className={`${styles.btnPrimary} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => run("mark_received")}>
                   {spinner("mark_received")} Mark as received
                 </button>
               </div>
@@ -293,7 +293,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
               <div className={styles.actions}>
                 <button
                   type="button"
-                  className={styles.btnPrimary}
+                  className={`${styles.btnPrimary} ${styles.drawerBtn}`}
                   disabled={!!busy}
                   onClick={() =>
                     run("inspect", condition === "DAMAGED" && fee ? { condition, restocking_fee_rate: fee } : { condition })
@@ -312,7 +312,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
                 {formatINR(refundPreview)} goes back to the buyer and is deducted from your next settlement.
               </p>
               <div className={styles.actions}>
-                <button type="button" className={styles.btnPrimary} disabled={!!busy} onClick={() => run("issue_refund")}>
+                <button type="button" className={`${styles.btnPrimary} ${styles.drawerBtn}`} disabled={!!busy} onClick={() => run("issue_refund")}>
                   {spinner("issue_refund")} Issue {formatINR(refundPreview)} refund
                 </button>
               </div>
@@ -398,7 +398,7 @@ export default function ReturnDrawer({ item, onClose, onUpdated }: ReturnDrawerP
                 </div>
               </dl>
               {item.return_label_url && (
-                <a href={item.return_label_url} target="_blank" rel="noreferrer" className={styles.btnGhost} style={{ marginTop: 8 }}>
+                <a href={item.return_label_url} target="_blank" rel="noreferrer" className={`${styles.btn} ${styles.sm}`} style={{ marginTop: 8, display: "inline-flex", width: "fit-content" }}>
                   Open label <ExternalLink size={14} />
                 </a>
               )}

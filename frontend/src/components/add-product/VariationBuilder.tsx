@@ -7,11 +7,8 @@ import { validateImageFile } from "./ImageUploader";
 import styles from "./addProduct.module.css";
 import Select from "@/components/ui/Select";
 
+/** Per-variant extras; price and stock belong to listings, so only an optional photo lives here. */
 export interface VariantRow {
-  sku: string;
-  mrp: string;
-  price: string;
-  stock: string;
   imageUrl?: string;
   imagePreview?: string;
   imageStatus?: "uploading" | "done" | "error";
@@ -23,7 +20,7 @@ export interface VariantCombo {
   values: { attribute: CategoryAttribute; value: string; unit?: string }[];
 }
 
-export const EMPTY_ROW: VariantRow = { sku: "", mrp: "", price: "", stock: "" };
+export const EMPTY_ROW: VariantRow = {};
 
 /** Cartesian product of the values picked for each variation attribute. */
 export function buildCombos(
@@ -71,7 +68,6 @@ export default function VariationBuilder({
   errors,
 }: VariationBuilderProps) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [bulk, setBulk] = useState({ mrp: "", price: "", stock: "" });
 
   function toggleValue(attributeId: string, value: string) {
     const current = selection[attributeId] ?? [];
@@ -90,20 +86,6 @@ export default function VariationBuilder({
 
   function updateRow(key: string, patch: Partial<VariantRow>) {
     onRowsChange((prev) => ({ ...prev, [key]: { ...EMPTY_ROW, ...prev[key], ...patch } }));
-  }
-
-  function applyBulk() {
-    onRowsChange((prev) => {
-      const next = { ...prev };
-      for (const combo of combos) {
-        const row = { ...EMPTY_ROW, ...next[combo.key] };
-        if (bulk.mrp) row.mrp = bulk.mrp;
-        if (bulk.price) row.price = bulk.price;
-        if (bulk.stock) row.stock = bulk.stock;
-        next[combo.key] = row;
-      }
-      return next;
-    });
   }
 
   function uploadRowImage(key: string, file: File | undefined) {
@@ -216,54 +198,12 @@ export default function VariationBuilder({
 
       {combos.length > 0 && (
         <>
-          {combos.length > 1 && (
-            <div className={styles.bulkRow}>
-              <div className={styles.field}>
-                <span className={styles.label}>MRP (₹)</span>
-                <input
-                  className={styles.input}
-                  type="number"
-                  min={0}
-                  value={bulk.mrp}
-                  onChange={(e) => setBulk({ ...bulk, mrp: e.target.value })}
-                />
-              </div>
-              <div className={styles.field}>
-                <span className={styles.label}>Selling price (₹)</span>
-                <input
-                  className={styles.input}
-                  type="number"
-                  min={0}
-                  value={bulk.price}
-                  onChange={(e) => setBulk({ ...bulk, price: e.target.value })}
-                />
-              </div>
-              <div className={styles.field}>
-                <span className={styles.label}>Stock</span>
-                <input
-                  className={styles.input}
-                  type="number"
-                  min={0}
-                  value={bulk.stock}
-                  onChange={(e) => setBulk({ ...bulk, stock: e.target.value })}
-                />
-              </div>
-              <button type="button" className={styles.btnSecondary} onClick={applyBulk}>
-                Apply to all {combos.length}
-              </button>
-            </div>
-          )}
-
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
                 <tr>
                   <th>Variant</th>
-                  <th>Seller SKU</th>
-                  <th>MRP (₹) *</th>
-                  <th>Selling price (₹) *</th>
-                  <th>Stock *</th>
-                  <th>Photo</th>
+                  <th style={{ width: 120 }}>Photo</th>
                 </tr>
               </thead>
               <tbody>
@@ -273,45 +213,6 @@ export default function VariationBuilder({
                   return (
                     <tr key={combo.key}>
                       <td className={styles.variantName}>{combo.label}</td>
-                      <td>
-                        <input
-                          className={`${styles.input} ${err("sku") ? styles.invalid : ""}`}
-                          placeholder="Auto"
-                          value={row.sku}
-                          onChange={(e) => updateRow(combo.key, { sku: e.target.value })}
-                        />
-                        {err("sku") && <div className={styles.error}>{err("sku")}</div>}
-                      </td>
-                      <td>
-                        <input
-                          className={`${styles.input} ${err("mrp") ? styles.invalid : ""}`}
-                          type="number"
-                          min={0}
-                          value={row.mrp}
-                          onChange={(e) => updateRow(combo.key, { mrp: e.target.value })}
-                        />
-                        {err("mrp") && <div className={styles.error}>{err("mrp")}</div>}
-                      </td>
-                      <td>
-                        <input
-                          className={`${styles.input} ${err("price") ? styles.invalid : ""}`}
-                          type="number"
-                          min={0}
-                          value={row.price}
-                          onChange={(e) => updateRow(combo.key, { price: e.target.value })}
-                        />
-                        {err("price") && <div className={styles.error}>{err("price")}</div>}
-                      </td>
-                      <td>
-                        <input
-                          className={`${styles.input} ${err("stock") ? styles.invalid : ""}`}
-                          type="number"
-                          min={0}
-                          value={row.stock}
-                          onChange={(e) => updateRow(combo.key, { stock: e.target.value })}
-                        />
-                        {err("stock") && <div className={styles.error}>{err("stock")}</div>}
-                      </td>
                       <td>
                         <label className={styles.miniUpload} title="Photo for this variant (optional)">
                           {row.imagePreview ? (
@@ -335,6 +236,7 @@ export default function VariationBuilder({
                           />
                         </label>
                         {row.imageStatus === "error" && <div className={styles.error}>Failed</div>}
+                        {err("image") && <div className={styles.error}>{err("image")}</div>}
                       </td>
                     </tr>
                   );
