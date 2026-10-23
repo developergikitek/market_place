@@ -84,6 +84,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [loadError, setLoadError] = useState(null);
+  // Guards the Retry button: the ref blocks repeat taps within a single frame, before
+  // the state update that disables the button has rendered
+  const [retrying, setRetrying] = useState(false);
+  const retryingRef = useRef(false);
 
   // Load Plus Jakarta Sans (Matches web-frontend project typography 1:1)
   const [fontsLoaded] = useFonts({
@@ -536,30 +540,8 @@ export default function App() {
             profileOpen && styles.webviewHidden,
           ]}
         >
-          {loadError ? (
-            <View style={[styles.errorContainer, { paddingTop: topInset }]}>
-              <View style={[styles.errorIconCircle, { backgroundColor: theme.gradient[1] }]}>
-                <Feather name="wifi-off" size={36} color={theme.accent} />
-              </View>
-              <Text style={styles.errorTitle}>Your internet seems a bit wonky</Text>
-              <Text style={styles.errorMessage}>
-                We couldn&apos;t load this page. Check your Wi-Fi or mobile data and try again.
-              </Text>
-              <TouchableOpacity
-                style={[styles.retryButton, { backgroundColor: theme.accent }]}
-                activeOpacity={0.85}
-                onPress={() => {
-                  setLoadError(null);
-                  webViewRef.current?.reload();
-                }}
-              >
-                <Feather name="refresh-cw" size={16} color={theme.accentInk} />
-                <Text style={[styles.retryButtonText, { color: theme.accentInk }]}>Retry</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <WebView
-              ref={webViewRef}
+          <WebView
+            ref={webViewRef}
               source={{
                 uri: config.webviewUrl?.includes('?')
                   ? `${config.webviewUrl}&native=1`
@@ -725,6 +707,8 @@ export default function App() {
               }}
               onLoadEnd={() => {
                 // SSR HTML is on screen now; the page's PAGE_VIEWED after hydration also clears it
+                retryingRef.current = false;
+                setRetrying(false);
                 if (!pendingPageRef.current) markPageReady(null);
                 setHasLoadedOnce(true);
                 sendToWebView(webViewRef, 'NATIVE_SHELL_INIT', { version: config.version });
@@ -737,14 +721,54 @@ export default function App() {
                 console.log('WebView error: ', nativeEvent);
                 setLoadError(nativeEvent.description || 'Connection failed');
                 setLoading(false);
+                retryingRef.current = false;
+                setRetrying(false);
               }}
+              // Drawn by the WebView itself, over the native view, so Android's built-in
+              // "Webpage not available" page is never visible. Swapping the WebView out via
+              // state instead left a frame where that page showed, which repeated fast taps
+              // on Retry turned into a flicker.
+              renderError={() => (
+                <View style={[styles.errorContainer, styles.webviewOverlayFill, { paddingTop: topInset }]}>
+                  <View style={[styles.errorIconCircle, { backgroundColor: theme.gradient[1] }]}>
+                    <Feather name="wifi-off" size={36} color={theme.accent} />
+                  </View>
+                  <Text style={styles.errorTitle}>Your internet seems a bit wonky</Text>
+                  <Text style={styles.errorMessage}>
+                    We couldn&apos;t load this page. Check your Wi-Fi or mobile data and try again.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.retryButton, { backgroundColor: theme.accent }, retrying && styles.retryButtonBusy]}
+                    activeOpacity={0.85}
+                    disabled={retrying}
+                    onPress={() => {
+                      // One reload at a time: without this, fast taps queue reloads that each
+                      // fail and re-render, which is what made the error page flash through
+                      if (retryingRef.current) return;
+                      retryingRef.current = true;
+                      setRetrying(true);
+                      setLoadError(null);
+                      webViewRef.current?.reload();
+                    }}
+                  >
+                    <Feather name="refresh-cw" size={16} color={theme.accentInk} />
+                    <Text style={[styles.retryButtonText, { color: theme.accentInk }]}>
+                      {retrying ? 'Retrying...' : 'Retry'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              // The app draws its own skeleton; an empty view keeps the library's default
+              // spinner from stacking on top of it during a reload
+              renderLoading={() => (
+                <View style={styles.webviewLoadingPlaceholder} pointerEvents="none" />
+              )}
               javaScriptEnabled={true}
               domStorageEnabled={true}
               allowsInlineMediaPlayback={true}
               mixedContentMode="always"
               pullToRefreshEnabled={true}
             />
-          )}
         </View>
 
         {/* Native Skeleton Shimmer Placeholder (Swiggy / Blinkit style): covers only the content
@@ -929,6 +953,27 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 28,
     borderRadius: 12,
+  },
+  retryButtonBusy: {
+    opacity: 0.6,
+  },
+  // renderError/renderLoading are returned raw to the WebView, which absolute-fills only its
+  // own default views — ours must position themselves or they sit beside the page, not over it
+  webviewOverlayFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  // Transparent: the app's own skeleton is the loading state, this only replaces the
+  // library's default spinner so the two don't stack
+  webviewLoadingPlaceholder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   retryButtonText: {
     fontFamily: 'PlusJakartaSans-ExtraBold',
