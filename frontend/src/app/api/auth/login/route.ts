@@ -6,14 +6,14 @@ const DJANGO_API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_A
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { identifier, phone, email, password } = body;
+    const { identifier, phone, email, username, password } = body;
 
-    // Django expects 'phone' (which can be a phone number or email string) and 'password'
-    const loginIdentifier = (identifier || phone || email || "").toString().trim();
+    // Django accepts phone, email, username, or identifier along with password
+    const loginIdentifier = (identifier || phone || email || username || "").toString().trim();
 
     if (!loginIdentifier || !password) {
       return NextResponse.json(
-        { success: false, message: "Please provide both mobile/email and password." },
+        { success: false, message: "Please provide your mobile, email, or username and password." },
         { status: 400 }
       );
     }
@@ -24,7 +24,10 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phone: loginIdentifier,
+        phone: phone || loginIdentifier,
+        email: email || undefined,
+        username: username || undefined,
+        identifier: loginIdentifier,
         password: password,
       }),
     });
@@ -90,7 +93,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to connect to authentication server. Please ensure backend is running.",
+        message: "Unable to connect to server. Please try again shortly.",
       },
       { status: 500 }
     );

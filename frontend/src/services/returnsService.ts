@@ -141,17 +141,21 @@ export async function fetchReturnsSummary(): Promise<ReturnsSummary> {
   return request("/api/portal/returns/summary/");
 }
 
+import { triggerPortalBadgesRefresh } from "@/context/BadgesContext";
+
 /** Run a lifecycle action; `body` carries the action's inputs (fee rate, carrier, condition…). */
 export async function runReturnAction(
   id: string,
   action: ReturnAction,
   body: Record<string, unknown> = {}
 ): Promise<ReturnRequest> {
-  return request(`/api/portal/returns/${id}/${action}/`, {
+  const result = await request<ReturnRequest>(`/api/portal/returns/${id}/${action}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  triggerPortalBadgesRefresh();
+  return result;
 }
 
 export async function fetchClaims(): Promise<Paginated<AtoZClaim>> {
@@ -163,9 +167,11 @@ export async function fetchClaimsSummary(): Promise<ClaimsSummary> {
 }
 
 export async function respondToClaim(id: string, response: string): Promise<AtoZClaim> {
-  return request(`/api/portal/returns/claims/${id}/respond/`, {
+  const result = await request<AtoZClaim>(`/api/portal/returns/claims/${id}/respond/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ response }),
   });
+  triggerPortalBadgesRefresh();
+  return result;
 }

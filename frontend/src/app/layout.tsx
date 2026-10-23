@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { BadgesProvider } from "@/context/BadgesContext";
 
 export const metadata: Metadata = {
   title: "Makaano — Sell construction materials online",
@@ -19,7 +20,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#040711" />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <BadgesProvider>{children}</BadgesProvider>
+        </AuthProvider>
       </body>
     </html>
   );

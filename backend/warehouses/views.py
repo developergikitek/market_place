@@ -111,8 +111,7 @@ class InventoryViewSet(viewsets.GenericViewSet):
     """
     serializer_class = InventoryListingSerializer
     pagination_class = StandardResultsSetPagination
-    # Open like the other seller APIs until the seller frontend sends JWTs.
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def _seller(self):
         return resolve_request_seller(self.request)

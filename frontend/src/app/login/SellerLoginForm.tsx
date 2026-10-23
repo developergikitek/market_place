@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -16,8 +16,14 @@ import {
   Building2,
   UserPlus,
   ShieldCheck,
+  KeyRound,
+  RotateCcw,
+  Edit2,
 } from "lucide-react";
-import { loginWithBackend } from "@/services/authService";
+import { loginWithBackend, sendOtp, verifyOtp } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
+
+
 
 export interface SellerLoginFormProps {
   initialMethod?: "email" | "phone";
@@ -35,14 +41,23 @@ export default function SellerLoginForm({
   showHeaderFooter = true,
 }: SellerLoginFormProps) {
   const router = useRouter();
+  const { refreshUser, setUser } = useAuth();
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">(initialMethod);
+
 
   const handleSignUp = () => {
     if (onGoToRegister) {
       onGoToRegister();
     } else {
-      router.push("/portal/dashboard");
+      router.push("/signup/seller");
     }
+  };
+
+  // Full page load, not router.push: the client router may still hold the logged-out redirect from
+  // /portal/* to /login, and a fresh load also lets AuthProvider pick up the new session.
+  const goToPortal = () => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/portal/dashboard");
   };
 
   useEffect(() => {
@@ -53,9 +68,26 @@ export default function SellerLoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [mobileNumber, setMobileNumber] = useState("");
 
+  // OTP Flow States
+  const [otpStep, setOtpStep] = useState<"PHONE" | "OTP">("PHONE");
+  const [sessionId, setSessionId] = useState("");
+  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [debugOtp, setDebugOtp] = useState<string | null>(null);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Countdown timer for Resend OTP
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setCooldownSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -63,11 +95,50 @@ export default function SellerLoginForm({
     setErrorMsg("");
   };
 
+  const handleOtpDigitChange = (index: number, val: string) => {
+    const clean = val.replace(/\D/g, "");
+    if (!clean) {
+      const next = [...otpDigits];
+      next[index] = "";
+      setOtpDigits(next);
+      return;
+    }
+
+    // Handle full paste
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split("");
+      const next = [...otpDigits];
+      pasted.forEach((digit, i) => {
+        if (i < 6) next[i] = digit;
+      });
+      setOtpDigits(next);
+      setErrorMsg("");
+      const targetFocus = Math.min(5, pasted.length);
+      otpInputRefs.current[targetFocus]?.focus();
+      return;
+    }
+
+    const next = [...otpDigits];
+    next[index] = clean.slice(-1);
+    setOtpDigits(next);
+    setErrorMsg("");
+
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const identifier = email.trim();
     if (!identifier) {
-      setErrorMsg("Please enter your registered email address or mobile number");
+      setErrorMsg("Please enter your registered email address");
       return;
     }
     if (!password.trim()) {
@@ -79,12 +150,16 @@ export default function SellerLoginForm({
     setErrorMsg("");
 
     try {
-      await loginWithBackend(identifier, password);
+      const res = await loginWithBackend(identifier, password);
+      if (res?.user) {
+        setUser(res.user);
+      }
+      await refreshUser();
       setIsSuccess(true);
       if (onLoginSuccess) {
         onLoginSuccess(identifier);
       } else {
-        router.push("/portal/dashboard");
+        goToPortal();
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
@@ -93,14 +168,10 @@ export default function SellerLoginForm({
     }
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mobileNumber.length < 10) {
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (mobileNumber.length !== 10) {
       setErrorMsg("Please enter a valid 10-digit mobile number");
-      return;
-    }
-    if (!password.trim()) {
-      setErrorMsg("Please enter your account password");
       return;
     }
 
@@ -108,19 +179,58 @@ export default function SellerLoginForm({
     setErrorMsg("");
 
     try {
-      await loginWithBackend(mobileNumber, password);
-      setIsSuccess(true);
-      if (onLoginSuccess) {
-        onLoginSuccess(mobileNumber);
-      } else {
-        router.push("/portal/dashboard");
-      }
+      const res = await sendOtp(mobileNumber, "SELLER_LOGIN");
+      if (res.session_id) setSessionId(res.session_id);
+      setCooldownSeconds(res.resend_cooldown_seconds || 60);
+      if (res.debug_otp) setDebugOtp(res.debug_otp);
+      setOtpStep("OTP");
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 150);
     } catch (err: any) {
-      setErrorMsg(err.message || "Invalid credentials. Please verify your phone/email and password.");
+      setErrorMsg(err.message || "Failed to send OTP. Please check mobile number.");
+      if (err.session_id) setSessionId(err.session_id);
+      if (err.resend_cooldown_seconds) setCooldownSeconds(err.resend_cooldown_seconds);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fullOtp = otpDigits.join("");
+    if (fullOtp.length !== 6) {
+      setErrorMsg("Please enter the complete 6-digit OTP code");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await verifyOtp({
+        session_id: sessionId || undefined,
+        phone: mobileNumber,
+        otp: fullOtp,
+        purpose: "SELLER_LOGIN",
+      });
+      if (res?.user) {
+        setUser(res.user);
+      }
+      await refreshUser();
+      setIsSuccess(true);
+      if (onLoginSuccess) {
+        onLoginSuccess(mobileNumber);
+      } else {
+        goToPortal();
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Invalid OTP. Please check and try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const formBody = (
     <div
@@ -161,7 +271,11 @@ export default function SellerLoginForm({
               marginBottom: "6px",
             }}
           >
-            {loginMethod === "email" ? "Seller Login" : "Mobile Login"}
+            {loginMethod === "email"
+              ? "Seller Login"
+              : otpStep === "OTP"
+              ? "Verify OTP"
+              : "Mobile & OTP Login"}
           </h1>
           <p
             style={{
@@ -174,44 +288,11 @@ export default function SellerLoginForm({
           >
             {loginMethod === "email"
               ? "Sign in with your registered email & password"
+              : otpStep === "OTP"
+              ? `Enter the 6-digit code sent to +91 ${mobileNumber}`
               : "Sign in with your registered mobile number & OTP"}
-            {" • "}
-            <span
-              onClick={handleSignUp}
-              style={{
-                color: "#C2410C",
-                fontWeight: 700,
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-            >
-              Sign Up
-            </span>
           </p>
-        </div>
 
-        {/* 3D Login Shield Graphic */}
-        <div
-          style={{
-            position: "relative",
-            width: "84px",
-            height: "84px",
-            borderRadius: "18px",
-            overflow: "hidden",
-            boxShadow: "0 8px 20px -4px rgba(194, 65, 12, 0.25)",
-            border: "2px solid rgba(194, 65, 12, 0.25)",
-            background: "#ffffff",
-            flexShrink: 0,
-          }}
-        >
-          <Image
-            src="/images/seller-login-3d.jpg"
-            alt="3D Seller Login Security Shield"
-            fill
-            sizes="84px"
-            style={{ objectFit: "cover" }}
-            priority
-          />
         </div>
       </div>
 
@@ -260,16 +341,16 @@ export default function SellerLoginForm({
                     zIndex: 1,
                   }}
                 >
-                  Email or Mobile Number
+                  Registered Email
                 </span>
                 <input
-                  type="text"
+                  type="email"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     setErrorMsg("");
                   }}
-                  placeholder="seller@gikitek.com or 7408108617"
+                  placeholder="Enter registered email"
                   style={{
                     width: "100%",
                     height: "52px",
@@ -552,265 +633,413 @@ export default function SellerLoginForm({
         </form>
       )}
 
-      {/* MODE 2: LOGIN WITH PHONE */}
+      {/* MODE 2: LOGIN WITH PHONE & OTP */}
       {loginMethod === "phone" && (
-        <form
-          onSubmit={handlePhoneSubmit}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            flex: 1,
-          }}
-        >
-          {/* Field: Mobile Number */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "50%",
-                background: "rgba(245, 158, 11, 0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#d97706",
-                flexShrink: 0,
-              }}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
+          {/* SUB-STEP 1: ENTER MOBILE NUMBER */}
+          {otpStep === "PHONE" && (
+            <form
+              onSubmit={handleSendOtp}
+              style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}
             >
-              <Phone size={20} />
-            </div>
-
-            <div style={{ flex: 1, position: "relative" }}>
-              <div style={{ position: "relative", width: "100%", display: "flex" }}>
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "-9px",
-                    left: "16px",
-                    background: "#ffffff",
-                    padding: "0 6px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "#64748b",
-                    letterSpacing: "0.2px",
-                    zIndex: 1,
-                  }}
-                >
-                  Mobile Number
-                </span>
-
+              {/* Field: Mobile Number */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div
                   style={{
-                    width: "100%",
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "50%",
+                    background: "rgba(245, 158, 11, 0.12)",
                     display: "flex",
                     alignItems: "center",
-                    border: "1.5px solid #e2e8f0",
-                    borderRadius: "9999px",
-                    background: "#ffffff",
-                    overflow: "hidden",
+                    justifyContent: "center",
+                    color: "#d97706",
+                    flexShrink: 0,
                   }}
                 >
-                  <div
-                    style={{
-                      padding: "0 14px",
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#0B1220",
-                      borderRight: "1px solid #e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <span>🇮🇳</span>
-                    <span>+91</span>
-                  </div>
+                  <Phone size={20} />
+                </div>
 
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={mobileNumber}
-                    onChange={handlePhoneChange}
-                    placeholder="10-digit mobile number"
-                    style={{
-                      flex: 1,
-                      height: "52px",
-                      border: "none",
-                      padding: "0 16px",
-                      fontSize: "14.5px",
-                      fontWeight: 600,
-                      color: "#0B1220",
-                      outline: "none",
-                      background: "transparent",
-                    }}
-                  />
+                <div style={{ flex: 1, position: "relative" }}>
+                  <div style={{ position: "relative", width: "100%", display: "flex" }}>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "-9px",
+                        left: "16px",
+                        background: "#ffffff",
+                        padding: "0 6px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#64748b",
+                        letterSpacing: "0.2px",
+                        zIndex: 1,
+                      }}
+                    >
+                      Mobile Number
+                    </span>
+
+                    <div
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1.5px solid #e2e8f0",
+                        borderRadius: "9999px",
+                        background: "#ffffff",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: "0 14px",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          color: "#0B1220",
+                          borderRight: "1px solid #e2e8f0",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <span>🇮🇳</span>
+                        <span>+91</span>
+                      </div>
+
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={mobileNumber}
+                        onChange={handlePhoneChange}
+                        placeholder="10-digit mobile number"
+                        style={{
+                          flex: 1,
+                          height: "52px",
+                          border: "none",
+                          padding: "0 16px",
+                          fontSize: "14.5px",
+                          fontWeight: 600,
+                          color: "#0B1220",
+                          outline: "none",
+                          background: "transparent",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Field: Password for Mobile Login */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "50%",
-                background: "rgba(245, 158, 11, 0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#d97706",
-                flexShrink: 0,
-              }}
-            >
-              <Lock size={20} />
-            </div>
-
-            <div style={{ flex: 1, position: "relative" }}>
-              <div style={{ position: "relative", width: "100%" }}>
-                <span
+              {/* Error Banner */}
+              {errorMsg && (
+                <div
                   style={{
-                    position: "absolute",
-                    top: "-9px",
-                    left: "16px",
-                    background: "#ffffff",
-                    padding: "0 6px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "#64748b",
-                    letterSpacing: "0.2px",
-                    zIndex: 1,
-                  }}
-                >
-                  Password
-                </span>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrorMsg("");
-                  }}
-                  placeholder="Enter your account password"
-                  style={{
-                    width: "100%",
-                    height: "52px",
-                    borderRadius: "9999px",
-                    border: "1.5px solid #e2e8f0",
-                    padding: "0 48px 0 18px",
-                    fontSize: "14.5px",
-                    fontWeight: 600,
-                    color: "#0B1220",
-                    outline: "none",
-                    background: "#ffffff",
-                    transition: "all 0.15s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#C2410C";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "#e2e8f0";
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "16px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    color: "#94a3b8",
-                    cursor: "pointer",
-                    padding: 0,
                     display: "flex",
                     alignItems: "center",
+                    gap: "8px",
+                    background: "#fef2f2",
+                    border: "1px solid #fee2e2",
+                    borderRadius: "12px",
+                    padding: "10px 14px",
+                    color: "#dc2626",
+                    fontSize: "13px",
+                    fontWeight: 600,
                   }}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-          </div>
+                  <AlertCircle size={16} />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
-          {/* Error Banner */}
-          {errorMsg && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "#fef2f2",
-                border: "1px solid #fee2e2",
-                borderRadius: "12px",
-                padding: "10px 14px",
-                color: "#dc2626",
-                fontSize: "13px",
-                fontWeight: 600,
-              }}
-            >
-              <AlertCircle size={16} />
-              <span>{errorMsg}</span>
-            </div>
+              {/* Get OTP Button */}
+              <button
+                type="submit"
+                disabled={isLoading || mobileNumber.length !== 10}
+                style={{
+                  width: "100%",
+                  height: "56px",
+                  background:
+                    mobileNumber.length === 10
+                      ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                      : "#cbd5e1",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "9999px",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  cursor: isLoading || mobileNumber.length !== 10 ? "not-allowed" : "pointer",
+                  boxShadow:
+                    mobileNumber.length === 10
+                      ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
+                      : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                  marginTop: "4px",
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw size={18} className="animate-spin" />
+                    <span>Sending OTP...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Get OTP</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </form>
           )}
 
-          {/* Sign In Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: "100%",
-              height: "56px",
-              background: "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "9999px",
-              fontSize: "16px",
-              fontWeight: 700,
-              cursor: isLoading ? "not-allowed" : "pointer",
-              boxShadow: "0 10px 25px -5px rgba(194, 65, 12, 0.45)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              transition: "all 0.2s ease",
-              marginTop: "4px",
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading) {
-                e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 14px 28px -5px rgba(194, 65, 12, 0.55)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(194, 65, 12, 0.45)";
-            }}
-          >
-            {isLoading ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                <span>Signing In...</span>
-              </>
-            ) : isSuccess ? (
-              <>
-                <CheckCircle2 size={18} />
-                <span>Logged In Successfully!</span>
-              </>
-            ) : (
-              <>
-                <span>Sign In to Seller Portal</span>
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
+          {/* SUB-STEP 2: ENTER & VERIFY OTP */}
+          {otpStep === "OTP" && (
+            <form
+              onSubmit={handleVerifyOtp}
+              style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}
+            >
+              {/* Mobile Number Summary Pill with Edit Action */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  background: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "12px",
+                  padding: "10px 14px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Phone size={15} style={{ color: "#C2410C" }} />
+                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#0B1220" }}>
+                    +91 {mobileNumber}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpStep("PHONE");
+                    setErrorMsg("");
+                    setOtpDigits(["", "", "", "", "", ""]);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "none",
+                    border: "none",
+                    color: "#C2410C",
+                    fontSize: "12.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  <Edit2 size={13} />
+                  <span>Edit Number</span>
+                </button>
+              </div>
+
+              {/* 6-Digit OTP Inputs */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    marginBottom: "10px",
+                    textAlign: "center",
+                  }}
+                >
+                  Enter the 6-digit OTP code:
+                </label>
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        otpInputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      style={{
+                        width: "46px",
+                        height: "52px",
+                        textAlign: "center",
+                        fontSize: "20px",
+                        fontWeight: 800,
+                        color: "#0B1220",
+                        background: digit ? "#FFF7ED" : "#ffffff",
+                        border: digit ? "2px solid #C2410C" : "1.5px solid #e2e8f0",
+                        borderRadius: "12px",
+                        outline: "none",
+                        transition: "all 0.15s ease",
+                        boxShadow: digit ? "0 2px 8px rgba(194, 65, 12, 0.15)" : "none",
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = "#C2410C";
+                        e.target.style.boxShadow = "0 0 0 3px rgba(194, 65, 12, 0.15)";
+                      }}
+                      onBlur={(e) => {
+                        if (!digit) {
+                          e.target.style.borderColor = "#e2e8f0";
+                          e.target.style.boxShadow = "none";
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Dev Helper Pill (Auto-fill debug OTP) */}
+              {debugOtp && (
+                <div
+                  onClick={() => {
+                    const digits = debugOtp.slice(0, 6).split("");
+                    setOtpDigits(digits);
+                    setErrorMsg("");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    background: "rgba(245, 158, 11, 0.1)",
+                    border: "1px dashed #d97706",
+                    borderRadius: "10px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    color: "#b45309",
+                    cursor: "pointer",
+                    userSelect: "none",
+                  }}
+                  title="Click to auto-fill test OTP"
+                >
+                  <KeyRound size={13} />
+                  <span>Dev OTP: <strong>{debugOtp}</strong> (Click to auto-fill)</span>
+                </div>
+              )}
+
+              {/* Resend Cooldown Row */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#64748b",
+                }}
+              >
+                {cooldownSeconds > 0 ? (
+                  <span>
+                    Resend OTP in{" "}
+                    <strong style={{ color: "#C2410C" }}>
+                      00:{cooldownSeconds < 10 ? `0${cooldownSeconds}` : cooldownSeconds}
+                    </strong>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    disabled={isLoading}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#C2410C",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <RotateCcw size={14} />
+                    <span>Resend OTP</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Error Banner */}
+              {errorMsg && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "#fef2f2",
+                    border: "1px solid #fee2e2",
+                    borderRadius: "12px",
+                    padding: "10px 14px",
+                    color: "#dc2626",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                  }}
+                >
+                  <AlertCircle size={16} />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {/* Verify & Sign In Button */}
+              <button
+                type="submit"
+                disabled={isLoading || otpDigits.join("").length !== 6}
+                style={{
+                  width: "100%",
+                  height: "56px",
+                  background:
+                    otpDigits.join("").length === 6
+                      ? "linear-gradient(135deg, #9A3412 0%, #C2410C 100%)"
+                      : "#cbd5e1",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "9999px",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  cursor: isLoading || otpDigits.join("").length !== 6 ? "not-allowed" : "pointer",
+                  boxShadow:
+                    otpDigits.join("").length === 6
+                      ? "0 10px 25px -5px rgba(194, 65, 12, 0.45)"
+                      : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                  marginTop: "4px",
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw size={18} className="animate-spin" />
+                    <span>Verifying OTP...</span>
+                  </>
+                ) : isSuccess ? (
+                  <>
+                    <CheckCircle2 size={18} />
+                    <span>Verified! Redirecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={18} />
+                    <span>Verify &amp; Sign In</span>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
 
           {/* Bottom Switcher Option: Login with Email */}
           <div
@@ -832,6 +1061,8 @@ export default function SellerLoginForm({
             type="button"
             onClick={() => {
               setErrorMsg("");
+              setOtpStep("PHONE");
+              setOtpDigits(["", "", "", "", "", ""]);
               if (onSwitchMethod) {
                 onSwitchMethod("email");
               } else {
@@ -884,8 +1115,9 @@ export default function SellerLoginForm({
             </div>
             <span>Sign in using Business Email</span>
           </button>
-        </form>
+        </div>
       )}
+
 
       {/* Divider */}
       <div

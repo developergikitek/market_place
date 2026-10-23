@@ -14,6 +14,7 @@ import {
   Search,
   ShoppingBag,
   Truck,
+  Wallet,
 } from "lucide-react";
 import SellerShell from "@/components/layout/SellerShell";
 import OrderDrawer from "@/components/orders/OrderDrawer";
@@ -50,6 +51,7 @@ export default function OrdersPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [fulfillment, setFulfillment] = useState("");
+  const [payment, setPayment] = useState<"" | "COD" | "PREPAID">("");
   const [late, setLate] = useState(false);
   const [ordering, setOrdering] = useState("newest");
   const [page, setPage] = useState(1);
@@ -69,11 +71,11 @@ export default function OrdersPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const filters = { tab, search, date_from: dateFrom, date_to: dateTo, fulfillment, late, ordering, page };
+  const filters = { tab, search, date_from: dateFrom, date_to: dateTo, fulfillment, payment, late, ordering, page };
 
   useEffect(() => {
     let cancelled = false;
-    fetchOrders({ tab, search, date_from: dateFrom, date_to: dateTo, fulfillment, late, ordering, page })
+    fetchOrders({ tab, search, date_from: dateFrom, date_to: dateTo, fulfillment, payment, late, ordering, page })
       .then((res) => {
         if (cancelled) return;
         setData(res);
@@ -84,7 +86,7 @@ export default function OrdersPage() {
     return () => {
       cancelled = true;
     };
-  }, [tab, search, dateFrom, dateTo, fulfillment, late, ordering, page, reloadKey]);
+  }, [tab, search, dateFrom, dateTo, fulfillment, payment, late, ordering, page, reloadKey]);
 
   const loadSummary = useCallback(() => {
     fetchOrderSummary().then(setSummary).catch(() => setSummary(null));
@@ -112,7 +114,7 @@ export default function OrdersPage() {
   }
 
   const results = data?.results ?? [];
-  const filtered = !!(search || dateFrom || dateTo || fulfillment || late);
+  const filtered = !!(search || dateFrom || dateTo || fulfillment || payment || late);
 
   return (
     <SellerShell active="Orders">
@@ -127,7 +129,7 @@ export default function OrdersPage() {
           </a>
         </div>
 
-        <div className={styles.kpis}>
+        <div className={`${styles.kpis} ${styles.kpis6}`}>
           <button type="button" className={styles.kpi} onClick={() => changeFilter(() => { setTab("unshipped"); setLate(false); })}>
             <div className={styles.kpiTop}>
               To ship
@@ -180,6 +182,18 @@ export default function OrdersPage() {
             <div className={styles.kpiValue}>{summary ? formatINR(summary.avg_order_value_30d) : "—"}</div>
             <div className={styles.kpiNote}>Your items per order, last 30 days</div>
           </div>
+          <button type="button" className={styles.kpi} onClick={() => changeFilter(() => { setTab(""); setLate(false); setPayment("COD"); })}>
+            <div className={styles.kpiTop}>
+              COD to collect
+              <span className={styles.kpiIcon} style={{ background: "#e0f2fe", color: "#0369a1" }}>
+                <Wallet size={17} />
+              </span>
+            </div>
+            <div className={styles.kpiValue}>{summary ? formatINR(summary.cod_to_collect) : "—"}</div>
+            <div className={styles.kpiNote}>
+              {summary ? `${summary.cod_open_orders} cash-on-delivery order${summary.cod_open_orders === 1 ? "" : "s"} not yet delivered` : " "}
+            </div>
+          </button>
         </div>
 
         <div className={styles.card}>
@@ -239,6 +253,11 @@ export default function OrdersPage() {
               <option value="">All fulfilment</option>
               <option value="FBM">Self ship</option>
               <option value="FBA">Makaano fulfilled</option>
+            </Select>
+            <Select value={payment} onChange={(e) => changeFilter(() => setPayment(e.target.value as "" | "COD" | "PREPAID"))} className={styles.filterSelect}>
+              <option value="">All payments</option>
+              <option value="COD">Cash on delivery</option>
+              <option value="PREPAID">Prepaid</option>
             </Select>
             <Select value={ordering} onChange={(e) => changeFilter(() => setOrdering(e.target.value))} className={styles.filterSelect}>
               <option value="newest">Newest first</option>
@@ -328,8 +347,21 @@ export default function OrdersPage() {
                         </td>
                         <td className={styles.money}>{formatINR(o.seller_total)}</td>
                         <td>
-                          <div style={{ fontSize: 13 }}>{o.payment?.method ?? "—"}</div>
-                          <div className={styles.sub}>{o.payment?.status_display}</div>
+                          {o.payment?.is_cod ? (
+                            <>
+                              <span className={styles.pill} style={{ background: "#e0f2fe", color: "#075985" }}>COD</span>
+                              <div className={styles.sub}>
+                                {o.payment.cod_to_collect
+                                  ? `Collect ${formatINR(o.payment.cod_to_collect)}`
+                                  : o.payment.status === "CAPTURED" ? "Cash collected" : "Not collected"}
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ fontSize: 13 }}>{o.payment?.method ?? "—"}</div>
+                              <div className={styles.sub}>{o.payment?.status_display}</div>
+                            </>
+                          )}
                         </td>
                         <td>
                           <span className={styles.pill} style={{ background: tone.bg, color: tone.fg }}>

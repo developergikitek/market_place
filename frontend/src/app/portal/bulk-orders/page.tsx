@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
+  LogOut,
   CheckCircle2,
   AlertCircle,
   FileText,
@@ -47,6 +48,7 @@ import {
   Info,
 } from "lucide-react";
 import Select from "@/components/ui/Select";
+import SellerShell from "@/components/layout/SellerShell";
 
 export type BulkOrderStatus = "New" | "Quoted" | "UnderReview" | "Ordered" | "Rejected";
 
@@ -190,8 +192,6 @@ const INITIAL_BULK_ORDERS: BulkOrderRecord[] = [
 
 export default function BulkOrdersPage() {
   const [orders, setOrders] = useState<BulkOrderRecord[]>(INITIAL_BULK_ORDERS);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isBulkSubmenuOpen, setIsBulkSubmenuOpen] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<"all" | "quotesSent">("all");
 
   // Filters state
@@ -346,416 +346,9 @@ export default function BulkOrdersPage() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        background: "#F8FAFC",
-        fontFamily: "var(--font-sans), sans-serif",
-      }}
-    >
-      {/* ========================================================= */}
-      {/* TOP HEADER NAVIGATION BAR (Makaano Navy Theme)  */}
-      {/* ========================================================= */}
-      <header
-        style={{
-          height: "64px",
-          background: "#0B1220",
-          borderBottom: "1px solid rgba(148, 163, 184, 0.25)",
-          boxShadow: "0 4px 16px rgba(11, 18, 32, 0.3)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 24px",
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-        }}
-      >
-        {/* Left: Brand Logo + Toggle + Greeting */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          {/* Hamburger Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            aria-label={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            title={isSidebarOpen ? "Collapse sidebar menu" : "Expand sidebar menu"}
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "50%",
-              cursor: "pointer",
-              color: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "40px",
-              height: "40px",
-              marginLeft: "-8px",
-              transition: "background 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            <Menu size={22} />
-          </button>
-
-          <Link
-            href="/dashboard"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              textDecoration: "none",
-            }}
-          >
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-                <path d="M16 3L28 12V16L16 7L4 16V12L16 3Z" fill="#F97316" />
-                <path d="M8 15L16 9L24 15V27H8V15Z" fill="#F97316" fillOpacity="0.9" />
-                <path d="M13 18H19V27H13V18Z" fill="#0B1220" />
-                <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#F97316" />
-              </svg>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.5px", lineHeight: 1 }}>
-                Makaan<span style={{ color: "#F97316" }}>o</span>
-              </span>
-              <span style={{ fontSize: "7.5px", fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.4px" }}>
-                Seller Central
-              </span>
-            </div>
-          </Link>
-
-          <div style={{ width: "1px", height: "24px", background: "rgba(255, 255, 255, 0.15)" }} />
-
-
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13.5px", color: "#E2E8F0", fontWeight: 500 }}>
-              Welcome back,{" "}
-              <strong style={{ color: "#ffffff", fontWeight: 700 }}>BuildWell Traders Pvt. Ltd.</strong>
-            </span>
-            <span
-              style={{
-                background: "rgba(249, 115, 22, 0.18)",
-                color: "#F97316",
-                border: "1px solid rgba(249, 115, 22, 0.45)",
-                fontSize: "11px",
-                fontWeight: 700,
-                padding: "2px 8px",
-                borderRadius: "6px",
-                fontFamily: "var(--font-mono), monospace",
-              }}
-            >
-              SELLER12345
-            </span>
-            {/* <span
-              style={{
-                background: "rgba(16, 185, 129, 0.18)",
-                color: "#34d399",
-                border: "1px solid rgba(16, 185, 129, 0.45)",
-                fontSize: "11px",
-                fontWeight: 700,
-                padding: "2px 8px",
-                borderRadius: "9999px",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <Check size={12} strokeWidth={3} />
-              <span>Verified</span>
-            </span> */}
-          </div>
-        </div>
-
-        {/* Right Header Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          {/*
-          <button
-            type="button"
-            title="Search"
-            style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
-          >
-            <Search size={19} />
-          </button>
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              title="Notifications"
-              style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
-            >
-              <Bell size={19} />
-              <span
-                style={{
-                  position: "absolute",
-                  top: "2px",
-                  right: "2px",
-                  background: "#ef4444",
-                  color: "#ffffff",
-                  fontSize: "9.5px",
-                  fontWeight: 800,
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "2px solid #172036",
-                }}
-              >
-                12
-              </span>
-            </button>
-          </div>
-          <button
-            type="button"
-            title="Help"
-            style={{ background: "transparent", border: "none", color: "#CBD5E1", cursor: "pointer", padding: "6px" }}
-          >
-            <HelpCircle size={19} />
-          </button>
-          */}
-
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "6px", cursor: "pointer" }}>
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
-                color: "#ffffff",
-                fontWeight: 800,
-                fontSize: "14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(194, 65, 12, 0.4)",
-              }}
-            >
-              A
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
-                Arjun Sharma
-              </span>
-              <span style={{ fontSize: "11px", color: "#CBD5E1", fontWeight: 500 }}>Admin</span>
-            </div>
-            <ChevronDown size={14} color="#CBD5E1" />
-          </div>
-        </div>
-      </header>
-
-      {/* ========================================================= */}
-      {/* MAIN CONTAINER: SIDEBAR + CONTENT                         */}
-      {/* ========================================================= */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* ======================================================= */}
-        {/* LEFT MAKAANO NAVY UNIFIED SIDEBAR                     */}
-        {/* ======================================================= */}
-        <aside
-          style={{
-            width: isSidebarOpen ? "250px" : "0px",
-            minWidth: isSidebarOpen ? "250px" : "0px",
-            maxWidth: isSidebarOpen ? "250px" : "0px",
-            background: "#111A2E",
-            color: "#CBD5E1",
-            display: "flex",
-            flexDirection: "column",
-            flexShrink: 0,
-            borderRight: isSidebarOpen ? "1px solid rgba(148, 163, 184, 0.25)" : "none",
-            padding: isSidebarOpen ? "16px 12px" : "0px",
-            gap: "4px",
-            transition:
-              "width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s ease, opacity 0.2s ease",
-            overflowY: isSidebarOpen ? "auto" : "hidden",
-            overflowX: "hidden",
-            opacity: isSidebarOpen ? 1 : 0,
-          }}
-        >
-          {/* Navigation Links */}
-          {[
-            { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-            { label: "Orders", href: "/orders", icon: Package, badge: "128" },
-            { label: "Bulk orders", href: "/bulk-orders", icon: Layers },
-            { label: "Catalog", href: "/catalog", icon: BookOpen },
-            { label: "Inventory", href: "/inventory", icon: Boxes },
-            { label: "Pricing", href: "/pricing", icon: Tag },
-            { label: "Payments", href: "/payments", icon: CreditCard },
-            { label: "Returns", href: "/returns", icon: RotateCcw, badge: "8" },
-            { label: "Payouts", icon: Wallet },
-          ].map((item, idx) => {
-            const Icon = item.icon;
-            const isActive = item.label === "Bulk orders";
-
-            const linkStyle: React.CSSProperties = isActive
-              ? {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  padding: "9px 12px",
-                  borderRadius: "8px",
-                  color: "#ffffff",
-                  background: "linear-gradient(135deg, #C2410C 0%, #9A3412 100%)",
-                  border: "1px solid rgba(249, 115, 22, 0.5)",
-                  fontSize: "13.5px",
-                  fontWeight: 700,
-                  width: "100%",
-                  boxSizing: "border-box",
-                  boxShadow: "0 4px 14px rgba(154, 52, 18, 0.4)",
-                  textDecoration: "none",
-                }
-              : {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  padding: "9px 12px",
-                  borderRadius: "8px",
-                  color: "#CBD5E1",
-                  background: "transparent",
-                  textDecoration: "none",
-                  fontSize: "13.5px",
-                  fontWeight: 500,
-                  width: "100%",
-                  boxSizing: "border-box",
-                };
-
-            if (item.href) {
-              return (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  title={item.label}
-                  style={linkStyle}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Icon size={18} color={isActive ? "#ffffff" : undefined} />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge ? (
-                    <span
-                      style={{
-                        background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(194, 65, 12, 0.35)",
-                        color: isActive ? "#ffffff" : "#FDBA74",
-                        border: isActive ? "1px solid rgba(255, 255, 255, 0.3)" : "1px solid rgba(249, 115, 22, 0.4)",
-                        fontSize: "11px",
-                        padding: "1px 6px",
-                        borderRadius: "9999px",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            }
-
-            return (
-              <button
-                key={idx}
-                type="button"
-                title={item.label}
-                style={{
-                  ...linkStyle,
-                  border: isActive ? "1px solid rgba(249, 115, 22, 0.5)" : "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Icon size={18} color={isActive ? "#ffffff" : undefined} />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge ? (
-                  <span
-                    style={{
-                      background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(194, 65, 12, 0.35)",
-                      color: isActive ? "#ffffff" : "#FDBA74",
-                      border: isActive ? "1px solid rgba(255, 255, 255, 0.3)" : "1px solid rgba(249, 115, 22, 0.4)",
-                      fontSize: "11px",
-                      padding: "1px 6px",
-                      borderRadius: "9999px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-
-          <div
-            style={{
-              marginTop: "auto",
-              paddingTop: "16px",
-              borderTop: "1px solid rgba(148, 163, 184, 0.2)",
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(148, 163, 184, 0.25)",
-                borderRadius: "10px",
-                padding: "12px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#ffffff", fontSize: "12.5px", fontWeight: 700 }}>
-                <HelpCircle size={15} color="#F97316" />
-                <span>Need Help?</span>
-              </div>
-              <span style={{ fontSize: "11px", color: "#CBD5E1" }}>
-                Our support team is here
-              </span>
-              <a
-                href="#support"
-                style={{
-                  color: "#F97316",
-                  fontSize: "11.5px",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  marginTop: "4px",
-                  display: "inline-block",
-                }}
-              >
-                Contact Support →
-              </a>
-            </div>
-            <div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "12px", paddingLeft: "4px" }}>
-              © 2025 Makaano.<br />All rights reserved.
-            </div>
-          </div>
-        </aside>
-
-        {/* ======================================================= */}
-        {/* MAIN WORKSPACE                                          */}
-        {/* ======================================================= */}
-        <main
-          style={{
-            flex: 1,
-            padding: "24px 32px",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-          }}
-        >
-          {/* Toast Notification */}
+    <SellerShell active="Bulk orders">
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  {/* Toast Notification */}
           {toastMessage && (
             <div
               style={{
@@ -1808,7 +1401,6 @@ export default function BulkOrdersPage() {
               </div>
             </div>
           </div>
-        </main>
       </div>
 
       {/* ========================================================= */}
@@ -2193,6 +1785,6 @@ export default function BulkOrdersPage() {
           </div>
         </div>
       )}
-    </div>
+    </SellerShell>
   );
 }

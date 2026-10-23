@@ -91,22 +91,35 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    phone = serializers.CharField(required=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.CharField(required=False, allow_blank=True)
+    username = serializers.CharField(required=False, allow_blank=True)
+    identifier = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
 
     def validate(self, attrs):
-        phone = attrs.get('phone', '').strip()
+        # Resolve identifier from any provided field (phone, email, username, or generic identifier)
+        raw_identifier = (
+            attrs.get('phone') or
+            attrs.get('email') or
+            attrs.get('username') or
+            attrs.get('identifier') or
+            ''
+        ).strip()
         password = attrs.get('password')
 
-        # Allow login by phone, email, or username
-        user = User.objects.filter(phone=phone).first()
-        if not user and '@' in phone:
-            user = User.objects.filter(email=phone.lower()).first()
-        if not user:
-            user = User.objects.filter(username=phone).first()
+        if not raw_identifier:
+            raise serializers.ValidationError("Please provide your phone, email, or username.")
+
+        # Allow login by matching against actual database columns: phone, email, or username
+        user = (
+            User.objects.filter(phone=raw_identifier).first() or
+            User.objects.filter(email__iexact=raw_identifier).first() or
+            User.objects.filter(username__iexact=raw_identifier).first()
+        )
 
         if not user or not user.check_password(password):
-            raise serializers.ValidationError("Invalid mobile number, username, or password.")
+            raise serializers.ValidationError("Invalid credentials. Please check your phone/email/username and password.")
 
         if not user.is_active:
             raise serializers.ValidationError("User account is inactive or disabled.")
@@ -123,3 +136,103 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Current password is incorrect.")
         return value
+
+
+class SendOTPSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=True)
+    purpose = serializers.ChoiceField(
+        choices=[
+            ("SELLER_LOGIN", "Seller Login"),
+            ("SELLER_SIGNUP", "Seller Registration"),
+            ("CUSTOMER_LOGIN", "Customer Login"),
+            ("PASSWORD_RESET", "Password Reset"),
+            ("BANK_UPDATE", "Bank Account Update"),
+            ("ORDER_DELIVERY", "Order Delivery Confirmation"),
+        ],
+        default="SELLER_LOGIN",
+    )
+    channel = serializers.ChoiceField(
+        choices=[("SMS", "SMS"), ("WHATSAPP", "WhatsApp"), ("EMAIL", "Email")],
+        default="SMS",
+    )
+
+    def validate_phone(self, value):
+        cleaned = value.strip().replace(" ", "").replace("-", "")
+        # Remove +91 or 91 if present for 10-digit standard Indian phone numbers
+        if cleaned.startswith("+91"):
+            cleaned = cleaned[3:]
+        elif cleaned.startswith("91") and len(cleaned) == 12:
+            cleaned = cleaned[2:]
+
+        if not cleaned.isdigit() or len(cleaned) < 10:
+            raise serializers.ValidationError("Please provide a valid 10-digit mobile number.")
+        return cleaned
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    session_id = serializers.UUIDField(required=False)
+    phone = serializers.CharField(required=False)
+    otp = serializers.CharField(required=True, min_length=4, max_length=8)
+    purpose = serializers.ChoiceField(
+        choices=[
+            ("SELLER_LOGIN", "Seller Login"),
+            ("SELLER_SIGNUP", "Seller Registration"),
+            ("CUSTOMER_LOGIN", "Customer Login"),
+            ("PASSWORD_RESET", "Password Reset"),
+            ("BANK_UPDATE", "Bank Account Update"),
+            ("ORDER_DELIVERY", "Order Delivery Confirmation"),
+        ],
+        default="SELLER_LOGIN",
+        required=False,
+    )
+
+    # Optional device binding fields
+    device_id = serializers.CharField(required=False, allow_blank=True)
+    platform = serializers.CharField(required=False, allow_blank=True)
+    device_model = serializers.CharField(required=False, allow_blank=True)
+    os_version = serializers.CharField(required=False, allow_blank=True)
+    app_version = serializers.CharField(required=False, allow_blank=True)
+    push_token = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_otp(self, value):
+        cleaned = value.strip()
+        if not cleaned.isdigit():
+            raise serializers.ValidationError("OTP must be numeric digits only.")
+        return cleaned
+
+    def validate(self, attrs):
+        if not attrs.get('session_id') and not attrs.get('phone'):
+            raise serializers.ValidationError("Either 'session_id' or 'phone' must be provided.")
+        if attrs.get('phone'):
+            cleaned = attrs['phone'].strip().replace(" ", "").replace("-", "")
+            if cleaned.startswith("+91"):
+                cleaned = cleaned[3:]
+            elif cleaned.startswith("91") and len(cleaned) == 12:
+                cleaned = cleaned[2:]
+            attrs['phone'] = cleaned
+        return attrs
+
+
+class UserDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import UserDevice
+        model = UserDevice
+        fields = [
+            'id', 'device_id', 'platform', 'device_model', 'os_version',
+            'app_version', 'is_trusted', 'is_active', 'first_seen_at', 'last_seen_at'
+        ]
+        read_only_fields = ['id', 'first_seen_at', 'last_seen_at']
+
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    device = UserDeviceSerializer(read_only=True)
+
+    class Meta:
+        from .models import UserSession
+        model = UserSession
+        fields = [
+            'id', 'device', 'status', 'ip_address', 'city', 'country',
+            'user_agent', 'last_activity_at', 'expires_at', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'last_activity_at']
+
