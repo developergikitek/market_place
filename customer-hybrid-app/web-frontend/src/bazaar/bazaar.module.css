@@ -1,0 +1,426 @@
+/* ============================================================
+   BAZAAR — item-first catalogue (Blinkit / Zepto density)
+   Colours come from the shared tokens in globals.css so the page continues the native
+   header gradient: Bazaar runs the NEUTRAL section theme (orange accent, light surface).
+============================================================ */
+
+.screen {
+  min-height: 100%;
+  background: var(--bg-canvas);
+  padding-bottom: 96px;
+}
+
+/* ---------- Hero: delivery promise + search ---------- */
+.hero {
+  background: linear-gradient(180deg, var(--hero-from, #f3f5fa) 0%, var(--bg-canvas) 100%);
+  padding: 14px 16px 16px;
+}
+
+.etaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.etaBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--accent-orange-deep);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 16px -6px rgba(249, 115, 22, 0.7);
+}
+
+.etaCopy {
+  min-width: 0;
+}
+
+.etaTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-dark);
+}
+
+.etaSub {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.searchIcon {
+  padding-left: 14px;
+  font-size: 18px;
+  color: var(--text-dim);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 12px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.searchInput::placeholder {
+  color: var(--text-dim);
+}
+
+/* Chrome's own clear control, replaced by .searchClear */
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.searchClear {
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ---------- Category rail ---------- */
+.rail {
+  display: flex;
+  gap: 14px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.railItem {
+  flex: 0 0 auto;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.railArt {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--bg-white);
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.railItemActive .railArt {
+  border-color: var(--accent-orange-deep);
+  transform: translateY(-2px);
+}
+
+.railImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.railLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-body);
+}
+
+.railItemActive .railLabel {
+  color: var(--accent-orange-deep);
+  font-weight: 800;
+}
+
+/* ---------- Offer strip ---------- */
+.offers {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.offers::-webkit-scrollbar {
+  display: none;
+}
+
+.offerCard {
+  flex: 0 0 auto;
+  min-width: 156px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+}
+
+.offerTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.offerSub {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.offerCode {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--accent-orange-deep);
+  background: #fff7ed;
+  color: var(--accent-orange-deep);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Shelves ---------- */
+.shelf {
+  padding: 0 16px 20px;
+}
+
+.shelfHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.shelfTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-dark);
+}
+
+.shelfCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.shelfLink {
+  border: 0;
+  background: transparent;
+  color: var(--accent-orange-deep);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Two across on phones; wider viewports simply fit more of the same tile */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* ---------- Product card ---------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-white);
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.cardMedia {
+  position: relative;
+  background: var(--bg-subtle);
+  aspect-ratio: 1 / 1;
+}
+
+.cardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.discountTag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 3px 8px;
+  border-bottom-right-radius: 10px;
+  background: var(--retail-green);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Overlaps the image edge so the tile stays compact, as Blinkit does */
+.addSlot {
+  position: absolute;
+  right: 8px;
+  bottom: -14px;
+  z-index: 3;
+}
+
+.addBtn {
+  min-width: 64px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--retail-green);
+  background: var(--retail-green-light);
+  color: var(--retail-green);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 10px -4px rgba(14, 138, 66, 0.5);
+}
+
+.addBtn:active {
+  transform: scale(0.96);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  min-width: 64px;
+  border-radius: 10px;
+  background: var(--retail-green);
+  box-shadow: 0 4px 10px -4px rgba(14, 138, 66, 0.6);
+}
+
+.stepperBtn {
+  width: 24px;
+  padding: 7px 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepperQty {
+  flex: 1;
+  text-align: center;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.cardBody {
+  /* top clears the ADD control hanging off the image */
+  padding: 20px 10px 12px;
+}
+
+.cardName {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-dark);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 34px;
+}
+
+.cardPack {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.price {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.mrp {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+.dealer {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Empty state ---------- */
+.empty {
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.emptySub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
