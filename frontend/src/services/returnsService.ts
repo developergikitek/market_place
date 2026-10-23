@@ -40,7 +40,7 @@ export interface ReturnRequest {
   unit_price: string;
   item_total: string;
   seller_sku: string;
-  fulfillment_channel: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   product: { asin: string; title: string; brand: string | null; image: string | null };
   customer: { name: string; phone: string | null; city: string | null; state: string | null };
   return_carrier: string | null;

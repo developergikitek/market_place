@@ -248,15 +248,15 @@ export default function EditListingDrawer({ listing, onClose, onSaved }: EditLis
           <section className={styles.section}>
             <h3>Delivery</h3>
             <div className={styles.choice}>
-              {(["FBM", "FBA"] as const).map((f) => (
+              {(["SF", "MF"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
                   className={`${styles.choiceCard} ${form.fulfillment_channel === f ? styles.choiceOn : ""}`}
                   onClick={() => setForm({ ...form, fulfillment_channel: f })}
                 >
-                  <strong>{f === "FBM" ? "Self ship" : "Makaano fulfilled"}</strong>
-                  <span>{f === "FBM" ? "Your vehicles or courier" : "We pick up and deliver"}</span>
+                  <strong>{f === "SF" ? "Seller Fulfilled (SF)" : "Makaano Fulfilled (MF)"}</strong>
+                  <span>{f === "SF" ? "Your vehicles or courier" : "We pick up and deliver"}</span>
                 </button>
               ))}
             </div>

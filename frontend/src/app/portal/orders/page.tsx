@@ -251,8 +251,8 @@ export default function OrdersPage() {
             />
             <Select value={fulfillment} onChange={(e) => changeFilter(() => setFulfillment(e.target.value))} className={styles.filterSelect}>
               <option value="">All fulfilment</option>
-              <option value="FBM">Self ship</option>
-              <option value="FBA">Makaano fulfilled</option>
+              <option value="MF">Makaano Fulfilled (MF)</option>
+              <option value="SF">Seller Fulfilled (SF)</option>
             </Select>
             <Select value={payment} onChange={(e) => changeFilter(() => setPayment(e.target.value as "" | "COD" | "PREPAID"))} className={styles.filterSelect}>
               <option value="">All payments</option>

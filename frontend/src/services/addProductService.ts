@@ -59,7 +59,7 @@ export type CommerceChannel = "BAZAAR" | "QUICK_COMMERCE" | "BOTH";
 export interface OfferInput {
   seller_sku?: string;
   condition?: string;
-  fulfillment_channel: "MAKAANO_FULFILLED" | "SELLER_FULFILLED" | "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   commerce_channel?: CommerceChannel;
   handling_time_days: number;
   max_order_quantity?: number | null;

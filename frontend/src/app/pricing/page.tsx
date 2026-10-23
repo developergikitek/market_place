@@ -216,8 +216,8 @@ export default function PricingPage() {
             </Select>
             <Select value={fulfillment} onChange={(e) => changeFilter(() => setFulfillment(e.target.value))} className={styles.filterSelect}>
               <option value="">All fulfilment</option>
-              <option value="FBM">Self ship</option>
-              <option value="FBA">Makaano fulfilled</option>
+              <option value="MF">Makaano Fulfilled (MF)</option>
+              <option value="SF">Seller Fulfilled (SF)</option>
             </Select>
           </div>
 
@@ -298,7 +298,7 @@ export default function PricingPage() {
                         </td>
                         <td>
                           <div className={styles.rma} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.seller_sku}</div>
-                          <div className={styles.sub}>{l.fulfillment_channel === "FBA" ? "Makaano fulfilled" : "Self ship"}</div>
+                          <div className={styles.sub}>{l.fulfillment_channel === "MF" ? "Makaano Fulfilled (MF)" : "Seller Fulfilled (SF)"}</div>
                         </td>
                         <td>
                           <span className={styles.pill} style={{ background: tone.bg, color: tone.fg }}>

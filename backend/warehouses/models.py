@@ -9,7 +9,7 @@ class Warehouse(models.Model):
     id = models.CharField(max_length=64, primary_key=True, default=generate_id, editable=False)
     code = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=255)
-    type = models.CharField(max_length=50, choices=WarehouseType.choices, default=WarehouseType.FBA_FULFILLMENT_CENTER)
+    type = models.CharField(max_length=50, choices=WarehouseType.choices, default=WarehouseType.MF_FULFILLMENT_CENTER)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state_or_province = models.CharField(max_length=100)

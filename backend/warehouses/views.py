@@ -15,7 +15,7 @@ from warehouses.models import InventoryItem, InventoryMovement, Warehouse
 # Reasons a seller may pick by hand, per adjustment mode. Order reservations/dispatches and
 # return restocks are written by the order and returns flows, never typed in here.
 MANUAL_REASONS = {
-    'add': [InventoryMovementReason.FBA_INBOUND_RECEIVED, InventoryMovementReason.CYCLE_COUNT_ADJUSTMENT],
+    'add': [InventoryMovementReason.MF_INBOUND_RECEIVED, InventoryMovementReason.CYCLE_COUNT_ADJUSTMENT],
     'remove': [
         InventoryMovementReason.DAMAGED_IN_WAREHOUSE, InventoryMovementReason.DISPOSED,
         InventoryMovementReason.SELLER_REMOVAL_ORDER, InventoryMovementReason.CYCLE_COUNT_ADJUSTMENT,

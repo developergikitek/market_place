@@ -49,7 +49,7 @@ export default function CreateListingModal({ initialAsin, onClose, onCreated }: 
 
   const [offer, setOffer] = useState({ sku: "", condition: "NEW", mrp: "", price: "", stock: "", handlingDays: "2", maxOrderQty: "" });
   const [channel, setChannel] = useState<CommerceChannel | null>(null);
-  const [fulfillment, setFulfillment] = useState<"FBM" | "FBA">("FBM");
+  const [fulfillment, setFulfillment] = useState<"SF" | "MF">("SF");
   const [showErrors, setShowErrors] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
@@ -305,18 +305,18 @@ export default function CreateListingModal({ initialAsin, onClose, onCreated }: 
               <div className={styles.cards2}>
                 <button
                   type="button"
-                  className={`${styles.card} ${fulfillment === "FBM" ? styles.cardOn : ""}`}
-                  onClick={() => setFulfillment("FBM")}
+                  className={`${styles.card} ${fulfillment === "SF" ? styles.cardOn : ""}`}
+                  onClick={() => setFulfillment("SF")}
                 >
-                  <strong>Self ship</strong>
+                  <strong>Seller Fulfilled (SF)</strong>
                   <span>Your vehicles or courier.</span>
                 </button>
                 <button
                   type="button"
-                  className={`${styles.card} ${fulfillment === "FBA" ? styles.cardOn : ""}`}
-                  onClick={() => setFulfillment("FBA")}
+                  className={`${styles.card} ${fulfillment === "MF" ? styles.cardOn : ""}`}
+                  onClick={() => setFulfillment("MF")}
                 >
-                  <strong>Makaano fulfilled</strong>
+                  <strong>Makaano Fulfilled (MF)</strong>
                   <span>We pick up and deliver.</span>
                 </button>
               </div>

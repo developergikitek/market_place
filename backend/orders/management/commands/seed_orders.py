@@ -178,7 +178,7 @@ class Command(BaseCommand):
                 unit_price=unit, total_price=total, item_tax_amount=line_tax, item_shipping_fee=ship_fee,
                 item_discount_amount=D('0'), referral_fee_charged=(total * D('0.06')).quantize(D('0.01')),
                 closing_fee_charged=D('20.00'),
-                fba_fulfillment_fee=D('45.00') * qty if listing.fulfillment_channel == FulfillmentChannel.MAKAANO_FULFILLED else D('0'),
+                mf_fulfillment_fee=D('45.00') * qty if listing.fulfillment_channel == FulfillmentChannel.MF else D('0'),
                 gift_wrap_requested=False, gift_wrap_fee=D('0'),
             )
 

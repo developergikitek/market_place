@@ -97,7 +97,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
                 seller=seller,
                 product=product,
                 condition=attrs.get('condition', ProductCondition.NEW),
-                fulfillment_channel=attrs.get('fulfillment_channel', FulfillmentChannel.MAKAANO_FULFILLED),
+                fulfillment_channel=attrs.get('fulfillment_channel', FulfillmentChannel.MF),
             ).exists():
                 raise serializers.ValidationError(
                     "You already sell this product in this condition and fulfilment mode. "
@@ -162,7 +162,7 @@ class SellerListingSerializer(serializers.ModelSerializer):
                 )
                 InventoryMovement.objects.create(
                     inventory_item=item, quantity_change=initial_stock, balance_after=initial_stock,
-                    reason=InventoryMovementReason.FBA_INBOUND_RECEIVED, reference_note="Opening stock for new listing",
+                    reason=InventoryMovementReason.MF_INBOUND_RECEIVED, reference_note="Opening stock for new listing",
                 )
 
         return listing

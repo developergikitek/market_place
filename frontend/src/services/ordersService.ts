@@ -8,7 +8,7 @@ export interface OrderLine {
   status: string;
   status_display: string;
   seller_sku: string;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   product: { asin: string; title: string; image: string | null };
   quantity: number;
   unit_price: string;
@@ -18,7 +18,7 @@ export interface OrderLine {
   item_discount_amount: string;
   referral_fee_charged: string;
   closing_fee_charged: string;
-  fba_fulfillment_fee: string;
+  mf_fulfillment_fee: string;
   gift_wrap_requested: boolean;
   fees_total: string;
   net_earning: string;

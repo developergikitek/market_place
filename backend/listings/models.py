@@ -13,7 +13,7 @@ class Listing(models.Model):
     seller_sku = models.CharField(max_length=100)
     condition = models.CharField(max_length=50, choices=ProductCondition.choices, default=ProductCondition.NEW)
     condition_note = models.TextField(null=True, blank=True)
-    fulfillment_channel = models.CharField(max_length=30, choices=FulfillmentChannel.choices, default=FulfillmentChannel.MAKAANO_FULFILLED)
+    fulfillment_channel = models.CharField(max_length=30, choices=FulfillmentChannel.choices, default=FulfillmentChannel.MF)
     commerce_channel = models.CharField(
         max_length=20,
         choices=CommerceChannel.choices,

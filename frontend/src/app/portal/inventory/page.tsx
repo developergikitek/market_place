@@ -274,7 +274,7 @@ export default function InventoryPage() {
                         </td>
                         <td>
                           <div className={styles.rma} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.seller_sku}</div>
-                          <div className={styles.sub}>{r.fulfillment_channel === "FBA" ? "Makaano fulfilled" : "Self ship"}</div>
+                          <div className={styles.sub}>{r.fulfillment_channel === "MF" ? "Makaano Fulfilled (MF)" : "Seller Fulfilled (SF)"}</div>
                         </td>
                         <td>
                           <div className={styles.money} style={{ fontSize: 15 }}>{r.available.toLocaleString("en-IN")}</div>

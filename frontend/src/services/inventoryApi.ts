@@ -31,7 +31,7 @@ export interface InventoryRow {
   id: string;
   seller_sku: string;
   status: string;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   product: { asin: string; title: string; brand: string | null; image: string | null };
   items: InventoryItem[];
   available: number;

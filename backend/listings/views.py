@@ -172,10 +172,12 @@ class SellerListingViewSet(viewsets.ModelViewSet):
 
         if 'fulfillment_channel' in data or 'fulfillmentChannel' in data:
             channel = str(data.get('fulfillment_channel') or data.get('fulfillmentChannel') or '').upper()
-            if channel in FulfillmentChannel.values:
-                listing.fulfillment_channel = channel
+            if channel in (FulfillmentChannel.MF, 'MAKAANO_FULFILLED', 'MAKAANO'):
+                listing.fulfillment_channel = FulfillmentChannel.MF
+            elif channel in (FulfillmentChannel.SF, 'SELLER_FULFILLED', 'SELLER'):
+                listing.fulfillment_channel = FulfillmentChannel.SF
             else:
-                errors['fulfillment_channel'] = "Choose FBA or FBM."
+                errors['fulfillment_channel'] = "Choose MF (Makaano Fulfilled) or SF (Seller Fulfilled)."
 
         if 'commerce_channel' in data or 'commerceChannel' in data:
             commerce = str(data.get('commerce_channel') or data.get('commerceChannel') or '').upper()

@@ -19,7 +19,7 @@ export interface Listing {
   };
   condition: string;
   condition_note: string | null;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   fulfillment_channel_display: string;
   commerce_channel: CommerceChannel;
   commerce_channel_display: string;
@@ -72,7 +72,7 @@ export type ListingPatch = Partial<{
   minimum_price: string | null;
   maximum_price: string | null;
   commerce_channel: CommerceChannel;
-  fulfillment_channel: "FBA" | "FBM";
+  fulfillment_channel: "MF" | "SF";
   handling_time_days: number;
   max_order_quantity: number | null;
   condition: string;

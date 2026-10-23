@@ -52,7 +52,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'status', 'status_display', 'seller_sku', 'fulfillment_channel', 'product', 'quantity',
             'unit_price', 'total_price', 'item_tax_amount', 'item_shipping_fee', 'item_discount_amount',
-            'referral_fee_charged', 'closing_fee_charged', 'fba_fulfillment_fee', 'gift_wrap_requested',
+            'referral_fee_charged', 'closing_fee_charged', 'mf_fulfillment_fee', 'gift_wrap_requested',
             'fees_total', 'net_earning', 'shipment_number',
         ]
 
@@ -62,10 +62,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return {'asin': p.asin, 'title': p.title, 'image': images[0].image_url if images else None}
 
     def get_fees_total(self, obj):
-        return _money(obj.referral_fee_charged + obj.closing_fee_charged + obj.fba_fulfillment_fee)
+        return _money(obj.referral_fee_charged + obj.closing_fee_charged + obj.mf_fulfillment_fee)
 
     def get_net_earning(self, obj):
-        fees = obj.referral_fee_charged + obj.closing_fee_charged + obj.fba_fulfillment_fee
+        fees = obj.referral_fee_charged + obj.closing_fee_charged + obj.mf_fulfillment_fee
         return _money(obj.total_price + obj.item_shipping_fee - obj.item_discount_amount - fees)
 
 
@@ -194,7 +194,7 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
     Seller Central orders: orders that contain the seller's lines, with only those lines shown.
 
     GET  /api/orders/              tab=pending_payment|unshipped|shipped|delivered|cancelled|refunded,
-                                   search, date_from, date_to, fulfillment=FBA|FBM, payment=COD|PREPAID,
+                                   search, date_from, date_to, fulfillment=MF|SF, payment=COD|PREPAID,
                                    late=true, ordering
     GET  /api/orders/summary/      tab counts, 30-day sales and late shipments
     GET  /api/orders/export/       same filters, as CSV
@@ -237,7 +237,8 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
             qs = qs.filter(placed_at__date__gte=parse_date(p['date_from']))
         if parse_date(p.get('date_to') or ''):
             qs = qs.filter(placed_at__date__lte=parse_date(p['date_to']))
-        channel = {'FBA': FulfillmentChannel.MAKAANO_FULFILLED, 'FBM': FulfillmentChannel.SELLER_FULFILLED}.get(p.get('fulfillment'))
+        f_val = str(p.get('fulfillment') or '').strip().upper()
+        channel = {'MF': FulfillmentChannel.MF, 'SF': FulfillmentChannel.SF}.get(f_val)
         if channel:
             qs = qs.filter(items__seller=self._seller(), items__listing__fulfillment_channel=channel).distinct()
         if p.get('payment') == 'COD':
@@ -305,7 +306,7 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
                     o.order_number, timezone.localtime(o.placed_at).strftime('%Y-%m-%d %H:%M'), o.get_status_display(),
                     o.shipping_address.full_name, o.shipping_address.city, i.listing.seller_sku, i.listing.product.asin,
                     i.listing.product.title, i.quantity, i.unit_price, i.total_price, i.item_tax_amount,
-                    _money(i.referral_fee_charged + i.closing_fee_charged + i.fba_fulfillment_fee), i.get_status_display(),
+                    _money(i.referral_fee_charged + i.closing_fee_charged + i.mf_fulfillment_fee), i.get_status_display(),
                     pay.get_payment_method_display() if pay else '', i.shipment.tracking_number if i.shipment else '',
                 ])
         return response

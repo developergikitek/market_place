@@ -99,7 +99,7 @@ class OrderItem(models.Model):
 
     referral_fee_charged = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     closing_fee_charged = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    fba_fulfillment_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    mf_fulfillment_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     gift_wrap_requested = models.BooleanField(default=False)
     gift_wrap_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)

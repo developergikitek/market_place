@@ -3,7 +3,7 @@ Return (RMA) lifecycle rules shared by the API and serializers.
 
 REQUESTED ─approve─▶ SELLER_APPROVED ─┐
 REQUESTED ─reject──▶ REJECTED         ├─label─▶ RETURN_LABEL_GENERATED ─ship─▶ IN_TRANSIT_TO_FC ─receive─▶ DELIVERED_TO_FC
-(FBA lines start at AUTO_AUTHORIZED) ─┘
+(MF lines start at AUTO_AUTHORIZED) ─┘
 DELIVERED_TO_FC ─inspect─▶ INSPECTED_SELLABLE (restocked) | INSPECTED_DAMAGED ─refund─▶ REFUND_ISSUED
 The buyer can cancel any time before the parcel ships.
 """

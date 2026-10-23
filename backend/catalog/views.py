@@ -149,10 +149,15 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         if in_stock in ['true', '1', 'True']:
             qs = qs.filter(listings__status='ACTIVE', listings__inventory_items__available_stock__gt=0)
 
-        # 6. Fulfillment Filter (FBA = Fulfillment by Buildmart, FBM = Merchant)
+        # 6. Fulfillment Filter (MF = Makaano Fulfilled, SF = Seller Fulfilled)
         fulfillment = params.get('fulfillment')
         if fulfillment:
-            qs = qs.filter(listings__status='ACTIVE', listings__fulfillment_channel__iexact=fulfillment)
+            f_norm = str(fulfillment).strip().upper()
+            target_channels = {
+                'MF': [FulfillmentChannel.MF, 'MAKAANO_FULFILLED'],
+                'SF': [FulfillmentChannel.SF, 'SELLER_FULFILLED'],
+            }.get(f_norm, [fulfillment])
+            qs = qs.filter(listings__status='ACTIVE', listings__fulfillment_channel__in=target_channels)
 
         # Commerce channel: products with an active offer reaching that channel (BOTH counts for either)
         commerce = params.get('commerce_channel')

@@ -47,8 +47,18 @@ class ProductCondition(models.TextChoices):
     COLLECTIBLE = "COLLECTIBLE", "Collectible"
 
 class FulfillmentChannel(models.TextChoices):
-    MAKAANO_FULFILLED = "MAKAANO_FULFILLED", "Fulfilled by Makaano"
-    SELLER_FULFILLED = "SELLER_FULFILLED", "Fulfilled by Seller"
+    MF = "MF", "Makaano Fulfilled"
+    SF = "SF", "Seller Fulfilled"
+
+
+def normalize_fulfillment_channel(val) -> str:
+    """Normalize fulfillment channel to MF or SF."""
+    if not val:
+        return FulfillmentChannel.MF
+    v = str(val).strip().upper()
+    if v in ("SF", "SELLER_FULFILLED", "SELLER"):
+        return FulfillmentChannel.SF
+    return FulfillmentChannel.MF
 
 
 class CommerceChannel(models.TextChoices):
@@ -97,7 +107,7 @@ class CatalogStatus(models.TextChoices):
     DISCONTINUED = "DISCONTINUED", "Discontinued"
 
 class WarehouseType(models.TextChoices):
-    FBA_FULFILLMENT_CENTER = "FBA_FULFILLMENT_CENTER", "Buildmart Fulfillment Center"
+    MF_FULFILLMENT_CENTER = "MF_FULFILLMENT_CENTER", "Makaano Fulfillment Center"
     SORTATION_CENTER = "SORTATION_CENTER", "Sortation Center"
     DELIVERY_STATION = "DELIVERY_STATION", "Delivery Station"
     SELLER_WAREHOUSE = "SELLER_WAREHOUSE", "Seller Warehouse"
@@ -117,7 +127,7 @@ class InventoryMovementReason(models.TextChoices):
     CUSTOMER_ORDER_RESERVED = "CUSTOMER_ORDER_RESERVED", "Customer Order Reserved"
     CUSTOMER_ORDER_DISPATCHED = "CUSTOMER_ORDER_DISPATCHED", "Customer Order Dispatched"
     CUSTOMER_RETURN_RESTOCKED = "CUSTOMER_RETURN_RESTOCKED", "Customer Return Restocked"
-    FBA_INBOUND_RECEIVED = "FBA_INBOUND_RECEIVED", "FBA Inbound Received"
+    MF_INBOUND_RECEIVED = "MF_INBOUND_RECEIVED", "MF Inbound Received"
     DAMAGED_IN_WAREHOUSE = "DAMAGED_IN_WAREHOUSE", "Damaged in Warehouse"
     CYCLE_COUNT_ADJUSTMENT = "CYCLE_COUNT_ADJUSTMENT", "Cycle Count Adjustment"
     DISPOSED = "DISPOSED", "Disposed"
@@ -193,9 +203,9 @@ class TransactionType(models.TextChoices):
     PRODUCT_SALE = "PRODUCT_SALE", "Product Sale"
     REFERRAL_FEE = "REFERRAL_FEE", "Referral Fee"
     CLOSING_FEE = "CLOSING_FEE", "Closing Fee"
-    FBA_PICK_AND_PACK_FEE = "FBA_PICK_AND_PACK_FEE", "FBA Pick and Pack Fee"
-    FBA_MONTHLY_STORAGE_FEE = "FBA_MONTHLY_STORAGE_FEE", "FBA Monthly Storage Fee"
-    FBA_LONG_TERM_STORAGE_FEE = "FBA_LONG_TERM_STORAGE_FEE", "FBA Long-Term Storage Fee"
+    MF_PICK_AND_PACK_FEE = "MF_PICK_AND_PACK_FEE", "MF Pick and Pack Fee"
+    MF_MONTHLY_STORAGE_FEE = "MF_MONTHLY_STORAGE_FEE", "MF Monthly Storage Fee"
+    MF_LONG_TERM_STORAGE_FEE = "MF_LONG_TERM_STORAGE_FEE", "MF Long-Term Storage Fee"
     REFUND_DEDUCTION = "REFUND_DEDUCTION", "Refund Deduction"
     REFUND_ADMIN_FEE = "REFUND_ADMIN_FEE", "Refund Admin Fee"
     ADVERTISING_SPEND_DEBIT = "ADVERTISING_SPEND_DEBIT", "Advertising Spend Debit"

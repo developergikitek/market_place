@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 code="BM-WH-DEL-01",
                 defaults={
                     "name": "Buildmart Central Distribution Hub (NCR)",
-                    "type": WarehouseType.FBA_FULFILLMENT_CENTER,
+                    "type": WarehouseType.MF_FULFILLMENT_CENTER,
                     "street_address": "Plot 42, Sector 8, IMT Manesar",
                     "city": "Gurugram",
                     "state_or_province": "Haryana",
@@ -111,7 +111,7 @@ class Command(BaseCommand):
                     "seller_sku": "GIK-ULTRA-PPC-50",
                     "condition": ProductCondition.NEW,
                     "condition_note": "Direct factory supply with verified test certificates.",
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("385.00"),
                     "handling_time_days": 1,
@@ -170,7 +170,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "GIK-TATA-TMT-12MM",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("785.00"),
                     "handling_time_days": 1,
@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "GIK-AP-APEX-20L",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("4290.00"),
                     "sale_price": Decimal("3999.00"),
@@ -263,7 +263,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "BOSCH-GSB-550W",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("2099.00"),
                     "handling_time_days": 1,
@@ -299,7 +299,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "STAN-16IN",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("649.00"),
                     "handling_time_days": 1,
@@ -334,7 +334,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "FIN-1INCH-6M",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("340.00"),
                     "handling_time_days": 1,
@@ -369,7 +369,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "PHIL-12W-CDL",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("165.00"),
                     "handling_time_days": 1,
@@ -404,7 +404,7 @@ class Command(BaseCommand):
                 defaults={
                     "seller_sku": "SINTEX-1000L-TL",
                     "condition": ProductCondition.NEW,
-                    "fulfillment_channel": FulfillmentChannel.MAKAANO_FULFILLED,
+                    "fulfillment_channel": FulfillmentChannel.MF,
                     "status": ListingStatus.ACTIVE,
                     "standard_price": Decimal("6850.00"),
                     "handling_time_days": 2,

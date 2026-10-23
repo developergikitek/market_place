@@ -265,7 +265,7 @@ Also surface `CustomerProfile` (Prime-equivalent membership, preferred currency/
   "buy_box": {
     "listing_id": "…", "seller": {"id": "…", "display_name": "Shree Traders", "feedback_percent": 97.5},
     "price": "385.00", "currency": "INR", "condition": "NEW",
-    "fulfillment_channel": "FBA", "commerce_channel": "BAZAAR",
+    "fulfillment_channel": "MF", "commerce_channel": "BAZAAR",
     "in_stock": true, "max_order_quantity": 500,
     "delivery_estimate": "2026-10-25",
     "tier_prices": [{"min_quantity": 50, "price": "372.00"}, {"min_quantity": 200, "price": "360.00"}]
@@ -337,9 +337,9 @@ returns the shipment split before any money moves:
 ```json
 {
   "shipment_groups": [
-    {"seller": "Shree Traders", "fulfillment_channel": "FBA", "warehouse_code": "BLR1",
+    {"seller": "Shree Traders", "fulfillment_channel": "MF", "warehouse_code": "BLR1",
      "items": ["…"], "shipping_fee": "0.00", "estimated_delivery": "2026-10-25"},
-    {"seller": "Metro Steel", "fulfillment_channel": "FBM",
+    {"seller": "Metro Steel", "fulfillment_channel": "SF",
      "items": ["…"], "shipping_fee": "450.00", "estimated_delivery": "2026-10-29"}
   ],
   "totals": {"items_subtotal": "…", "shipping_total": "…", "tax_total": "…",

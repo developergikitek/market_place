@@ -131,7 +131,7 @@
   - `brand`: Brand slug or name (`?brand=ultratech`)
   - `min_price` & `max_price`: Standard price range (`?min_price=300&max_price=800`)
   - `in_stock`: Only in-stock items (`?in_stock=true`)
-  - `fulfillment`: Filter by logistics (`?fulfillment=FBA` for Buildmart, `FBM` for merchant)
+  - `fulfillment`: Filter by logistics (`?fulfillment=MF` for Makaano Fulfilled, `SF` for Seller Fulfilled)
   - `ordering` / `sort`: `price_asc`, `price_desc`, `newest`, `title_asc`
   - `page` & `page_size`: Pagination (`?page=1&page_size=20`)
 - **Response `200 OK`:**

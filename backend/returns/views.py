@@ -129,8 +129,8 @@ class ReturnRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mix
         if item.return_requests.filter(status__in=OPEN_STATUSES + [ReturnStatus.REFUND_ISSUED]).exists():
             raise ValidationError({'order_item_id': 'A return is already open for this item.'})
 
-        # Makaano-fulfilled returns are authorised automatically; seller-fulfilled wait for the seller.
-        start = ReturnStatus.AUTO_AUTHORIZED if item.listing.fulfillment_channel == FulfillmentChannel.MAKAANO_FULFILLED \
+        # Makaano-fulfilled (MF) returns are authorised automatically; seller-fulfilled (SF) wait for the seller.
+        start = ReturnStatus.AUTO_AUTHORIZED if item.listing.fulfillment_channel in (FulfillmentChannel.MF, FulfillmentChannel.MAKAANO_FULFILLED) \
             else ReturnStatus.REQUESTED
         rr = ReturnRequest.objects.create(
             rma_number=_new_number('RMA', ReturnRequest, 'rma_number'),
