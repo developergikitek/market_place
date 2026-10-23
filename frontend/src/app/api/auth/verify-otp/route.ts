@@ -88,6 +88,8 @@ export async function POST(request: Request) {
       message: data.message || "Login successful.",
       user: data.user,
       tokens: data.tokens,
+      session_id: data.session_id,
+      device_id: data.device_id,
     });
   } catch (error: any) {
     console.error("[BFF Auth Verify-OTP Error]:", error);

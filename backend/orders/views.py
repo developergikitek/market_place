@@ -202,7 +202,7 @@ class SellerOrderViewSet(viewsets.GenericViewSet):
     POST /api/orders/<n>/confirm|pack|ship|mark_delivered|mark_rto|add_tracking|cancel/
     """
     pagination_class = StandardResultsSetPagination
-    permission_classes = [permissions.AllowAny]  # open like the other seller APIs until JWT login lands
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'order_number'
 
     def _seller(self):

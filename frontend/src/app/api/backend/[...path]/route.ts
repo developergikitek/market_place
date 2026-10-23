@@ -116,17 +116,17 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
     }
 
     const dataBlob = await backendRes.blob();
-    const responseHeaders = new Headers();
-    const resContentType = backendRes.headers.get("content-type");
-    if (resContentType) {
-      responseHeaders.set("content-type", resContentType);
-    }
-
-    return new NextResponse(dataBlob, {
+    const finalResponse = new NextResponse(dataBlob, {
       status: backendRes.status,
       statusText: backendRes.statusText,
-      headers: responseHeaders,
     });
+
+    const resContentType = backendRes.headers.get("content-type");
+    if (resContentType) {
+      finalResponse.headers.set("content-type", resContentType);
+    }
+
+    return finalResponse;
   } catch (error: any) {
     console.error("[BFF Universal Proxy Error]:", error);
     return NextResponse.json(

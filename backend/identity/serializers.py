@@ -186,6 +186,14 @@ class VerifyOTPSerializer(serializers.Serializer):
         required=False,
     )
 
+    # Optional device binding fields
+    device_id = serializers.CharField(required=False, allow_blank=True)
+    platform = serializers.CharField(required=False, allow_blank=True)
+    device_model = serializers.CharField(required=False, allow_blank=True)
+    os_version = serializers.CharField(required=False, allow_blank=True)
+    app_version = serializers.CharField(required=False, allow_blank=True)
+    push_token = serializers.CharField(required=False, allow_blank=True)
+
     def validate_otp(self, value):
         cleaned = value.strip()
         if not cleaned.isdigit():
@@ -203,4 +211,28 @@ class VerifyOTPSerializer(serializers.Serializer):
                 cleaned = cleaned[2:]
             attrs['phone'] = cleaned
         return attrs
+
+
+class UserDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import UserDevice
+        model = UserDevice
+        fields = [
+            'id', 'device_id', 'platform', 'device_model', 'os_version',
+            'app_version', 'is_trusted', 'is_active', 'first_seen_at', 'last_seen_at'
+        ]
+        read_only_fields = ['id', 'first_seen_at', 'last_seen_at']
+
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    device = UserDeviceSerializer(read_only=True)
+
+    class Meta:
+        from .models import UserSession
+        model = UserSession
+        fields = [
+            'id', 'device', 'status', 'ip_address', 'city', 'country',
+            'user_agent', 'last_activity_at', 'expires_at', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'last_activity_at']
 

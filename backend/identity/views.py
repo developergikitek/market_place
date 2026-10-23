@@ -5,9 +5,21 @@ from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.utils import timezone
 
-from .models import User, OTPRequest, OTPPurpose, OTPChannel
+from .models import (
+    User,
+    OTPRequest,
+    OTPPurpose,
+    OTPChannel,
+    UserDevice,
+    UserSession,
+    RefreshTokenRecord,
+    SessionStatus,
+    AuthEventType,
+)
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -15,6 +27,15 @@ from .serializers import (
     ChangePasswordSerializer,
     SendOTPSerializer,
     VerifyOTPSerializer,
+    UserDeviceSerializer,
+    UserSessionSerializer,
+)
+from .services import (
+    create_user_session_and_tokens,
+    extract_device_info,
+    revoke_session,
+    revoke_all_user_sessions,
+    record_audit_log,
 )
 
 
@@ -35,12 +56,15 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            tokens = get_tokens_for_user(user)
+            device_info = extract_device_info(request, serializer.validated_data)
+            auth_data = create_user_session_and_tokens(user, request, device_info=device_info)
             return Response(
                 {
                     "message": "User registered successfully.",
                     "user": UserSerializer(user).data,
-                    "tokens": tokens,
+                    "tokens": auth_data['tokens'],
+                    "session_id": auth_data['session_id'],
+                    "device_id": auth_data['device_id'],
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -60,12 +84,15 @@ class LoginView(APIView):
             user.failed_login_attempts = 0
             user.save(update_fields=['last_login_at', 'failed_login_attempts'])
 
-            tokens = get_tokens_for_user(user)
+            device_info = extract_device_info(request, serializer.validated_data)
+            auth_data = create_user_session_and_tokens(user, request, device_info=device_info)
             return Response(
                 {
                     "message": "Login successful.",
                     "user": UserSerializer(user).data,
-                    "tokens": tokens,
+                    "tokens": auth_data['tokens'],
+                    "session_id": auth_data['session_id'],
+                    "device_id": auth_data['device_id'],
                 },
                 status=status.HTTP_200_OK,
             )
@@ -286,12 +313,15 @@ class VerifyOTPView(APIView):
             user.failed_login_attempts = 0
             user.save(update_fields=['is_phone_verified', 'last_login_at', 'failed_login_attempts'])
 
-            tokens = get_tokens_for_user(user)
+            device_info = extract_device_info(request, serializer.validated_data)
+            auth_data = create_user_session_and_tokens(user, request, device_info=device_info)
             return Response(
                 {
                     "message": "OTP verified successfully. Login successful.",
                     "user": UserSerializer(user).data,
-                    "tokens": tokens,
+                    "tokens": auth_data['tokens'],
+                    "session_id": auth_data['session_id'],
+                    "device_id": auth_data['device_id'],
                 },
                 status=status.HTTP_200_OK,
             )
@@ -304,4 +334,252 @@ class VerifyOTPView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class LogoutView(APIView):
+    """
+    Logout endpoint: Revokes active session and invalidates tokens.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        session_id = None
+        if hasattr(request, 'user_session') and request.user_session:
+            session_id = request.user_session.id
+        elif hasattr(request, 'auth') and hasattr(request.auth, 'get'):
+            session_id = request.auth.get('session_id')
+
+        if not session_id:
+            session_id = request.data.get('session_id') or request.headers.get('X-Session-Id')
+
+        if session_id:
+            revoke_session(session_id, request.user, reason="USER_LOGOUT")
+        else:
+            # Fallback: Revoke most recent active session for this user
+            latest_session = UserSession.objects.filter(
+                user=request.user,
+                status=SessionStatus.ACTIVE
+            ).order_by('-created_at').first()
+            if latest_session:
+                latest_session.revoke(reason="USER_LOGOUT")
+                session_id = latest_session.id
+
+        record_audit_log(
+            event=AuthEventType.LOGOUT,
+            user=request.user,
+            request=request,
+            metadata={'session_id': session_id}
+        )
+        return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
+
+
+class UserSessionsView(APIView):
+    """
+    List all active sessions for authenticated user ("Active Devices / Logged-in Sessions").
+    DELETE: Revoke all other sessions ("Log out from all other devices").
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        sessions = UserSession.objects.filter(
+            user=request.user,
+            status=SessionStatus.ACTIVE,
+            expires_at__gt=timezone.now(),
+        ).select_related('device').order_by('-last_activity_at')
+        return Response(UserSessionSerializer(sessions, many=True).data, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        current_session_id = request.data.get('current_session_id') or request.headers.get('X-Session-Id')
+        revoked_count = revoke_all_user_sessions(
+            request.user,
+            except_session_id=current_session_id,
+            reason="USER_REVOKED_OTHER_SESSIONS",
+        )
+        record_audit_log(
+            event=AuthEventType.SESSION_REVOKED,
+            user=request.user,
+            request=request,
+            metadata={'action': 'revoke_all_other_sessions', 'revoked_count': revoked_count}
+        )
+        return Response(
+            {"message": f"Successfully revoked {revoked_count} other active session(s)."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class RevokeSessionView(APIView):
+    """
+    Revoke a specific session by ID ("Remove Device").
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, session_id):
+        revoked = revoke_session(session_id, request.user, reason="USER_MANUAL_REVOCATION")
+        if revoked:
+            record_audit_log(
+                event=AuthEventType.SESSION_REVOKED,
+                user=request.user,
+                request=request,
+                metadata={'revoked_session_id': session_id}
+            )
+            return Response({"message": "Session revoked successfully."}, status=status.HTTP_200_OK)
+        return Response({"error": "Session not found or already inactive."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Enterprise OAuth 2.0 / JWT Token Refresh View with Session Binding & Family Rotation:
+    1. Replay Attack Detection: If an already-revoked refresh token is re-submitted,
+       revoke ALL tokens in that family and terminate the entire UserSession immediately.
+    2. Token Rotation: If refresh succeeds, rotate the token record and update
+       UserSession.last_activity_at.
+    3. Session Expiration: If refresh fails due to token expiration (401),
+       mark UserSession status = 'EXPIRED' and record revocation in the DB.
+    """
+    def post(self, request, *args, **kwargs):
+        raw_refresh = request.data.get('refresh')
+        token_hash = RefreshTokenRecord.hash_token(raw_refresh) if raw_refresh else None
+        record = None
+
+        if token_hash:
+            record = RefreshTokenRecord.objects.filter(token_hash=token_hash).select_related('session', 'session__user').first()
+
+            # Fallback: If valid token has session_id claim but wasn't tracked, track it now
+            if not record and raw_refresh:
+                try:
+                    from rest_framework_simplejwt.tokens import RefreshToken as JWTRefreshToken
+                    token_payload = JWTRefreshToken(raw_refresh)
+                    sess_id = token_payload.get('session_id')
+                    if sess_id:
+                        session = UserSession.objects.filter(id=sess_id).first()
+                        if session and session.status == SessionStatus.ACTIVE:
+                            record = RefreshTokenRecord.objects.create(
+                                session=session,
+                                token_hash=token_hash,
+                                family_id=str(uuid.uuid4()),
+                                expires_at=timezone.now() + timedelta(days=30),
+                            )
+                except Exception:
+                    pass
+
+            # Security Defense: Replay attack detection (token was already used/revoked)
+            if record and record.is_revoked:
+                session = record.session
+                now = timezone.now()
+
+                # Leeway Window (30 seconds): Modern browsers fire parallel requests on reload
+                # If this token was rotated within the last 30 seconds, treat it as a concurrent request race condition,
+                # NOT a malicious replay attack!
+                latest_token = (
+                    RefreshTokenRecord.objects.filter(family_id=record.family_id, is_revoked=False)
+                    .order_by('-created_at')
+                    .first()
+                )
+
+                if latest_token and session and session.status == SessionStatus.ACTIVE:
+                    time_diff = (now - latest_token.created_at).total_seconds()
+                    if time_diff <= 30:
+                        # Legitimate concurrent request: Issue new access & refresh token with session_id without killing session
+                        from rest_framework_simplejwt.tokens import RefreshToken as JWTRefreshToken
+                        jwt_obj = JWTRefreshToken.for_user(session.user)
+                        jwt_obj['session_id'] = str(session.id)
+                        if session.device:
+                            jwt_obj['device_id'] = str(session.device.device_id)
+                            jwt_obj['platform'] = str(session.device.platform)
+
+                        new_refresh_str = str(jwt_obj)
+                        RefreshTokenRecord.objects.create(
+                            session=session,
+                            token_hash=RefreshTokenRecord.hash_token(new_refresh_str),
+                            family_id=record.family_id,
+                            expires_at=now + timedelta(days=30),
+                        )
+
+                        return Response(
+                            {
+                                "access": str(jwt_obj.access_token),
+                                "refresh": new_refresh_str,
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+
+                # Outside leeway window (>30s) -> Genuine replay attack from an attacker!
+                if session and session.status == SessionStatus.ACTIVE:
+                    session.revoke(reason="TOKEN_REPLAY_ATTACK_DETECTED")
+                    RefreshTokenRecord.objects.filter(family_id=record.family_id).update(is_revoked=True)
+                    record_audit_log(
+                        event=AuthEventType.SESSION_REVOKED,
+                        user=session.user,
+                        request=request,
+                        metadata={
+                            'reason': 'REPLAY_ATTACK_DETECTED',
+                            'family_id': record.family_id,
+                            'session_id': session.id,
+                        }
+                    )
+                return Response(
+                    {"detail": "Security violation: This token was already used or revoked. Please log in again.", "code": "token_replayed"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+        try:
+            response = super().post(request, *args, **kwargs)
+
+            # Success (200 OK)
+            if response.status_code == status.HTTP_200_OK and record:
+                session = record.session
+                now = timezone.now()
+
+                # Update session activity
+                session.last_activity_at = now
+                session.save(update_fields=['last_activity_at'])
+
+                # If new refresh token was returned (ROTATE_REFRESH_TOKENS=True)
+                new_refresh = response.data.get('refresh')
+                if new_refresh:
+                    # Invalidate old token
+                    record.is_revoked = True
+                    record.save(update_fields=['is_revoked'])
+
+                    # Create new token record in same family
+                    new_token_hash = RefreshTokenRecord.hash_token(new_refresh)
+                    RefreshTokenRecord.objects.create(
+                        session=session,
+                        token_hash=new_token_hash,
+                        family_id=record.family_id,
+                        expires_at=now + timedelta(days=30),
+                    )
+
+                record_audit_log(
+                    event=AuthEventType.TOKEN_REFRESH,
+                    user=session.user,
+                    request=request,
+                    metadata={'session_id': session.id}
+                )
+
+            return response
+
+        except (InvalidToken, TokenError) as exc:
+            # Token Expired or Invalid -> Mark UserSession as EXPIRED in DB
+            if record and record.session:
+                session = record.session
+                if session.status == SessionStatus.ACTIVE:
+                    session.status = SessionStatus.EXPIRED
+                    session.revoked_at = timezone.now()
+                    session.revocation_reason = "REFRESH_TOKEN_EXPIRED"
+                    session.save(update_fields=['status', 'revoked_at', 'revocation_reason'])
+
+                    record.is_revoked = True
+                    record.save(update_fields=['is_revoked'])
+
+                    record_audit_log(
+                        event=AuthEventType.SESSION_REVOKED,
+                        user=session.user,
+                        request=request,
+                        metadata={
+                            'reason': 'REFRESH_TOKEN_EXPIRED',
+                            'session_id': session.id,
+                        }
+                    )
+            raise exc
 

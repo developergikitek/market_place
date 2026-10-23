@@ -60,14 +60,14 @@ export function BadgesProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  // 1. Initial fetch when authenticated
+  // 1. Initial fetch once when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       refreshBadges();
     }
   }, [isAuthenticated, refreshBadges]);
 
-  // 2. Custom global event listener for cross-component action triggers
+  // 2. Custom global event listener for explicit action triggers (e.g. when an order is shipped)
   useEffect(() => {
     const handleCustomRefresh = () => {
       refreshBadges();
@@ -78,33 +78,6 @@ export function BadgesProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener(PORTAL_BADGES_REFRESH_EVENT, handleCustomRefresh);
     };
   }, [refreshBadges]);
-
-  // 3. Tab focus & visibility change listener (smart revalidation when user switches tabs)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        refreshBadges();
-      }
-    };
-
-    window.addEventListener("focus", handleVisibilityChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      window.removeEventListener("focus", handleVisibilityChange);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [refreshBadges]);
-
-  // 4. Background heartbeat polling (every 60 seconds) for incoming new orders
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        refreshBadges();
-      }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, refreshBadges]);
 
   return (
     <BadgesContext.Provider
