@@ -340,8 +340,9 @@ class UserSession(models.Model):
         now = timezone.now()
         if now > self.expires_at:
             return False
-        if self.idle_expires_at and now > self.idle_expires_at:
-            return False
+        # Idle expiry temporarily disabled
+        # if self.idle_expires_at and now > self.idle_expires_at:
+        #     return False
         return True
 
     def revoke(self, reason: str = "USER_LOGOUT"):

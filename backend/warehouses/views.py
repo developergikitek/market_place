@@ -34,10 +34,14 @@ def _stock_status(available, safety):
 
 class WarehouseSerializer(serializers.ModelSerializer):
     type_display = serializers.CharField(source='get_type_display', read_only=True)
+    is_private = serializers.SerializerMethodField()
 
     class Meta:
         model = Warehouse
-        fields = ['id', 'code', 'name', 'type', 'type_display', 'city', 'state_or_province']
+        fields = ['id', 'code', 'name', 'type', 'type_display', 'city', 'state_or_province', 'is_private']
+
+    def get_is_private(self, obj):
+        return bool(obj.seller_id)
 
 
 class InventoryItemSerializer(serializers.ModelSerializer):
@@ -169,7 +173,13 @@ class InventoryViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'])
     def warehouses(self, request):
-        return Response(WarehouseSerializer(Warehouse.objects.filter(is_active=True).order_by('name'), many=True).data)
+        seller = self._seller()
+        qs = Warehouse.objects.filter(is_active=True)
+        if seller:
+            qs = qs.filter(Q(seller__isnull=True) | Q(seller=seller))
+        else:
+            qs = qs.filter(seller__isnull=True)
+        return Response(WarehouseSerializer(qs.order_by('name'), many=True).data)
 
     @action(detail=False, methods=['get'])
     def reasons(self, request):
@@ -201,8 +211,9 @@ class InventoryViewSet(viewsets.GenericViewSet):
         if not listing:
             errors['listing_id'] = "Choose one of your listings."
         warehouse = Warehouse.objects.filter(id=data.get('warehouse_id'), is_active=True).first()
-        if not warehouse:
-            errors['warehouse_id'] = "Choose a warehouse."
+        seller = self._seller()
+        if not warehouse or (warehouse.seller and warehouse.seller != seller):
+            errors['warehouse_id'] = "Choose a valid warehouse."
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -74,14 +74,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // Client session cookie
-    cookieStore.set("makaano_seller_logged_in", "true", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
+
 
     return NextResponse.json({
       success: true,

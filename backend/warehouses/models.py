@@ -17,6 +17,7 @@ class Warehouse(models.Model):
     country_code = models.CharField(max_length=10, default="US")
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    seller = models.ForeignKey('sellers.Seller', on_delete=models.CASCADE, null=True, blank=True, related_name='warehouses')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -25,6 +26,7 @@ class Warehouse(models.Model):
         db_table = 'warehouses'
         indexes = [
             models.Index(fields=['code']),
+            models.Index(fields=['seller']),
         ]
 
     def __str__(self):

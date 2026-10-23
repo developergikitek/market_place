@@ -443,6 +443,7 @@ model Seller {
   brandRegistries      Brand[]             @relation("BrandOwner")
   listings             Listing[]
   warehouseInventories InventoryItem[]
+  warehouses           Warehouse[]
   inboundShipments     InboundShipment[]
   settlements          SellerSettlement[]
   orderItemsFulfilled  OrderItem[]         @relation("SellerOrderItems")
@@ -840,11 +841,14 @@ model Warehouse {
   updatedAt       DateTime        @updatedAt
 
   // Relationships
+  sellerId         String?
+  seller           Seller?         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   inventoryItems   InventoryItem[]
   inboundShipments InboundShipment[]
   outboundPackages Shipment[]
 
   @@index([code])
+  @@index([sellerId])
 }
 
 /// Multi-location physical stock tracking per listing offer in every warehouse.

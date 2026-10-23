@@ -56,8 +56,7 @@ export default function SellerLoginForm({
   // Full page load, not router.push: the client router may still hold the logged-out redirect from
   // /portal/* to /login, and a fresh load also lets AuthProvider pick up the new session.
   const goToPortal = () => {
-    const next = new URLSearchParams(window.location.search).get("next");
-    window.location.assign(next && next.startsWith("/") && !next.startsWith("//") ? next : "/portal/dashboard");
+    window.location.assign("/portal/dashboard");
   };
 
   useEffect(() => {
@@ -154,7 +153,6 @@ export default function SellerLoginForm({
       if (res?.user) {
         setUser(res.user);
       }
-      await refreshUser();
       setIsSuccess(true);
       if (onLoginSuccess) {
         onLoginSuccess(identifier);
@@ -217,7 +215,6 @@ export default function SellerLoginForm({
       if (res?.user) {
         setUser(res.user);
       }
-      await refreshUser();
       setIsSuccess(true);
       if (onLoginSuccess) {
         onLoginSuccess(mobileNumber);

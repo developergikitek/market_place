@@ -153,7 +153,7 @@ def create_user_session_and_tokens(
         session_token_hash=token_hash,
         status=SessionStatus.ACTIVE,
         expires_at=now + timedelta(days=expiry_days),
-        idle_expires_at=now + timedelta(minutes=idle_minutes),
+        idle_expires_at=None,
         ip_address=ip,
         user_agent=ua,
     )
