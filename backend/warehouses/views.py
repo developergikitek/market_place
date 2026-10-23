@@ -176,7 +176,11 @@ class InventoryViewSet(viewsets.GenericViewSet):
         seller = self._seller()
         qs = Warehouse.objects.filter(is_active=True)
         if seller:
-            qs = qs.filter(Q(seller__isnull=True) | Q(seller=seller))
+            seller_warehouses = qs.filter(seller=seller)
+            if seller_warehouses.exists():
+                qs = seller_warehouses
+            else:
+                qs = qs.filter(seller__isnull=True)
         else:
             qs = qs.filter(seller__isnull=True)
         return Response(WarehouseSerializer(qs.order_by('name'), many=True).data)
